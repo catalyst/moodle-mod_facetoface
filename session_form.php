@@ -37,10 +37,21 @@ class mod_facetoface_session_form extends moodleform {
 
         $mform =& $this->_form;
 
+        // Course Module ID.
         $mform->addElement('hidden', 'id', $this->_customdata['id']);
+        $mform->setType('id', PARAM_INT);
+
+        // Facetoface Instance ID.
         $mform->addElement('hidden', 'f', $this->_customdata['f']);
+        $mform->setType('f', PARAM_INT);
+
+        // Facetoface Session ID.
         $mform->addElement('hidden', 's', $this->_customdata['s']);
+        $mform->setType('s', PARAM_INT);
+
+        // Copy Session Flag.
         $mform->addElement('hidden', 'c', $this->_customdata['c']);
+        $mform->setType('c', PARAM_INT);
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
@@ -72,6 +83,7 @@ class mod_facetoface_session_form extends moodleform {
 
         $repeatarray = array();
         $repeatarray[] = &$mform->createElement('hidden', 'sessiondateid', 0);
+        $mform->setType('sessiondateid', PARAM_INT);
         $repeatarray[] = &$mform->createElement('date_time_selector', 'timestart', get_string('timestart', 'facetoface'));
         $repeatarray[] = &$mform->createElement('date_time_selector', 'timefinish', get_string('timefinish', 'facetoface'));
         $checkboxelement = &$mform->createElement('checkbox', 'datedelete', '', get_string('dateremove', 'facetoface'));
