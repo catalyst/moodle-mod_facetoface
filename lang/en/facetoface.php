@@ -538,9 +538,9 @@ $string['error:shortnametaken'] = 'Custom field with this short name already exi
 // -------------------------------------------------------
 // Help Text
 
-$string['allowoverbook_help'] = 'When "Allow overbooking" is checked, learners will be able to sign up for a face-to-face session even if it is already full.</p>
+$string['allowoverbook_help'] = 'When "Allow overbooking" is checked, learners will be able to sign up for a face-to-face session even if it is already full.<br />
 
-<p>When a learner signs up for a session that is already full, they will receive an email advising that they have been waitlisted for the session and will be notified when a booking becomes available.';
+When a learner signs up for a session that is already full, they will receive an email advising that they have been waitlisted for the session and will be notified when a booking becomes available.';
 
 $string['approvalreqd_help'] = 'When "Approval required" is checked, a learner will need approval from their manager to be permitted to attend a face-to-face session.';
 
