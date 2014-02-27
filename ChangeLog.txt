@@ -1,3 +1,9 @@
+2.2.4.1 (2014-01-04):
+Bug fixes:
+- Fix Moodleform missing param types
+- Fix broken HTML tag in help text
+- Fix SQL compare text missing usage
+
 2.2.3.1 (2013-01-04):
 Bug fixes:
 - Fix upgrade version number problem
