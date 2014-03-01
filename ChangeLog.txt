@@ -1,3 +1,8 @@
+2.2.3 (2014-03-01):
+Bug fixes:
+- add extended username support
+- fix system roles global config setting
+
 2.2.4.1 (2014-01-04):
 Bug fixes:
 - Fix Moodleform missing param types
