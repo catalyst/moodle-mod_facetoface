@@ -1109,13 +1109,12 @@ function facetoface_get_grade($userid, $courseid, $facetofaceid) {
  */
 function facetoface_get_attendees($sessionid) {
     global $CFG,$DB;
+
+    $usernamefields = get_all_user_name_fields(true, 'u');
     $records = $DB->get_records_sql("
-        SELECT
-            u.id,
-            su.id AS submissionid,
-            u.firstname,
-            u.lastname,
+        SELECT u.id, {$usernamefields},
             u.email,
+            su.id AS submissionid,
             s.discountcost,
             su.discountcode,
             su.notificationtype,
@@ -1177,6 +1176,7 @@ function facetoface_get_attendees($sessionid) {
  */
 function facetoface_get_attendee($sessionid, $userid) {
     global $CFG, $DB;
+
     $record = $DB->get_record_sql("
         SELECT
             u.id,
@@ -3852,6 +3852,7 @@ function facetoface_get_cancellations($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
+    $usernamefields = get_all_user_name_fields(true, 'u');
     $instatus = array(MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED, MDL_F2F_STATUS_REQUESTED);
     list($insql, $inparams) = $DB->get_in_or_equal($instatus);
     // Nasty SQL follows:
@@ -3860,9 +3861,8 @@ function facetoface_get_cancellations($sessionid) {
     $sql = "
             SELECT
                 u.id,
+                {$usernamefields},
                 su.id AS signupid,
-                u.firstname,
-                u.lastname,
                 MAX(ss.timecreated) AS timesignedup,
                 c.timecreated AS timecancelled,
                 " . $DB->sql_compare_text('c.note') . " AS cancelreason
@@ -3911,10 +3911,11 @@ function facetoface_get_requests($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
+    $usernamefields = get_all_user_name_fields(true);
 
     $params = array($sessionid, MDL_F2F_STATUS_REQUESTED);
 
-    $sql = "SELECT u.id, su.id AS signupid, u.firstname, u.lastname,
+    $sql = "SELECT u.id, su.id AS signupid, {$usernamefields},
                    ss.timecreated AS timerequested
               FROM {facetoface_signups} su
               JOIN {facetoface_signups_status} ss ON su.id=ss.signupid
@@ -3937,10 +3938,11 @@ function facetoface_get_declines($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
+    $usernamefields = get_all_user_name_fields(true);
 
     $params = array($sessionid, MDL_F2F_STATUS_DECLINED);
 
-    $sql = "SELECT u.id, su.id AS signupid, u.firstname, u.lastname,
+    $sql = "SELECT u.id, su.id AS signupid, {$usernamefields},
                    ss.timecreated AS timerequested
               FROM {facetoface_signups} su
               JOIN {facetoface_signups_status} ss ON su.id=ss.signupid
@@ -3992,27 +3994,33 @@ class facetoface_candidate_selector extends user_selector_base {
      */
     public function find_users($search) {
         global $DB;
-        /// All non-signed up system users
-        list($wherecondition, $params) = $this->search_sql($search, '{user}');
 
-        $fields      = 'SELECT id, firstname, lastname, email';
-        $countfields = 'SELECT COUNT(1)';
+        // All non-signed up system user.
+        list($wherecondition, $params) = $this->search_sql($search, 'u');
+
+        $fields      = 'SELECT ' . $this->required_fields_sql('u');
+        $countfields = 'SELECT COUNT(u.*)';
         $sql = "
-                  FROM {user}
+                  FROM {user} u
                  WHERE $wherecondition
-                   AND id NOT IN
+                   AND u.id NOT IN
                        (
-                       SELECT u.id
+                       SELECT u2.id
                          FROM {facetoface_signups} s
                          JOIN {facetoface_signups_status} ss ON s.id = ss.signupid
-                         JOIN {user} u ON u.id=s.userid
+                         JOIN {user} u2 ON u2.id = s.userid
                         WHERE s.sessionid = :sessid
-                          AND ss.statuscode >= :statusbooked
+                          AND ss.statuscode >= :statusbooked OR ss.statuscode >= :statuswaitlisted
                           AND ss.superceded = 0
                        )
                ";
-        $order = " ORDER BY lastname ASC, firstname ASC";
-        $params = array_merge($params, array('sessid' => $this->sessionid, 'statusbooked' => MDL_F2F_STATUS_BOOKED));
+        $order = " ORDER BY u.lastname ASC, u.firstname ASC";
+        $params = array_merge($params,
+            array(
+                'sessid' => $this->sessionid,
+                'statusbooked' => MDL_F2F_STATUS_BOOKED,
+                'statuswaitlisted' => MDL_F2F_STATUS_WAITLISTED
+            ));
 
         if (!$this->is_validating()) {
             $potentialmemberscount = $DB->count_records_sql($countfields . $sql, $params);
@@ -4061,20 +4069,9 @@ class facetoface_existing_selector extends user_selector_base {
         //by default wherecondition retrieves all users except the deleted, not confirmed and guest
         list($wherecondition, $whereparams) = $this->search_sql($search, 'u');
 
-        $fields = 'SELECT
-                        u.id,
-                        su.id AS submissionid,
-                        u.firstname,
-                        u.lastname,
-                        u.email,
-                        s.discountcost,
-                        su.discountcode,
-                        su.notificationtype,
-                        f.id AS facetofaceid,
-                        f.course,
-                        ss.grade,
-                        ss.statuscode,
-                        sign.timecreated';
+        $fields  = 'SELECT ' . $this->required_fields_sql('u');
+        $fields .= ', su.id AS submissionid, s.discountcost, su.discountcode, su.notificationtype, f.id AS facetofaceid,
+            f.course, ss.grade, ss.statuscode, sign.timecreated';
         $countfields = 'SELECT COUNT(1)';
         $sql = "
             FROM
