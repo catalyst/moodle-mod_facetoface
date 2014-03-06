@@ -3999,7 +3999,7 @@ class facetoface_candidate_selector extends user_selector_base {
         list($wherecondition, $params) = $this->search_sql($search, 'u');
 
         $fields      = 'SELECT ' . $this->required_fields_sql('u');
-        $countfields = 'SELECT COUNT(u.*)';
+        $countfields = 'SELECT COUNT(u.id)';
         $sql = "
                   FROM {user} u
                  WHERE $wherecondition
