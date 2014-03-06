@@ -3885,9 +3885,7 @@ function facetoface_get_cancellations($sessionid) {
                 su.sessionid = ?
             GROUP BY
                 su.id,
-                u.id,
-                u.firstname,
-                u.lastname,
+                {$usernamefields},
                 c.timecreated,
                 " . $DB->sql_compare_text('c.note') . "
             ORDER BY
@@ -4010,7 +4008,7 @@ class facetoface_candidate_selector extends user_selector_base {
                          JOIN {facetoface_signups_status} ss ON s.id = ss.signupid
                          JOIN {user} u2 ON u2.id = s.userid
                         WHERE s.sessionid = :sessid
-                          AND ss.statuscode >= :statusbooked OR ss.statuscode >= :statuswaitlisted
+                          AND ss.statuscode >= :statuswaitlisted
                           AND ss.superceded = 0
                        )
                ";
@@ -4018,7 +4016,6 @@ class facetoface_candidate_selector extends user_selector_base {
         $params = array_merge($params,
             array(
                 'sessid' => $this->sessionid,
-                'statusbooked' => MDL_F2F_STATUS_BOOKED,
                 'statuswaitlisted' => MDL_F2F_STATUS_WAITLISTED
             ));
 
