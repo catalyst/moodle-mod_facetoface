@@ -153,11 +153,10 @@ class mod_facetoface_session_form extends moodleform {
                 $context = context_course::instance($this->_customdata['course']->id);
 
                 // Attempt to load users with this role in this course
+                $usernamefields = get_all_user_name_fields(true, 'u');
                 $rs = $DB->get_recordset_sql("
                     SELECT
-                        u.id,
-                        u.firstname,
-                        u.lastname
+                        u.id, {$usernamefields}
                     FROM
                         {role_assignments} ra
                     LEFT JOIN

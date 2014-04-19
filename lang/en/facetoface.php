@@ -466,6 +466,8 @@ $string['setting:hidecost_caption'] = 'Hide cost and discount:';
 $string['setting:hidediscount'] = 'Hide only the discount code field.';
 $string['setting:hidediscount_caption'] = 'Hide discount:';
 $string['setting:isfilter'] = 'Display as a filter';
+$string['setting:multiplesessions'] = 'Allow a user to signup to multiple sessions within a single F2F instance. Default: no.';
+$string['setting:multiplesessions_caption'] = 'Allow multiple sessions';
 $string['setting:possiblevalues'] = 'List of possible values';
 $string['setting:showinsummary'] = 'Show in exports and lists';
 $string['setting:sessionroles'] = 'Users assigned to the selected roles in a course can be tracked with each face-to-face session';
@@ -479,6 +481,7 @@ $string['signupfor'] = 'Sign-up for {$a}';
 $string['signupforsession'] = 'Sign-up for an available upcoming session';
 $string['signupforthissession'] = 'Sign-up for this Face-to-face session';
 $string['sign-ups'] = 'Sign-ups';
+$string['multiplesessionsignup'] = 'Multiple Session Signup';
 $string['sitenoticesheading'] = 'Site Notices';
 $string['subject'] = 'Change in booking in the course {$a->coursename} ({$a->duedate})';
 $string['submissions'] = 'Submissions';
@@ -676,6 +679,8 @@ When **None** is selected, face-to-face activity sessions will only be displayed
 
 $string['suppressemail_help'] = 'Use this option if you want to silently add/remove users from a Face-to-face session. When this option is toggled, the usual email
   confirmation is not sent to the selected users.';
+
+$string['multiplesessionsignup_help'] = 'Use this option if you want users to be able to sign up to multiple sessions. When this option is toggled, users can sign up for multiple sessions in a Face-to-face activity.';
 
 $string['thirdpartyemailaddress_help'] = '**Third-party email address(es)** is an optional field used to specify the email address of a third-party (such as an external instructor) who will then receive confirmation messages whenever a user signs-up for a session.
 When entering **multiple email addresses**, separate each address with a comma. For example: bob@example.com,joe@example.com';

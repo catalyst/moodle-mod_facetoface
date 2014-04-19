@@ -88,12 +88,12 @@ echo $OUTPUT->header();
 $heading = get_string('cancelbookingfor', 'facetoface', $facetoface->name);
 
 $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
-$signedup = facetoface_check_signup($facetoface->id);
+$bookedsession = facetoface_is_booked_to_session($session->id, null, $facetoface->id);
 
 echo $OUTPUT->box_start();
 echo $OUTPUT->heading($heading);
 
-if ($signedup) {
+if ($bookedsession) {
     facetoface_print_session($session, $viewattendees);
     $mform->display();
 }

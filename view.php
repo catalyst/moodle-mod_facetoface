@@ -91,7 +91,7 @@ if (count($locations) > 2) {
     echo html_writer::end_tag('div'). html_writer::end_tag('form');
 }
 
-print_session_list($course->id, $facetoface->id, $location);
+facetoface_print_session_list($course->id, $facetoface->id, $location);
 
 if (has_capability('mod/facetoface:viewattendees', $context)) {
     echo $OUTPUT->heading(get_string('exportattendance', 'facetoface'));
@@ -107,91 +107,6 @@ if (has_capability('mod/facetoface:viewattendees', $context)) {
 
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer($course);
-
-function print_session_list($courseid, $facetofaceid, $location) {
-    global $CFG, $USER, $DB, $OUTPUT, $PAGE;
-
-    $f2f_renderer = $PAGE->get_renderer('mod_facetoface');
-
-    $timenow = time();
-
-    $context = context_course::instance($courseid);
-    $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
-    $editsessions = has_capability('mod/facetoface:editsessions', $context);
-
-    $bookedsession = null;
-    if ($submissions = facetoface_get_user_submissions($facetofaceid, $USER->id)) {
-        $submission = array_shift($submissions);
-        $bookedsession = $submission;
-    }
-
-    $customfields = facetoface_get_session_customfields();
-
-    $upcomingarray = array();
-    $previousarray = array();
-    $upcomingtbdarray = array();
-
-    if ($sessions = facetoface_get_sessions($facetofaceid, $location) ) {
-        foreach ($sessions as $session) {
-
-            $sessionstarted = false;
-            $sessionfull = false;
-            $sessionwaitlisted = false;
-            $isbookedsession = false;
-
-            $sessiondata = $session;
-            $sessiondata->bookedsession = $bookedsession;
-
-            // Add custom fields to sessiondata
-            $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
-            $sessiondata->customfielddata = $customdata;
-
-            // Is session waitlisted
-            if (!$session->datetimeknown) {
-                $sessionwaitlisted = true;
-            }
-
-            // Check if session is started
-            if ($session->datetimeknown && facetoface_has_session_started($session, $timenow) && facetoface_is_session_in_progress($session, $timenow)) {
-                $sessionstarted = true;
-            }
-            elseif ($session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
-                $sessionstarted = true;
-            }
-
-            // Put the row in the right table
-            if ($sessionstarted) {
-                $previousarray[] = $sessiondata;
-            }
-            elseif ($sessionwaitlisted) {
-                $upcomingtbdarray[] = $sessiondata;
-            }
-            else { // Normal scheduled session
-                $upcomingarray[] = $sessiondata;
-            }
-        }
-    }
-
-    // Upcoming sessions
-    echo $OUTPUT->heading(get_string('upcomingsessions', 'facetoface'));
-    if (empty($upcomingarray) && empty($upcomingtbdarray)) {
-        print_string('noupcoming', 'facetoface');
-    }
-    else {
-        $upcomingarray = array_merge($upcomingarray, $upcomingtbdarray);
-        echo $f2f_renderer->print_session_list_table($customfields, $upcomingarray, $viewattendees, $editsessions);
-    }
-
-    if ($editsessions) {
-        echo html_writer::tag('p', html_writer::link(new moodle_url('sessions.php', array('f' => $facetofaceid)), get_string('addsession', 'facetoface')));
-    }
-
-    // Previous sessions
-    if (!empty($previousarray)) {
-        echo $OUTPUT->heading(get_string('previoussessions', 'facetoface'));
-        echo $f2f_renderer->print_session_list_table($customfields, $previousarray, $viewattendees, $editsessions);
-    }
-}
 
 /**
  * Get facetoface locations

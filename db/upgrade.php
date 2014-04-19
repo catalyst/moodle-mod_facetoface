@@ -697,5 +697,20 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013010400, 'facetoface');
     }
 
+    if ($oldversion < 2014031400) {
+
+        // Define field multiplesessions to be added to facetoface.
+        $table = new xmldb_table('facetoface');
+        $field = new xmldb_field('multiplesessions', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0', 'usercalentry');
+
+        // Conditionally launch add field multiplesessions.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // facetoface savepoint reached.
+        upgrade_mod_savepoint(true, 2014031400, 'facetoface');
+    }
+
     return $result;
 }

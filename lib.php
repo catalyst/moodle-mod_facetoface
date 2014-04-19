@@ -2243,21 +2243,30 @@ function facetoface_send_cancellation_notice($facetoface, $session, $userid) {
 }
 
 /**
- * Returns true if the user has registered for a session in the given
- * facetoface activity
+ * Check if a user is booked on to the given session.
  *
- * @global class $USER used to get the current userid
- * @returns integer The session id that we signed up for, false otherwise
+ * @param int $sessionid session ID
+ * @param unknown_type $submissions
+ * @return mix session sighnup object or false
  */
-function facetoface_check_signup($facetofaceid) {
-
+function facetoface_is_booked_to_session($sessionid, $submissions=null, $facetofaceid=0, $user=null) {
     global $USER;
 
-    if ($submissions = facetoface_get_user_submissions($facetofaceid, $USER->id)) {
-        return reset($submissions)->sessionid;
-    } else {
-        return false;
+    if (!isset($user)) {
+        $user = $USER;
     }
+    if (!isset($submissions)) {
+        // TODO: make this function more efficient by querying the specific session.
+        $submissions = facetoface_get_user_submissions($facetofaceid, $user->id);
+    }
+    if ($submissions) {
+        foreach ($submissions as $bookedsession) {
+            if ($bookedsession->sessionid == $sessionid) {
+                return $bookedsession;
+            }
+        }
+    }
+    return false;
 }
 
 /**
@@ -3884,10 +3893,8 @@ function facetoface_get_cancellations($sessionid) {
             WHERE
                 su.sessionid = ?
             GROUP BY
-                su.id,
-                u.id,
-                u.firstname,
-                u.lastname,
+                u.id, su.id,
+                {$usernamefields},
                 c.timecreated,
                 " . $DB->sql_compare_text('c.note') . "
             ORDER BY
@@ -3999,7 +4006,7 @@ class facetoface_candidate_selector extends user_selector_base {
         list($wherecondition, $params) = $this->search_sql($search, 'u');
 
         $fields      = 'SELECT ' . $this->required_fields_sql('u');
-        $countfields = 'SELECT COUNT(u.*)';
+        $countfields = 'SELECT COUNT(u.id)';
         $sql = "
                   FROM {user} u
                  WHERE $wherecondition
@@ -4010,7 +4017,7 @@ class facetoface_candidate_selector extends user_selector_base {
                          JOIN {facetoface_signups_status} ss ON s.id = ss.signupid
                          JOIN {user} u2 ON u2.id = s.userid
                         WHERE s.sessionid = :sessid
-                          AND ss.statuscode >= :statusbooked OR ss.statuscode >= :statuswaitlisted
+                          AND ss.statuscode >= :statuswaitlisted
                           AND ss.superceded = 0
                        )
                ";
@@ -4018,7 +4025,6 @@ class facetoface_candidate_selector extends user_selector_base {
         $params = array_merge($params,
             array(
                 'sessid' => $this->sessionid,
-                'statusbooked' => MDL_F2F_STATUS_BOOKED,
                 'statuswaitlisted' => MDL_F2F_STATUS_WAITLISTED
             ));
 
@@ -4163,4 +4169,92 @@ function facetoface_eventhandler_user_deleted($user) {
         }
     }
     return true;
+}
+
+/**
+ * Print out the session list - available, past, upcoming
+ *
+ * @param integer $courseid the ID for the current course
+ * @param integer $facetofaceid the ID for the current F2F instance
+ * @param         $location
+ */
+function facetoface_print_session_list($courseid, $facetofaceid, $location) {
+    global $CFG, $USER, $DB, $OUTPUT, $PAGE;
+
+    $f2f_renderer = $PAGE->get_renderer('mod_facetoface');
+
+    $timenow = time();
+
+    $context = context_course::instance($courseid);
+    $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
+    $editsessions = has_capability('mod/facetoface:editsessions', $context);
+
+    $submissions = facetoface_get_user_submissions($facetofaceid, $USER->id);
+
+    $customfields = facetoface_get_session_customfields();
+
+    $upcomingarray = array();
+    $previousarray = array();
+    $upcomingtbdarray = array();
+
+    if ($sessions = facetoface_get_sessions($facetofaceid, $location) ) {
+        foreach ($sessions as $session) {
+
+            $sessionstarted = false;
+            $sessionfull = false;
+            $sessionwaitlisted = false;
+            $isbookedsession = false;
+
+            $sessiondata = $session;
+            $sessiondata->bookedsession = facetoface_is_booked_to_session($session->id, $submissions);
+
+            // Add custom fields to sessiondata
+            $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
+            $sessiondata->customfielddata = $customdata;
+
+            // Is session waitlisted
+            if (!$session->datetimeknown) {
+                $sessionwaitlisted = true;
+            }
+
+            // Check if session is started
+            if ($session->datetimeknown && facetoface_has_session_started($session, $timenow) && facetoface_is_session_in_progress($session, $timenow)) {
+                $sessionstarted = true;
+            }
+            elseif ($session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
+                $sessionstarted = true;
+            }
+
+            // Put the row in the right table
+            if ($sessionstarted) {
+                $previousarray[] = $sessiondata;
+            }
+            elseif ($sessionwaitlisted) {
+                $upcomingtbdarray[] = $sessiondata;
+            }
+            else { // Normal scheduled session
+                $upcomingarray[] = $sessiondata;
+            }
+        }
+    }
+
+    // Upcoming sessions
+    echo $OUTPUT->heading(get_string('upcomingsessions', 'facetoface'));
+    if (empty($upcomingarray) && empty($upcomingtbdarray)) {
+        print_string('noupcoming', 'facetoface');
+    }
+    else {
+        $upcomingarray = array_merge($upcomingarray, $upcomingtbdarray);
+        echo $f2f_renderer->print_session_list_table($customfields, $upcomingarray, $viewattendees, $editsessions);
+    }
+
+    if ($editsessions) {
+        echo html_writer::tag('p', html_writer::link(new moodle_url('sessions.php', array('f' => $facetofaceid)), get_string('addsession', 'facetoface')));
+    }
+
+    // Previous sessions
+    if (!empty($previousarray)) {
+        echo $OUTPUT->heading(get_string('previoussessions', 'facetoface'));
+        echo $f2f_renderer->print_session_list_table($customfields, $previousarray, $viewattendees, $editsessions);
+    }
 }

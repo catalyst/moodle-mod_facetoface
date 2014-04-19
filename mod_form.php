@@ -1,7 +1,33 @@
 <?php
 
-require_once($CFG->dirroot.'/course/moodleform_mod.php');
-require_once($CFG->dirroot.'/mod/facetoface/lib.php');
+/*
+ * This file is part of Totara LMS
+ *
+ * Copyright (C) 2010, 2011 Totara Learning Solutions LTD
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Stacey Walker <stacey@catalyst-eu.net>
+ * @author Alastair Munro <alastair.munro@totaralms.com>
+ * @author Aaron Barnes <aaron.barnes@totaralms.com>
+ * @author Francois Marier <francois@catalyst.net.nz>
+ * @package modules
+ * @subpackage facetoface
+ */
+
+require_once("{$CFG->dirroot}/course/moodleform_mod.php");
+require_once("{$CFG->dirroot}/mod/facetoface/lib.php");
 
 class mod_facetoface_mod_form extends moodleform_mod {
 
@@ -41,6 +67,12 @@ class mod_facetoface_mod_form extends moodleform_mod {
 
         $mform->addElement('checkbox', 'approvalreqd', get_string('approvalreqd', 'facetoface'));
         $mform->addHelpButton('approvalreqd', 'approvalreqd', 'facetoface');
+
+        // MULTIPLE SESSION SIGNUP.
+        $mform->addElement('advcheckbox', 'multiplesessions', get_string('multiplesessionsignup', 'facetoface'), null, null, array(0, 1));
+        $mform->addHelpButton('multiplesessions', 'multiplesessionsignup', 'facetoface');
+        $multiplesessions = get_config(null, 'facetoface_multiplesessions') ? 1 : 0;
+        $mform->setDefault('multiplesessions', $multiplesessions);
 
         $mform->addElement('header', 'calendaroptions', get_string('calendaroptions', 'facetoface'));
 

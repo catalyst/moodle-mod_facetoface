@@ -34,7 +34,8 @@
         <FIELD NAME="shortname" TYPE="char" LENGTH="32" NOTNULL="false" SEQUENCE="false" PREVIOUS="timemodified" NEXT="showoncalendar"/>
         <FIELD NAME="showoncalendar" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="shortname" NEXT="approvalreqd"/>
         <FIELD NAME="approvalreqd" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="showoncalendar" NEXT="usercalentry"/>
-        <FIELD NAME="usercalentry" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="approvalreqd"/>
+        <FIELD NAME="usercalentry" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="true" DEFAULT="1" SEQUENCE="false" PREVIOUS="approvalreqd" NEXT="multiplesessions" />
+        <FIELD NAME="multiplesessions" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="usercalentry" />
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" COMMENT="Primary key for facetoface"/>

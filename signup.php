@@ -88,9 +88,10 @@ if ($fromform = $mform->get_data()) { // Form submitted
         $statuscode = MDL_F2F_STATUS_WAITLISTED;
     }
 
+    $submissions = facetoface_get_user_submissions($facetoface->id, $USER->id);
     if (!facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
         print_error('sessionisfull', 'facetoface', $returnurl);
-    } else if (facetoface_get_user_submissions($facetoface->id, $USER->id)) {
+    } else if ((!$facetoface->multiplesessions && $submissions) || facetoface_is_booked_to_session($session->id, $submissions)) {
         print_error('alreadysignedup', 'facetoface', $returnurl);
     } else if (facetoface_manager_needed($facetoface) && !facetoface_get_manageremail($USER->id)) {
         print_error('error:manageremailaddressmissing', 'facetoface', $returnurl);
@@ -124,11 +125,7 @@ echo $OUTPUT->header();
 $heading = get_string('signupfor', 'facetoface', $facetoface->name);
 
 $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
-$signedup = facetoface_check_signup($facetoface->id);
-
-if ($signedup and $signedup != $session->id) {
-    print_error('error:signedupinothersession', 'facetoface', $returnurl);
-}
+$bookedsession = facetoface_is_booked_to_session($session->id, null, $facetoface->id);
 
 echo $OUTPUT->box_start();
 echo $OUTPUT->heading($heading);
@@ -147,7 +144,7 @@ if ($session->datetimeknown && facetoface_has_session_started($session, $timenow
     exit;
 }
 
-if (!$signedup && !facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
+if (!$bookedsession && !facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
     print_error('sessionisfull', 'facetoface', $returnurl);
     echo $OUTPUT->box_end();
     echo $OUTPUT->footer($course);
@@ -156,7 +153,7 @@ if (!$signedup && !facetoface_session_has_capacity($session, $context) && (!$ses
 
 echo facetoface_print_session($session, $viewattendees);
 
-if ($signedup) {
+if ($bookedsession) {
     if (!($session->datetimeknown && facetoface_has_session_started($session, $timenow))) {
         // Cancellation link
         echo html_writer::link(new moodle_url('cancelsignup.php', array('s' => $session->id, 'backtoallsessions' => $backtoallsessions)), get_string('cancelbooking', 'facetoface'), array('title' => get_string('cancelbooking', 'facetoface')));
