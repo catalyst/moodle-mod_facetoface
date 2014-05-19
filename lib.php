@@ -2578,7 +2578,7 @@ function facetoface_cm_info_view(cm_info $cm) {
 
             // Don't include the link to cancel a session if it has already occurred.
             $cancellink = '';
-            if (!facetoface_has_session_started($session, $timenow)) {
+            if (!facetoface_has_session_started($session, $timenow) && $session->allowcancellations) {
                 $strcancel  = get_string('cancelbooking', 'facetoface');
                 $cancelurl  = new moodle_url('/mod/facetoface/cancelsignup.php', array('s' => $session->id));
                 $cancellink = ' ' . html_writer::link($cancelurl, $strcancel, array('class' => 'f2fsessionlinks f2fcancel', 'title' => $strcancel));

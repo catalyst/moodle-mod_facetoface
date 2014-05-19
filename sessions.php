@@ -140,7 +140,7 @@ $details->details = isset($session->details) ? $session->details : '';
 $details->detailsformat = FORMAT_HTML;
 $details = file_prepare_standard_editor($details, 'details', $editoroptions, $modulecontext, 'mod_facetoface', 'session', $sessionid);
 
-$mform = new mod_facetoface_session_form(null, compact('id', 'f', 's', 'c', 'nbdays', 'customfields', 'course', 'editoroptions'));
+$mform = new mod_facetoface_session_form(null, compact('id', 'facetoface', 'f', 's', 'c', 'nbdays', 'customfields', 'course', 'editoroptions'));
 
 if ($mform->is_cancelled()) {
     redirect($returnurl);
@@ -188,6 +188,9 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $todb->duration = $fromform->duration;
     $todb->normalcost = $fromform->normalcost;
     $todb->discountcost = $fromform->discountcost;
+    if (has_capability('mod/facetoface:configurecancellation', $context)) {
+        $todb->allowcancellations = $fromform->allowcancellations;
+    }
 
     $sessionid = null;
     $transaction = $DB->start_delegated_transaction();
@@ -301,6 +304,9 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $toform->duration = $session->duration;
     $toform->normalcost = $session->normalcost;
     $toform->discountcost = $session->discountcost;
+    if (has_capability('mod/facetoface:configurecancellation', $context)) {
+        $toform->allowcancellations = $session->allowcancellations;
+    }
 
     if ($session->sessiondates) {
         $i = 0;
