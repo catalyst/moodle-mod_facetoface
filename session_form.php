@@ -36,6 +36,7 @@ class mod_facetoface_session_form extends moodleform {
         global $CFG, $DB;
 
         $mform =& $this->_form;
+        $context = context_course::instance($this->_customdata['course']->id);
 
         // Course Module ID.
         $mform->addElement('hidden', 'id', $this->_customdata['id']);
@@ -102,6 +103,12 @@ class mod_facetoface_session_form extends moodleform {
         $this->repeat_elements($repeatarray, $repeatcount, $repeatoptions, 'date_repeats', 'date_add_fields',
                                1, get_string('dateadd', 'facetoface'), true);
 
+        if (has_capability('mod/facetoface:configurecancellation', $context)) {
+            $mform->addElement('advcheckbox', 'allowcancellations', get_string('allowcancellations', 'facetoface'));
+            $mform->setDefault('allowcancellations', $this->_customdata['facetoface']->allowcancellationsdefault);
+            $mform->addHelpButton('allowcancellations', 'allowcancellations', 'facetoface');
+        }
+
         $mform->addElement('text', 'capacity', get_string('capacity', 'facetoface'), 'size="5"');
         $mform->addRule('capacity', null, 'required', null, 'client');
         $mform->setType('capacity', PARAM_INT);
@@ -148,9 +155,6 @@ class mod_facetoface_session_form extends moodleform {
             $header_shown = false;
             foreach ($rolenames as $role => $rolename) {
                 $rolename = $rolename->name;
-
-                // Get course context
-                $context = context_course::instance($this->_customdata['course']->id);
 
                 // Attempt to load users with this role in this course
                 $rs = $DB->get_recordset_sql("

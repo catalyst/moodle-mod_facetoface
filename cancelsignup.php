@@ -13,6 +13,9 @@ $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT);
 if (!$session = facetoface_get_session($s)) {
     print_error('error:incorrectcoursemodulesession', 'facetoface');
 }
+if (!$session->allowcancellations) {
+    print_error('error:cancellationsnotallowed', 'facetoface');
+}
 if (!$facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface))) {
     print_error('error:incorrectfacetofaceid', 'facetoface');
 }

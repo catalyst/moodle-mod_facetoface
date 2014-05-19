@@ -697,5 +697,29 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2013010400, 'facetoface');
     }
 
+    if ($oldversion < 2014030601) {
+
+        // Define field allowcancellationsdefault to be added to facetoface.
+        $table = new xmldb_table('facetoface');
+        $field = new xmldb_field('allowcancellationsdefault', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'usercalentry');
+
+        // Conditionally launch add field allowcancellationsdefault.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Define field allowcancellations to be added to facetoface_sessions.
+        $table = new xmldb_table('facetoface_sessions');
+        $field = new xmldb_field('allowcancellations', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1', 'discountcost');
+
+        // Conditionally launch add field allowcancellations.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Facetoface savepoint reached.
+        upgrade_mod_savepoint(true, 2014030601, 'facetoface');
+    }
+
     return $result;
 }

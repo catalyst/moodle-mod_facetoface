@@ -143,6 +143,17 @@ $capabilities = array(
         ),
     ),
 
+    'mod/facetoface:configurecancellation' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => array(
+            'teacher' => CAP_ALLOW,
+            'editingteacher' => CAP_ALLOW,
+            'coursecreator' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ),
+    ),
+
     // Ability to overbook a session by signing up for it
     // Users with mod/facetoface:addattendees can also overbook
     'mod/facetoface:overbook' => array(
