@@ -26,9 +26,9 @@
  * @subpackage facetoface
  */
 
-$module->version   = 2014030600;  // use minor version bumps until 2013 then use YYYYMMDDxx
-$module->requires  = 2013111801;  // Requires this Moodle version
-$module->release   = '2.3.1 (Build: 2014030600)'; // User-friendly version number
-$module->component = 'mod_facetoface';
-$module->maturity  = MATURITY_STABLE;
-$module->cron      = 60;
+$plugin->version   = 2014030600;  // use minor version bumps until 2013 then use YYYYMMDDxx
+$plugin->requires  = 2013111801;  // Requires this Moodle version
+$plugin->release   = '2.3.1 (Build: 2014030600)'; // User-friendly version number
+$plugin->component = 'mod_facetoface';
+$plugin->maturity  = MATURITY_STABLE;
+$plugin->cron      = 60;
