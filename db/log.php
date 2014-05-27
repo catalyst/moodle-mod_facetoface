@@ -18,5 +18,3 @@ $logs = array(
     array('module' => 'facetoface', 'action' => 'signup', 'mtable' => 'facetoface', 'field' => 'name'),
     array('module' => 'facetoface', 'action' => 'cancel', 'mtable' => 'facetoface', 'field' => 'name'),
 );
-
-?>
