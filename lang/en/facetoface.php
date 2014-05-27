@@ -162,6 +162,7 @@ $string['export'] = 'Export';
 $string['exporttofile'] = 'Export to file';
 $string['exportattendance'] = 'Export attendance';
 $string['facetoface'] = 'Face-to-face';
+$string['facetoface:addinstance'] = 'Add a new Face-to-face activity';
 $string['facetoface:addattendees'] = 'Add attendees to a face-to-face session';
 $string['facetoface:editsessions'] = 'Add, edit, copy and delete face-to-face sessions';
 $string['facetoface:overbook'] = 'Sign-up to full sessions.';

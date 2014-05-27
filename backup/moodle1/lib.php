@@ -148,5 +148,3 @@ class moodle1_mod_facetoface_handler extends moodle1_mod_handler {
     }
 
 }
-
-?>
