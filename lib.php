@@ -2532,6 +2532,7 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
  * Used by course/lib.php to display a few sessions besides the
  * facetoface activity on the course page
  *
+ * @param object $cm the cm_info object for the F2F instance
  * @global class $USER used to get the current userid
  * @global class $CFG used to get the path to the module
  */
@@ -2628,12 +2629,6 @@ function facetoface_cm_info_view(cm_info $cm) {
 
         $count = 0;
         foreach ($sessions as $session) {
-            if ($count++ % 2 == 0) {
-                if ($count > $facetoface->display) {
-                    // Maximum display reached.
-                    break;
-                }
-            }
 
             // Don't display past or in-progress sessions.
             if ($session->datetimeknown && (facetoface_has_session_started($session, $timenow))) {
@@ -2643,6 +2638,12 @@ function facetoface_cm_info_view(cm_info $cm) {
             // Don't diisplay full sessions.
             if (!facetoface_session_has_capacity($session, $contextmodule)) {
                 continue;
+            }
+
+            // Check display count.
+            $count++;
+            if ($count > $facetoface->display) {
+                break;
             }
 
             $multiday    = '';
