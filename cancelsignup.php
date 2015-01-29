@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,14 +28,12 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-require_once '../../config.php';
-require_once 'lib.php';
-require_once 'cancelsignup_form.php';
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once('lib.php');
+require_once('cancelsignup_form.php');
 
-global $DB;
-
-$s  = required_param('s', PARAM_INT); // facetoface session ID
-$confirm           = optional_param('confirm', false, PARAM_BOOL);
+$s = required_param('s', PARAM_INT); // Facetoface session ID.
+$confirm = optional_param('confirm', false, PARAM_BOOL);
 $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT);
 
 if (!$session = facetoface_get_session($s)) {
@@ -68,7 +63,7 @@ if ($mform->is_cancelled()) {
     redirect($returnurl);
 }
 
-if ($fromform = $mform->get_data()) { // Form submitted
+if ($fromform = $mform->get_data()) { // Form submitted.
 
     if (empty($fromform->submitbutton)) {
         print_error('error:unknownbuttonclicked', 'facetoface', $returnurl);
@@ -87,8 +82,7 @@ if ($fromform = $mform->get_data()) { // Form submitted
             if (empty($error)) {
                 if ($session->datetimeknown && $facetoface->cancellationinstrmngr) {
                     $message .= html_writer::empty_tag('br') . html_writer::empty_tag('br') . get_string('cancellationsentmgr', 'facetoface');
-                }
-                else {
+                } else {
                     $message .= html_writer::empty_tag('br') . html_writer::empty_tag('br') . get_string('cancellationsent', 'facetoface');
                 }
             } else {
@@ -97,8 +91,7 @@ if ($fromform = $mform->get_data()) { // Form submitted
         }
 
         redirect($returnurl, $message, $timemessage);
-    }
-    else {
+    } else {
         add_to_log($course->id, 'facetoface', "cancel booking (FAILED)", "cancelsignup.php?s=$session->id", $facetoface->id, $cm->id);
         redirect($returnurl, $errorstr, $timemessage);
     }
@@ -127,8 +120,7 @@ echo $OUTPUT->heading($heading);
 if ($signedup) {
     facetoface_print_session($session, $viewattendees);
     $mform->display();
-}
-else {
+} else {
     print_error('notsignedup', 'facetoface', $returnurl);
 }
 

@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -33,9 +30,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2015012700;  // use minor version bumps until 2013 then use YYYYMMDDxx
-$module->requires  = 2013111801;  // Requires this Moodle version
-$module->release   = '2.7.0 (Build: 2015012700)'; // User-friendly version number
+$module->version   = 2015012700;
+$module->requires  = 2013111801;  // Requires this Moodle version.
+$module->release   = '2.7.0 (Build: 2015012700)'; // User-friendly version number.
 $module->component = 'mod_facetoface';
 $module->maturity  = MATURITY_ALPHA;
 $module->cron      = 60;

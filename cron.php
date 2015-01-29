@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,7 +28,7 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-require_once '../../config.php';
-require_once 'lib.php';
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once('lib.php');
 
 facetoface_cron();

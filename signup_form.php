@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -33,12 +30,11 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once "$CFG->dirroot/lib/formslib.php";
+require_once($CFG->dirroot . '/lib/formslib.php');
 
 class mod_facetoface_signup_form extends moodleform {
 
-    function definition()
-    {
+    public function definition() {
         $mform =& $this->_form;
         $manageremail = $this->_customdata['manageremail'];
         $showdiscountcode = $this->_customdata['showdiscountcode'];
@@ -52,10 +48,8 @@ class mod_facetoface_signup_form extends moodleform {
         if ($manageremail === false) {
             $mform->addElement('hidden', 'manageremail', '');
             $mform->setType('manageremail', PARAM_EMAIL);
-        }
-        else {
-            $mform->addElement('html', get_string('manageremailinstructionconfirm', 'facetoface')); // instructions
-
+        } else {
+            $mform->addElement('html', get_string('manageremailinstructionconfirm', 'facetoface')); // Instructions.
             $mform->addElement('text', 'manageremail', get_string('manageremail', 'facetoface'), 'size="35"');
             $mform->addRule('manageremail', null, 'required', null, 'client');
             $mform->addRule('manageremail', null, 'email', null, 'client');
@@ -66,16 +60,16 @@ class mod_facetoface_signup_form extends moodleform {
             $mform->addElement('text', 'discountcode', get_string('discountcode', 'facetoface'), 'size="6"');
             $mform->addRule('discountcode', null, 'required', null, 'client');
             $mform->setType('discountcode', PARAM_TEXT);
-        }
-        else {
+        } else {
             $mform->addElement('hidden', 'discountcode', '');
             $mform->setType('discountcode', PARAM_TEXT);
         }
 
-        $options = array(MDL_F2F_BOTH => get_string('notificationboth', 'facetoface'),
-                         MDL_F2F_TEXT => get_string('notificationemail', 'facetoface'),
-                         MDL_F2F_ICAL => get_string('notificationical', 'facetoface'),
-                         );
+        $options = array(
+            MDL_F2F_BOTH => get_string('notificationboth', 'facetoface'),
+            MDL_F2F_TEXT => get_string('notificationemail', 'facetoface'),
+            MDL_F2F_ICAL => get_string('notificationical', 'facetoface')
+        );
         $mform->addElement('select', 'notificationtype', get_string('notificationtype', 'facetoface'), $options);
         $mform->addHelpButton('notificationtype', 'notificationtype', 'facetoface');
         $mform->addRule('notificationtype', null, 'required', null, 'client');
@@ -84,8 +78,7 @@ class mod_facetoface_signup_form extends moodleform {
         $this->add_action_buttons(true, get_string('signup', 'facetoface'));
     }
 
-    function validation($data, $files)
-    {
+    public function validation($data, $files) {
         $errors = parent::validation($data, $files);
 
         $manageremail = $data['manageremail'];

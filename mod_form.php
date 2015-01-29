@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -38,13 +35,12 @@ require_once($CFG->dirroot.'/mod/facetoface/lib.php');
 
 class mod_facetoface_mod_form extends moodleform_mod {
 
-    function definition()
-    {
+    public function definition() {
         global $CFG;
 
         $mform =& $this->_form;
 
-        // GENERAL
+        // General.
         $mform->addElement('header', 'general', get_string('general', 'form'));
 
         $mform->addElement('text', 'name', get_string('name'), array('size' => '64'));
@@ -65,7 +61,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->addHelpButton('thirdpartywaitlist', 'thirdpartywaitlist', 'facetoface');
 
         $display = array();
-        for ($i=0; $i<=18; $i += 2) {
+        for ($i = 0; $i <= 18; $i += 2) {
             $display[$i] = $i;
         }
         $mform->addElement('select', 'display', get_string('sessionsoncoursepage', 'facetoface'), $display);
@@ -77,12 +73,12 @@ class mod_facetoface_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'calendaroptions', get_string('calendaroptions', 'facetoface'));
 
-        $calendarOptions = array(
-            F2F_CAL_NONE    =>  get_string('none'),
-            F2F_CAL_COURSE  =>  get_string('course'),
-            F2F_CAL_SITE    =>  get_string('site')
+        $calendaroptions = array(
+            F2F_CAL_NONE   => get_string('none'),
+            F2F_CAL_COURSE => get_string('course'),
+            F2F_CAL_SITE   => get_string('site')
         );
-        $mform->addElement('select', 'showoncalendar', get_string('showoncalendar', 'facetoface'), $calendarOptions);
+        $mform->addElement('select', 'showoncalendar', get_string('showoncalendar', 'facetoface'), $calendaroptions);
         $mform->setDefault('showoncalendar', F2F_CAL_COURSE);
         $mform->addHelpButton('showoncalendar', 'showoncalendar', 'facetoface');
 
@@ -95,7 +91,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->addHelpButton('shortname', 'shortname', 'facetoface');
         $mform->addRule('shortname', null, 'maxlength', 32);
 
-        // REQUEST MESSAGE
+        // Request message.
         $mform->addElement('header', 'request', get_string('requestmessage', 'facetoface'));
         $mform->addHelpButton('request', 'requestmessage', 'facetoface');
 
@@ -112,7 +108,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->setDefault('requestinstrmngr', get_string('setting:defaultrequestinstrmngrdefault', 'facetoface'));
         $mform->disabledIf('requestinstrmngr', 'approvalreqd');
 
-        // CONFIRMATION MESSAGE
+        // Confirmation message.
         $mform->addElement('header', 'confirmation', get_string('confirmationmessage', 'facetoface'));
         $mform->addHelpButton('confirmation', 'confirmationmessage', 'facetoface');
 
@@ -131,7 +127,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->disabledIf('confirmationinstrmngr', 'emailmanagerconfirmation');
         $mform->setDefault('confirmationinstrmngr', get_string('setting:defaultconfirmationinstrmngrdefault', 'facetoface'));
 
-        // REMINDER MESSAGE
+        // Reminder message.
         $mform->addElement('header', 'reminder', get_string('remindermessage', 'facetoface'));
         $mform->addHelpButton('reminder', 'remindermessage', 'facetoface');
 
@@ -151,14 +147,14 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->setDefault('reminderinstrmngr', get_string('setting:defaultreminderinstrmngrdefault', 'facetoface'));
 
         $reminderperiod = array();
-        for ($i=1; $i<=20; $i += 1) {
+        for ($i = 1; $i <= 20; $i += 1) {
             $reminderperiod[$i] = $i;
         }
         $mform->addElement('select', 'reminderperiod', get_string('reminderperiod', 'facetoface'), $reminderperiod);
         $mform->setDefault('reminderperiod', 2);
         $mform->addHelpButton('reminderperiod', 'reminderperiod', 'facetoface');
 
-        // WAITLISTED MESSAGE
+        // Waitlisted message.
         $mform->addElement('header', 'waitlisted', get_string('waitlistedmessage', 'facetoface'));
         $mform->addHelpButton('waitlisted', 'waitlistedmessage', 'facetoface');
 
@@ -169,7 +165,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->addElement('textarea', 'waitlistedmessage', get_string('email:message', 'facetoface'), 'wrap="virtual" rows="15" cols="70"');
         $mform->setDefault('waitlistedmessage', get_string('setting:defaultwaitlistedmessagedefault', 'facetoface'));
 
-        // CANCELLATION MESSAGE
+        // Cancellation message.
         $mform->addElement('header', 'cancellation', get_string('cancellationmessage', 'facetoface'));
         $mform->addHelpButton('cancellation', 'cancellationmessage', 'facetoface');
 
@@ -200,28 +196,25 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $this->add_action_buttons();
     }
 
-    function data_preprocessing(&$default_values)
-    {
-        // Fix manager emails
-        if (empty($default_values['confirmationinstrmngr'])) {
-            $default_values['confirmationinstrmngr'] = null;
-        }
-        else {
-            $default_values['emailmanagerconfirmation'] = 1;
+    public function data_preprocessing(&$defaultvalues) {
+
+        // Fix manager emails.
+        if (empty($defaultvalues['confirmationinstrmngr'])) {
+            $defaultvalues['confirmationinstrmngr'] = null;
+        } else {
+            $defaultvalues['emailmanagerconfirmation'] = 1;
         }
 
-        if (empty($default_values['reminderinstrmngr'])) {
-            $default_values['reminderinstrmngr'] = null;
-        }
-        else {
-            $default_values['emailmanagerreminder'] = 1;
+        if (empty($defaultvalues['reminderinstrmngr'])) {
+            $defaultvalues['reminderinstrmngr'] = null;
+        } else {
+            $defaultvalues['emailmanagerreminder'] = 1;
         }
 
-        if (empty($default_values['cancellationinstrmngr'])) {
-            $default_values['cancellationinstrmngr'] = null;
-        }
-        else {
-            $default_values['emailmanagercancellation'] = 1;
+        if (empty($defaultvalues['cancellationinstrmngr'])) {
+            $defaultvalues['cancellationinstrmngr'] = null;
+        } else {
+            $defaultvalues['emailmanagercancellation'] = 1;
         }
     }
 }

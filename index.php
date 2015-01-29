@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -31,12 +28,10 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-require_once '../../config.php';
-require_once 'lib.php';
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
+require_once('lib.php');
 
-global $DB;
-
-$id = required_param('id', PARAM_INT); // Course Module ID
+$id = required_param('id', PARAM_INT); // Course Module ID.
 
 if (!$course = $DB->get_record('course', array('id' => $id))) {
     print_error('error:coursemisconfigured', 'facetoface');
@@ -78,20 +73,16 @@ $table->width = '100%';
 if ($course->format == 'weeks' && has_capability('mod/facetoface:viewattendees', $context)) {
     $table->head  = array ($strweek, $strfacetofacename, get_string('sign-ups', 'facetoface'));
     $table->align = array ('center', 'left', 'center');
-}
-elseif ($course->format == 'weeks') {
+} else if ($course->format == 'weeks') {
     $table->head  = array ($strweek, $strfacetofacename);
     $table->align = array ('center', 'left', 'center', 'center');
-}
-elseif ($course->format == 'topics' && has_capability('mod/facetoface:viewattendees', $context)) {
+} else if ($course->format == 'topics' && has_capability('mod/facetoface:viewattendees', $context)) {
     $table->head  = array ($strcourse, $strfacetofacename, get_string('sign-ups', 'facetoface'));
     $table->align = array ('center', 'left', 'center');
-}
-elseif ($course->format == 'topics') {
+} else if ($course->format == 'topics') {
     $table->head  = array ($strcourse, $strfacetofacename);
     $table->align = array ('center', 'left', 'center', 'center');
-}
-else {
+} else {
     $table->head  = array ($strfacetofacename);
     $table->align = array ('left', 'left');
 }
@@ -103,11 +94,10 @@ foreach ($facetofaces as $facetoface) {
     $submitted = get_string('no');
 
     if (!$facetoface->visible) {
-        //Show dimmed if the mod is hidden
+        // Show dimmed if the mod is hidden.
         $link = html_writer::link("view.php?f=$facetoface->id", $facetoface->name, array('class' => 'dimmed'));
-    }
-    else {
-        //Show normal if the mod is visible
+    } else {
+        // Show normal if the mod is visible.
         $link = html_writer::link("view.php?f=$facetoface->id", $facetoface->name);
     }
 
@@ -133,12 +123,10 @@ foreach ($facetofaces as $facetoface) {
     if ($course->format == 'weeks' or $course->format == 'topics') {
         if (has_capability('mod/facetoface:viewattendees', $context)) {
             $table->data[] = array ($courselink, $link, $totalsignupcount);
-        }
-        else {
+        } else {
             $table->data[] = array ($courselink, $link);
         }
-    }
-    else {
+    } else {
         $table->data[] = array ($link, $submitted);
     }
 }

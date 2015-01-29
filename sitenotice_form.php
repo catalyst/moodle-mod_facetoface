@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -33,13 +30,12 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once "$CFG->dirroot/lib/formslib.php";
-require_once "$CFG->dirroot/mod/facetoface/lib.php";
+require_once($CFG->dirroot . '/lib/formslib.php');
+require_once($CFG->dirroot . '/mod/facetoface/lib.php');
 
 class mod_facetoface_sitenotice_form extends moodleform {
 
-    function definition()
-    {
+    public function definition() {
         $mform =& $this->_form;
 
         $mform->addElement('header', 'general', get_string('general', 'form'));
@@ -58,7 +54,7 @@ class mod_facetoface_sitenotice_form extends moodleform {
         $mform->addElement('header', 'conditions', get_string('conditions', 'facetoface'));
         $mform->addElement('html', get_string('conditionsexplanation', 'facetoface'));
 
-        // Show all custom fields
+        // Show all custom fields.
         $customfields = $this->_customdata['customfields'];
         facetoface_add_customfields_to_form($mform, $customfields, true);
 

@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -35,9 +32,8 @@ defined('MOODLE_INTERNAL') || die();
 
 $handlers = array (
     'user_deleted' => array(
-        'handlerfile'       => '/mod/facetoface/lib.php',
-        'handlerfunction'   => 'facetoface_eventhandler_user_deleted',
-        'schedule'          => 'instant'
+        'handlerfile'     => '/mod/facetoface/lib.php',
+        'handlerfunction' => 'facetoface_eventhandler_user_deleted',
+        'schedule'        => 'instant'
     )
 );
-

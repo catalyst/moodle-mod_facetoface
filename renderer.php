@@ -1,7 +1,4 @@
 <?php
-
-// Face-to-face module for Moodle
-//
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -34,6 +31,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 class mod_facetoface_renderer extends plugin_renderer_base {
+
     /**
      * Builds session list table given an array of sessions
      */
@@ -50,8 +48,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         $tableheader[] = get_string('time', 'facetoface');
         if ($viewattendees) {
             $tableheader[] = get_string('capacity', 'facetoface');
-        }
-        else {
+        } else {
             $tableheader[] = get_string('seatsavailable', 'facetoface');
         }
         $tableheader[] = get_string('status', 'facetoface');
@@ -65,7 +62,6 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         $table->data = array();
 
         foreach ($sessions as $session) {
-
             $isbookedsession = false;
             $bookedsession = $session->bookedsession;
             $sessionstarted = false;
@@ -73,7 +69,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
             $sessionrow = array();
 
-            // Custom fields
+            // Custom fields.
             $customdata = $session->customfielddata;
             foreach ($customfields as $field) {
                 if (empty($field->showinsummary)) {
@@ -82,8 +78,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
                 if (empty($customdata[$field->id])) {
                     $sessionrow[] = '&nbsp;';
-                }
-                else {
+                } else {
                     if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
                         $sessionrow[] = str_replace(CUSTOMFIELD_DELIMITER, html_writer::empty_tag('br'), format_string($customdata[$field->id]->data));
                     } else {
@@ -93,7 +88,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 }
             }
 
-            // Dates/times
+            // Dates/times.
             $allsessiondates = '';
             $allsessiontimes = '';
             if ($session->datetimeknown) {
@@ -108,8 +103,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                     $allsessiontimes .= userdate($date->timestart, get_string('strftimetime')).
                         ' - '.userdate($date->timefinish, get_string('strftimetime'));
                 }
-            }
-            else {
+            } else {
                 $allsessiondates = get_string('wait-listed', 'facetoface');
                 $allsessiontimes = get_string('wait-listed', 'facetoface');
                 $sessionwaitlisted = true;
@@ -117,41 +111,36 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             $sessionrow[] = $allsessiondates;
             $sessionrow[] = $allsessiontimes;
 
-            // Capacity
+            // Capacity.
             $signupcount = facetoface_get_num_attendees($session->id, MDL_F2F_STATUS_APPROVED);
             $stats = $session->capacity - $signupcount;
             if ($viewattendees) {
-                $stats = $signupcount.' / '.$session->capacity;
-            }
-            else {
+                $stats = $signupcount . ' / ' . $session->capacity;
+            } else {
                 $stats = max(0, $stats);
             }
             $sessionrow[] = $stats;
 
-            // Status
+            // Status.
             $status  = get_string('bookingopen', 'facetoface');
             if ($session->datetimeknown && facetoface_has_session_started($session, $timenow) && facetoface_is_session_in_progress($session, $timenow)) {
                 $status = get_string('sessioninprogress', 'facetoface');
                 $sessionstarted = true;
-            }
-            elseif ($session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
+            } else if ($session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
                 $status = get_string('sessionover', 'facetoface');
                 $sessionstarted = true;
-            }
-            elseif ($bookedsession && $session->id == $bookedsession->sessionid) {
+            } else if ($bookedsession && $session->id == $bookedsession->sessionid) {
                 $signupstatus = facetoface_get_status($bookedsession->statuscode);
-
-                $status = get_string('status_'.$signupstatus, 'facetoface');
+                $status = get_string('status_' . $signupstatus, 'facetoface');
                 $isbookedsession = true;
-            }
-            elseif ($signupcount >= $session->capacity) {
+            } else if ($signupcount >= $session->capacity) {
                 $status = get_string('bookingfull', 'facetoface');
                 $sessionfull = true;
             }
 
             $sessionrow[] = $status;
 
-            // Options
+            // Options.
             $options = '';
             if ($editsessions) {
                 $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id)), new pix_icon('t/edit', get_string('edit', 'facetoface')), null, array('title' => get_string('editsession', 'facetoface'))) . ' ';
@@ -166,8 +155,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('moreinfo', 'facetoface'), array('title' => get_string('moreinfo', 'facetoface'))) . html_writer::empty_tag('br');
 
                 $options .= html_writer::link('cancelsignup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('cancelbooking', 'facetoface'), array('title' => get_string('cancelbooking', 'facetoface')));
-            }
-            elseif (!$sessionstarted and !$bookedsession) {
+            } else if (!$sessionstarted and !$bookedsession) {
                 $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('signup', 'facetoface'));
             }
             if (empty($options)) {
@@ -177,18 +165,16 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
             $row = new html_table_row($sessionrow);
 
-            // Set the CSS class for the row
+            // Set the CSS class for the row.
             if ($sessionstarted) {
                 $row->attributes = array('class' => 'dimmed_text');
-            }
-            elseif ($isbookedsession) {
+            } else if ($isbookedsession) {
                 $row->attributes = array('class' => 'highlight');
-            }
-            elseif ($sessionfull) {
+            } else if ($sessionfull) {
                 $row->attributes = array('class' => 'dimmed_text');
             }
 
-            // Add row to table
+            // Add row to table.
             $table->data[] = $row;
         }
 
@@ -197,4 +183,3 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         return $output;
     }
 }
-?>
