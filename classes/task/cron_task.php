@@ -28,10 +28,27 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
+namespace mod_facetoface\task;
+
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2015020302;
-$module->requires  = 2013111801;  // Requires this Moodle version.
-$module->release   = '2.7.0 (Build: 2015012700)'; // User-friendly version number.
-$module->component = 'mod_facetoface';
-$module->maturity  = MATURITY_ALPHA;
+class cron_task extends \core\task\scheduled_task {
+
+    /**
+     * Get a descriptive name for this task (shown to admins).
+     *
+     * @return string
+     */
+    public function get_name() {
+        return get_string('crontask', 'mod_facetoface');
+    }
+
+    /**
+     * Run Face-to-Face cron.
+     */
+    public function execute() {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/facetoface/lib.php');
+        facetoface_cron();
+    }
+}

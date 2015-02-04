@@ -28,7 +28,16 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
-require_once('lib.php');
+defined('MOODLE_INTERNAL') || die();
 
-facetoface_cron();
+$tasks = array(
+    array(
+        'classname' => 'mod_facetoface\task\cron_task',
+        'blocking'  => 0,
+        'minute'    => '*',
+        'hour'      => '1',
+        'day'       => '*',
+        'month'     => '*',
+        'dayofweek' => '*'
+    )
+);

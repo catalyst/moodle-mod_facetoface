@@ -99,6 +99,7 @@ $string['cancellation'] = 'Cancellation';
 $string['cancellations'] = 'Cancellations';
 $string['cancellationmessage'] = 'Cancellation message';
 $string['cancellationconfirm'] = 'Are you sure you want to cancel your booking to this session?';
+$string['crontask'] = 'Face-to-Face maintenance jobs';
 $string['costheading'] = 'Session Cost';
 $string['currentstatus'] = 'Current status';
 $string['customfieldsheading'] = 'Custom Session Fields';
