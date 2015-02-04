@@ -29,7 +29,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
-require_once('customfield_form.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 $id      = required_param('id', PARAM_INT); // ID in facetoface_session_field.
 $d       = optional_param('d', false, PARAM_BOOL); // set to true to delete the given field.

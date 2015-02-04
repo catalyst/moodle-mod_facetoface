@@ -30,7 +30,6 @@
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once('lib.php');
-require_once('cancelsignup_form.php');
 
 $s = required_param('s', PARAM_INT); // Facetoface session ID.
 $confirm = optional_param('confirm', false, PARAM_BOOL);

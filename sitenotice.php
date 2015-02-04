@@ -29,7 +29,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
-require_once('sitenotice_form.php');
+require_once($CFG->libdir . '/adminlib.php');
 
 $id      = required_param('id', PARAM_INT); // ID in facetoface_notice.
 $d       = optional_param('d', false, PARAM_BOOL); // Set to true to delete the given notice.

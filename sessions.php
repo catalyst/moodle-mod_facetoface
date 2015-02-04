@@ -30,7 +30,6 @@
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once('lib.php');
-require_once('session_form.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
 $f = optional_param('f', 0, PARAM_INT); // facetoface Module ID.
