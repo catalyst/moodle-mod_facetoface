@@ -41,7 +41,14 @@ require_course_login($course);
 $context = context_course::instance($course->id);
 require_capability('mod/facetoface:view', $context);
 
-add_to_log($course->id, 'facetoface', 'view all', "index.php?id=$course->id");
+// Logging and events trigger.
+$params = array(
+    'context'  => $context,
+    'objectid' => $course->id
+);
+$event = \mod_facetoface\event\course_viewed::create($params);
+$event->add_record_snapshot('course', $course);
+$event->trigger();
 
 $strfacetofaces = get_string('modulenameplural', 'facetoface');
 $strfacetoface = get_string('modulename', 'facetoface');

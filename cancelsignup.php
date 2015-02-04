@@ -73,7 +73,16 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
     $errorstr = '';
     if (facetoface_user_cancel($session, false, false, $errorstr, $fromform->cancelreason)) {
-        add_to_log($course->id, 'facetoface', 'cancel booking', "cancelsignup.php?s=$session->id", $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\cancel_booking::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
 
         $message = get_string('bookingcancelled', 'facetoface');
 
@@ -92,7 +101,17 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
         redirect($returnurl, $message, $timemessage);
     } else {
-        add_to_log($course->id, 'facetoface', "cancel booking (FAILED)", "cancelsignup.php?s=$session->id", $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\cancel_booking_failed::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
+
         redirect($returnurl, $errorstr, $timemessage);
     }
 

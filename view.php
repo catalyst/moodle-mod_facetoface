@@ -78,7 +78,16 @@ if (!empty($download)) {
 require_course_login($course, true, $cm);
 require_capability('mod/facetoface:view', $context);
 
-add_to_log($course->id, 'facetoface', 'view', "view.php?id=$cm->id", $facetoface->id, $cm->id);
+// Logging and events trigger.
+$params = array(
+    'context'  => $context,
+    'objectid' => $facetoface->id
+);
+$event = \mod_facetoface\event\course_module_viewed::create($params);
+$event->add_record_snapshot('course_modules', $cm);
+$event->add_record_snapshot('course', $course);
+$event->add_record_snapshot('facetoface', $facetoface);
+$event->trigger();
 
 $title = $course->shortname . ': ' . format_string($facetoface->name);
 

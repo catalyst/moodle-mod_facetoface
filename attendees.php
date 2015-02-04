@@ -124,15 +124,42 @@ if ($form = data_submitted()) {
 
         // Approve requests.
         if ($canapproverequests && facetoface_approve_requests($form)) {
-            add_to_log($course->id, 'facetoface', 'approve requests', "view.php?id=$cm->id", $facetoface->id, $cm->id);
+
+            // Logging and events trigger.
+            $params = array(
+                'context'  => $contextmodule,
+                'objectid' => $session->id
+            );
+            $event = \mod_facetoface\event\approve_requests::create($params);
+            $event->add_record_snapshot('facetoface_sessions', $session);
+            $event->add_record_snapshot('facetoface', $facetoface);
+            $event->trigger();
         }
 
         redirect($return);
     } else if ($takeattendance) {
         if (facetoface_take_attendance($form)) {
-            add_to_log($course->id, 'facetoface', 'take attendance', "view.php?id=$cm->id", $facetoface->id, $cm->id);
+
+            // Logging and events trigger.
+            $params = array(
+                'context'  => $contextmodule,
+                'objectid' => $session->id
+            );
+            $event = \mod_facetoface\event\take_attendance::create($params);
+            $event->add_record_snapshot('facetoface_sessions', $session);
+            $event->add_record_snapshot('facetoface', $facetoface);
+            $event->trigger();
         } else {
-            add_to_log($course->id, 'facetoface', 'take attendance (FAILED)', "view.php?id=$cm->id", $face->id, $cm->id);
+
+            // Logging and events trigger.
+            $params = array(
+                'context'  => $contextmodule,
+                'objectid' => $session->id
+            );
+            $event = \mod_facetoface\event\take_attendance_failed::create($params);
+            $event->add_record_snapshot('facetoface_sessions', $session);
+            $event->add_record_snapshot('facetoface', $facetoface);
+            $event->trigger();
         }
         redirect($return.'&takeattendance=1');
     }
@@ -141,7 +168,16 @@ if ($form = data_submitted()) {
 /*
  * Print page header
  */
-add_to_log($course->id, 'facetoface', 'view attendees', "view.php?id=$cm->id", $facetoface->id, $cm->id);
+
+// Logging and events trigger.
+$params = array(
+    'context'  => $contextmodule,
+    'objectid' => $session->id
+);
+$event = \mod_facetoface\event\attendees_viewed::create($params);
+$event->add_record_snapshot('facetoface_sessions', $session);
+$event->add_record_snapshot('facetoface', $facetoface);
+$event->trigger();
 
 $pagetitle = format_string($facetoface->name);
 

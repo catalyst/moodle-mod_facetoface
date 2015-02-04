@@ -102,9 +102,27 @@ if ($d and $confirm) {
     }
 
     if (facetoface_delete_session($session)) {
-        add_to_log($course->id, 'facetoface', 'delete session', 'sessions.php?s='.$session->id, $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\delete_session::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
     } else {
-        add_to_log($course->id, 'facetoface', 'delete session (FAILED)', 'sessions.php?s='.$session->id, $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\delete_session_failed::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
         print_error('error:couldnotdeletesession', 'facetoface', $returnurl);
     }
     redirect($returnurl);
@@ -182,7 +200,16 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         $todb->id = $session->id;
         if (!facetoface_update_session($todb, $sessiondates)) {
             $transaction->force_transaction_rollback();
-            add_to_log($course->id, 'facetoface', 'update session (FAILED)', "sessions.php?s=$session->id", $facetoface->id, $cm->id);
+
+            // Logging and events trigger.
+            $params = array(
+                'context'  => $contextmodule,
+                'objectid' => $session->id
+            );
+            $event = \mod_facetoface\event\update_session_failed::create($params);
+            $event->add_record_snapshot('facetoface_sessions', $session);
+            $event->add_record_snapshot('facetoface', $facetoface);
+            $event->trigger();
             print_error('error:couldnotupdatesession', 'facetoface', $returnurl);
         }
 
@@ -194,7 +221,15 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     } else {
         if (!$sessionid = facetoface_add_session($todb, $sessiondates)) {
             $transaction->force_transaction_rollback();
-            add_to_log($course->id, 'facetoface', 'add session (FAILED)', 'sessions.php?f='.$facetoface->id, $facetoface->id, $cm->id);
+
+            // Logging and events trigger.
+            $params = array(
+                'context'  => $contextmodule,
+                'objectid' => $facetoface->id
+            );
+            $event = \mod_facetoface\event\add_session_failed::create($params);
+            $event->add_record_snapshot('facetoface', $facetoface);
+            $event->trigger();
             print_error('error:couldnotaddsession', 'facetoface', $returnurl);
         }
     }
@@ -225,9 +260,27 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     // Update calendar entries.
     facetoface_update_calendar_entries($session, $facetoface);
     if ($update) {
-        add_to_log($course->id, 'facetoface', 'updated session', "sessions.php?s=$session->id", $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\update_session::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
     } else {
-        add_to_log($course->id, 'facetoface', 'added session', 'facetoface', 'sessions.php?f='.$facetoface->id, $facetoface->id, $cm->id);
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $contextmodule,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\add_session::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
     }
 
     $transaction->allow_commit();
