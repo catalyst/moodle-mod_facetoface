@@ -28,7 +28,7 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-require_once(dirname(dirname(dirname(__FILE__))) . '/config.php';
+require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
 require_once('lib.php');
 
 define('MAX_USERS_PER_PAGE', 5000);
