@@ -30,7 +30,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$module->version   = 2015020302;
+$module->version   = 2015020900;
 $module->requires  = 2013111801;  // Requires this Moodle version.
 $module->release   = '2.7.0 (Build: 2015012700)'; // User-friendly version number.
 $module->component = 'mod_facetoface';

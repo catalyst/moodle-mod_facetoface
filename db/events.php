@@ -30,10 +30,14 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$handlers = array (
-    'user_deleted' => array(
-        'handlerfile'     => '/mod/facetoface/lib.php',
-        'handlerfunction' => 'facetoface_eventhandler_user_deleted',
-        'schedule'        => 'instant'
-    )
+// List of observers.
+$observers = array(
+    array(
+        'eventname'   => '\core\event\user_enrolment_deleted',
+        'callback'    => 'mod_facetoface_observer::user_enrolment_deleted',
+    ),
+    array(
+        'eventname' => '\core\event\course_module_created',
+        'callback'  => 'mod_facetoface_observer::course_module_created',
+    ),
 );
