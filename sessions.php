@@ -104,7 +104,7 @@ if ($d and $confirm) {
 
         // Logging and events trigger.
         $params = array(
-            'context'  => $contextmodule,
+            'context'  => $modulecontext,
             'objectid' => $session->id
         );
         $event = \mod_facetoface\event\delete_session::create($params);
@@ -115,7 +115,7 @@ if ($d and $confirm) {
 
         // Logging and events trigger.
         $params = array(
-            'context'  => $contextmodule,
+            'context'  => $modulecontext,
             'objectid' => $session->id
         );
         $event = \mod_facetoface\event\delete_session_failed::create($params);
@@ -202,7 +202,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
             // Logging and events trigger.
             $params = array(
-                'context'  => $contextmodule,
+                'context'  => $modulecontext,
                 'objectid' => $session->id
             );
             $event = \mod_facetoface\event\update_session_failed::create($params);
@@ -223,7 +223,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
             // Logging and events trigger.
             $params = array(
-                'context'  => $contextmodule,
+                'context'  => $modulecontext,
                 'objectid' => $facetoface->id
             );
             $event = \mod_facetoface\event\add_session_failed::create($params);
@@ -262,7 +262,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
         // Logging and events trigger.
         $params = array(
-            'context'  => $contextmodule,
+            'context'  => $modulecontext,
             'objectid' => $session->id
         );
         $event = \mod_facetoface\event\update_session::create($params);
@@ -273,7 +273,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
         // Logging and events trigger.
         $params = array(
-            'context'  => $contextmodule,
+            'context'  => $modulecontext,
             'objectid' => $session->id
         );
         $event = \mod_facetoface\event\add_session::create($params);
