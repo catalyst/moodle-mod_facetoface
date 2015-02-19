@@ -61,23 +61,4 @@ class mod_facetoface_observer {
             $transaction->allow_commit();
         }
     }
-
-    /**
-     * Observer for \core\event\course_module_created event.
-     *
-     * @param \core\event\course_module_created $event
-     * @return void
-     */
-    public static function course_module_created(\core\event\course_module_created $event) {
-        global $CFG;
-
-        if ($event->other['modulename'] === 'facetoface') {
-
-            // Include the Face-to-Face library to make use of the facetoface_instance_created function.
-            require_once($CFG->dirroot . '/mod/facetoface/lib.php');
-
-            $facetoface = $event->get_record_snapshot('facetoface', $event->other['instanceid']);
-            facetoface_instance_created($event->get_context(), $forum);
-        }
-    }
 }
