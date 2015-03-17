@@ -34,8 +34,9 @@ require_once('lib.php');
 $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
 $f = optional_param('f', 0, PARAM_INT); // facetoface Module ID.
 $s = optional_param('s', 0, PARAM_INT); // facetoface session ID.
-$c = optional_param('c', 0, PARAM_INT); // Copy session.
-$d = optional_param('d', 0, PARAM_INT); // Delete session.
+$cancel = optional_param('cancel', 0, PARAM_INT); // Cancel session.
+$copy = optional_param('copy', 0, PARAM_INT); // Copy session.
+$delete = optional_param('delete', 0, PARAM_INT); // Delete session.
 $confirm = optional_param('confirm', false, PARAM_BOOL); // Delete confirmation.
 
 $nbdays = 1; // Default number to show.
@@ -95,7 +96,7 @@ $editoroptions = array(
 
 
 // Handle deletions.
-if ($d and $confirm) {
+if ($delete and $confirm) {
     if (!confirm_sesskey()) {
         print_error('confirmsesskeybad', 'error');
     }
@@ -127,6 +128,39 @@ if ($d and $confirm) {
     redirect($returnurl);
 }
 
+// Handle cancellations.
+if ($cancel and $confirm) {
+    if (!confirm_sesskey()) {
+        print_error('confirmsesskeybad', 'error');
+    }
+
+    if (facetoface_cancel_session($session)) {
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $modulecontext,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\cancel_session::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
+    } else {
+
+        // Logging and events trigger.
+        $params = array(
+            'context'  => $modulecontext,
+            'objectid' => $session->id
+        );
+        $event = \mod_facetoface\event\cancel_session_failed::create($params);
+        $event->add_record_snapshot('facetoface_sessions', $session);
+        $event->add_record_snapshot('facetoface', $facetoface);
+        $event->trigger();
+        print_error('error:couldnotcancelsession', 'facetoface', $returnurl);
+    }
+    redirect($returnurl);
+}
+
 $customfields = facetoface_get_session_customfields();
 
 $sessionid = isset($session->id) ? $session->id : 0;
@@ -137,7 +171,7 @@ $details->details = isset($session->details) ? $session->details : '';
 $details->detailsformat = FORMAT_HTML;
 $details = file_prepare_standard_editor($details, 'details', $editoroptions, $modulecontext, 'mod_facetoface', 'session', $sessionid);
 
-$mform = new mod_facetoface_session_form(null, compact('id', 'f', 's', 'c', 'nbdays', 'customfields', 'course', 'editoroptions'));
+$mform = new mod_facetoface_session_form(null, compact('id', 'f', 's', 'copy', 'nbdays', 'customfields', 'course', 'editoroptions'));
 
 if ($mform->is_cancelled()) {
     redirect($returnurl);
@@ -192,7 +226,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $transaction = $DB->start_delegated_transaction();
 
     $update = false;
-    if (!$c and $session != null) {
+    if (!$copy and $session != null) {
         $update = true;
         $sessionid = $session->id;
 
@@ -322,9 +356,11 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $mform->set_data($toform);
 }
 
-if ($c) {
+if ($copy) {
     $heading = get_string('copyingsession', 'facetoface', $facetoface->name);
-} else if ($d) {
+} else if ($cancel) {
+    $heading = get_string('cancellingsession', 'facetoface', $facetoface->name);
+} else if ($delete) {
     $heading = get_string('deletingsession', 'facetoface', $facetoface->name);
 } else if ($id || $f) {
     $heading = get_string('addingsession', 'facetoface', $facetoface->name);
@@ -348,10 +384,17 @@ if (!empty($errorstr)) {
     echo $OUTPUT->container(html_writer::tag('span', $errorstr, array('class' => 'errorstring')), array('class' => 'notifyproblem'));
 }
 
-if ($d) {
+if ($cancel) {
     $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
     facetoface_print_session($session, $viewattendees);
-    $optionsyes = array('sesskey' => sesskey(), 's' => $session->id, 'd' => 1, 'confirm' => 1);
+    $optionsyes = array('sesskey' => sesskey(), 's' => $session->id, 'cancel' => 1, 'confirm' => 1);
+    echo $OUTPUT->confirm(get_string('cancelsessionconfirm', 'facetoface', format_string($facetoface->name)),
+        new moodle_url('sessions.php', $optionsyes),
+        new moodle_url($returnurl));
+} else if ($delete) {
+    $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
+    facetoface_print_session($session, $viewattendees);
+    $optionsyes = array('sesskey' => sesskey(), 's' => $session->id, 'delete' => 1, 'confirm' => 1);
     echo $OUTPUT->confirm(get_string('deletesessionconfirm', 'facetoface', format_string($facetoface->name)),
         new moodle_url('sessions.php', $optionsyes),
         new moodle_url($returnurl));
