@@ -509,7 +509,6 @@ $string['signups'] = 'Sign-ups';
 $string['signupfor'] = 'Sign-up for {$a}';
 $string['signupforsession'] = 'Sign-up for an available upcoming session';
 $string['signupforthissession'] = 'Sign-up for this Face-to-Face session';
-$string['sign-ups'] = 'Sign-ups';
 $string['sitenoticesheading'] = 'Site Notices';
 $string['subject'] = 'Change in booking in the course {$a->coursename} ({$a->duedate})';
 $string['submissions'] = 'Submissions';

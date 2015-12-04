@@ -182,4 +182,79 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
         return $output;
     }
+
+    /**
+     * Render a list of all Face-to-Face instances within
+     * the course
+     *
+     * @param object $course the current course
+     * @param array $instances Face-to-Face instances
+     * @return string HTML
+     */
+    public function render_index_list($course, $instances) {
+        $format     = course_get_format($course);
+        $strmanager = get_string_manager();
+        $context    = context_course::instance($course->id);
+
+        $table = new html_table();
+        $table->width = '100%';
+        $table->head = array();
+        $table->align = array();
+
+        // If the format uses sections then display as first column.
+        if ($format->uses_sections()) {
+            if ($strmanager->string_exists('sectionname', 'format_' . $format->get_format())) {
+                $table->head[] = $strmanager->get_string('sectionname', 'format_' . $format->get_format());
+                $table->align[] = 'left';
+            } else {
+                $table->head[] = $strmanager->get_string('section');
+                $table->align[] = 'left';
+            }
+        }
+        $table->head[] = $strmanager->get_string('facetofacename', 'facetoface');
+        $table->align[] = 'left';
+
+        // If the user can view Face-to-Face attendees display as a final column.
+        $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
+        if ($viewattendees) {
+            $table->head[] = $strmanager->get_string('signups', 'facetoface');
+            $table->align[] = 'center';
+        }
+
+        // Render Face-to-Face instances as rows.
+        $timenow = time();
+        foreach ($instances as $instance) {
+            $data = array();
+            $class = '';
+            if (!$instance->visible) {
+                $class = 'dimmed';
+            }
+            if ($format->uses_sections()) {
+                if (isset($instance->section)) {
+                    $data[] = $format->get_section_name($instance->section);
+                } else {
+                    $data[] = '';
+                }
+            }
+            $viewurl = new moodle_url('/mod/facetoface/view.php', array('id' => $instance->coursemodule));
+            $instancelink = html_writer::link($viewurl, $instance->name, array('class' => $class));
+            $data[] = $instancelink;
+
+            if ($viewattendees) {
+                $totalattendees = 0;
+                if ($sessions = facetoface_get_sessions($instance->id)) {
+                    foreach ($sessions as $session) {
+                        if (!facetoface_has_session_started($session, $timenow)) {
+                            $signups = facetoface_get_num_attendees($session->id);
+                            $totalattendees += $attendees;
+                        }
+                    }
+                }
+                $data[] = $totalattendees;
+            }
+            $table->data[] = $data;
+        }
+
+        return html_writer::table($table);
+    }
 }
