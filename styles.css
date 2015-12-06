@@ -32,6 +32,16 @@ span.errorstring {
     line-height: 18px;
 }
 
-body#page-mod-facetoface-view div#page-content table.sessions {
+body#page-mod-facetoface-view #facetoface-current-sessions,
+body#page-mod-facetoface-view #facetoface-upcoming-sessions,
+body#page-mod-facetoface-view #facetoface-previous-sessions {
     width: 100%;
+    clear: both;
+    margin: auto 5px;
 }
+body#page-mod-facetoface-view .locationfilter {
+    float: right;
+    display: block;
+    clear: both;
+}
+

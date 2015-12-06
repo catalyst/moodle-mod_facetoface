@@ -220,6 +220,7 @@ $string['guestsno'] = 'Sorry, guests are not allowed to sign up for sessions.';
 $string['icalendarheading'] = 'iCalendar Attachments';
 $string['import'] = 'Import';
 $string['info'] = 'Info';
+$string['inprogresssessions'] = 'In progress sessions';
 $string['late'] = '\{$a} late';
 $string['location'] = 'Location';
 $string['lookfor'] = 'Search';
