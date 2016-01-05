@@ -778,12 +778,12 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                 'idnumber', 'institution', 'department', 'address'
             );
             foreach ($names as $shortname) {
-                $userfields[$shortname] = get_string($shortname);
+                $fields[$shortname] = get_string($shortname);
             }
-            $userfields['managersemail'] = get_string('manageremail', 'facetoface');
+            $fields['managersemail'] = get_string('manageremail', 'facetoface');
         }
 
-        return $userfields;
+        return $fields;
     }
 
     /* Export attendance functionality */
@@ -1004,13 +1004,6 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                     $column = $this->export_write_dates($worksheet, $dates, $status, $row, $column);
                     $column = $this->export_write_trainers($worksheet, $trainerroles, $sessiontrainers, $row, $column);
                     $column = $this->export_write_userdata($worksheet, $userfields, $attendee, $row, $column);
-
-                    /*if (!empty($coursename)) {
-                        $worksheet->write_string($row, $column++, $coursename);
-                    }
-                    if (!empty($activityname)) {
-                        $worksheet->write_string($row, $column++, $activityname);
-                    }*/
                 }
             } else {
 
@@ -1024,13 +1017,6 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                     $worksheet->write_string($row, $column++, '-');
                 }
                 $worksheet->write_string($row, $column++, '-');
-
-                /*if (!empty($coursename)) {
-                    $worksheet->write_string($i, $j++, $coursename);
-                }
-                if (!empty($activityname)) {
-                    $worksheet->write_string($i, $j++, $activityname);
-                } */
             }
         }
 
