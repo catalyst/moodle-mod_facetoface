@@ -506,36 +506,4 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
         return get_string('none', 'facetoface');
     }
-
-    /**
-     * Render a form to export attendees for the Face-to-Face sessions
-     *
-     * @param object $instance the Face-to-face record instance
-     * @param object $cm the Face-to-Face course module
-     * @param string $location the location filter string if used
-     * @return string HTML
-     */
-    public function render_attendees_export($instance, $cm, $location) {
-
-        $html = '';
-        $context = context_module::instance($cm->id);
-        if (has_capability('mod/facetoface:viewattendees', $context)) {
-            $formats = array(
-                'excel' => get_string('excelformat', 'facetoface'),
-                'ods'   => get_string('odsformat', 'facetoface')
-            );
-
-            $html .= $this->output->heading(get_string('exportattendance', 'facetoface'));
-            $html .= html_writer::start_tag('form', array('action' => 'view.php', 'method' => 'get'));
-            $html .= html_writer::start_tag('div');
-            $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'f', 'value' => $instance->id));
-            $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'location', 'value' => $location));
-            $html .= get_string('format', 'facetoface') . '&nbsp;';
-            $html .= html_writer::select($formats, 'download', 'excel', '');
-            $html .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('exporttofile', 'facetoface')));
-            $html .= html_writer::end_tag('div'). html_writer::end_tag('form');
-        }
-
-        return $html;
-    }
 }

@@ -108,6 +108,8 @@ echo $renderer->add_session_link($facetoface, $cm);
 // Session listing.
 $sessions = $facetoface->get_sessionslist($location);
 echo $renderer->render_sessions($facetoface, $sessions, $cm, $location);
-echo $renderer->render_attendees_export($facetoface, $cm, $location);
+
+$attendancerenderer = $PAGE->get_renderer('mod_facetoface', 'attendance');
+echo $attendancerenderer->render_attendees_export($facetoface, $cm, $location);
 
 echo $OUTPUT->footer($course);
