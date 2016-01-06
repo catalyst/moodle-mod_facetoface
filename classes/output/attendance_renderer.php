@@ -42,7 +42,7 @@ class attendance_renderer extends \plugin_renderer_base {
      * @param string $location the location filter string if used
      * @return string HTML
      */
-    public function render_attendees_export($instance, $cm, $location) {
+    public function attendees_export_form($instance, $cm, $location) {
 
         $html = '';
         $context = context_module::instance($cm->id);

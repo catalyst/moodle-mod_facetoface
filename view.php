@@ -100,16 +100,27 @@ $renderer = $PAGE->get_renderer('mod_facetoface');
 
 echo $OUTPUT->header();
 echo $OUTPUT->heading(get_string('allsessionsin', 'facetoface', $facetoface->name), 2);
-echo $renderer->render_intro($facetoface, $cm);
+echo $renderer->introduction($facetoface, $cm);
 
 // Add new session link.
-echo $renderer->add_session_link($facetoface, $cm);
+$sessionrenderer = $PAGE->get_renderer('mod_facetoface', 'session');
+echo $sessionrenderer->add_session_link($facetoface, $cm);
+
+// Session location filter.
+$locations = $facetoface->get_locations();
+if (!empty($locations)) {
+    echo $renderer->location_filter($facetoface, $locations, $location);
+}
 
 // Session listing.
-$sessions = $facetoface->get_sessionslist($location);
-echo $renderer->render_sessions($facetoface, $sessions, $cm, $location);
+$sessions = $facetoface->get_sessions_list($location);
+$sortedsessions = $facetoface->sort_sessions_list($sessions);
+echo $sessionrenderer->view_sessions_list($facetoface, $sortedsessions, $cm);
 
-$attendancerenderer = $PAGE->get_renderer('mod_facetoface', 'attendance');
-echo $attendancerenderer->render_attendees_export($facetoface, $cm, $location);
+// Attendance export form.
+if (!empty($sortedsessions)) {
+    $attendancerenderer = $PAGE->get_renderer('mod_facetoface', 'attendance');
+    echo $attendancerenderer->attendees_export_form($facetoface, $cm, $location);
+}
 
 echo $OUTPUT->footer($course);

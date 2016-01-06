@@ -459,12 +459,12 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
-     * Return the Face-to-Face sessions
+     * Return the Face-to-Face instance sessions list
      *
      * @param string $location a specified location filter
      * @return array $locations
      */
-    public function get_sessionslist($location=null) {
+    public function get_sessions_list($location=null) {
         global $DB;
         $params = array('facetoface' => $this->id);
 
@@ -506,8 +506,45 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
-     * Converts minutes to hours
+     * Sort the Face-to-Face instance sessions into relative groups:
+     *  - in-progress
+     *  - upcoming or dateless
+     *  - finished
      *
+     * @param array $sessions the current list of sessions to sort
+     * @return array the sorted sessions keyed by type
+     */
+    public function sort_sessions_list($sessions) {
+        $sorted = array(
+            'inprogress' => array(),
+            'upcoming'   => array(),
+            'previous'   => array(),
+        );
+
+        if (!empty($sessions)) {
+            foreach ($sessions as $session) {
+                switch ($session->status) {
+                    case FACETOFACE_FINISHED:
+                        $sorted['previous'][$session->id] = $session;
+                        break;
+                    case FACETOFACE_NOT_STARTED:
+                        $sorted['upcoming'][$session->id] = $session;
+                        break;
+                    case FACETOFACE_IN_PROGRESS:
+                        $sorted['current'][$session->id] = $session;
+                        break;
+                    default:
+                        $sorted['upcoming'][$session->id] = $session;
+                        break;
+                }
+            }
+        }
+
+        return $sorted;
+    }
+
+    /**
+     * Converts minutes to hours
      * @param int $minutes the session duration to format
      * @return int
      */
@@ -683,6 +720,15 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                 AND s.statuscode >= :status';
 
         return $DB->count_records_sql($sql, array('session' => $session, 'status' => $status));
+    }
+
+    public function get_current_booking_submission($user=0, $includecancellations=false) {
+        $submission = null;
+        if ($submissions = $this->user_booking_submissions($user, $includecancellations)) {
+            $submission = array_shift($submissions);
+        }
+
+        return $submission;
     }
 
     /**

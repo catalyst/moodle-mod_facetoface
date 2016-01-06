@@ -59,7 +59,7 @@ echo $OUTPUT->heading("{$course->fullname}: " . get_string('modulename', 'faceto
 $instances = get_all_instances_in_course('facetoface', $course);
 if ($instances) {
     $renderer = $PAGE->get_renderer('mod_facetoface');
-    echo $renderer->render_index_list($course, $instances);
+    echo $renderer->index_table($course, $instances);
 } else {
     $courseurl = new moodle_url('/course/view.php', array('id' => $course->id));
     notice(get_string('nofacetofaces', 'facetoface'), $courseurl);
