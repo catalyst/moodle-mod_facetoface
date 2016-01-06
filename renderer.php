@@ -142,7 +142,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         $html = '';
         if (count($locations) > 2) {
             $locationurl = new moodle_url('/mod/facetoface/view.php', array('f' => $instance->id));
-            $html = $OUTPUT->single_select($locationurl, 'location', $locations, $selected);
+            $html = $OUTPUT->single_select($locationurl, 'location', $locations, $selected, array());
         }
 
         return html_writer::tag('div', get_string('showbylocation', 'facetoface') . ": {$html}",
