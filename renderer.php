@@ -87,18 +87,17 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                     $data[] = '';
                 }
             }
+
             $viewurl = new moodle_url('/mod/facetoface/view.php', array('id' => $instance->coursemodule));
             $instancelink = html_writer::link($viewurl, $instance->name, array('class' => $class));
             $data[] = $instancelink;
 
             if ($viewattendees) {
+                $facetoface = facetoface::get($instance->id);
                 $totalattendees = 0;
-                if ($sessions = facetoface_get_sessions($instance->id)) {
+                if ($sessions = $facetoface->get_sessionslist()) {
                     foreach ($sessions as $session) {
-                        if (!facetoface_has_session_started($session, $timenow)) {
-                            $attendees = facetoface_get_num_attendees($session->id);
-                            $totalattendees += $attendees;
-                        }
+                        $totalattendees += $session->attendees;
                     }
                 }
                 $data[] = $totalattendees;
