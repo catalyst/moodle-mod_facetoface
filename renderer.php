@@ -30,7 +30,7 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-require_once($CFG->dirroot . '/mod/facetoface/facetoface.class.php');
+require_once($CFG->dirroot . '/mod/facetoface/classes/facetoface.class.php');
 
 class mod_facetoface_renderer extends plugin_renderer_base {
 

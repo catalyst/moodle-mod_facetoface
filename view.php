@@ -29,7 +29,7 @@
  */
 
 require_once(dirname(dirname(dirname(__FILE__))) . '/config.php');
-require_once($CFG->dirroot . '/mod/facetoface/facetoface.class.php');
+require_once($CFG->dirroot . '/mod/facetoface/classes/facetoface.class.php');
 
 $id = optional_param('id', 0, PARAM_INT); // Course Module ID.
 $f  = optional_param('f', 0, PARAM_INT); // Facetoface ID.
