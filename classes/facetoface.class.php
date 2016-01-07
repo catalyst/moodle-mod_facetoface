@@ -474,7 +474,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
             $session->duration   = $this->minutes_to_hours($session->duration);
             $session->dates      = $this->get_session_dates($session->id);
             $session->customdata = $this->get_session_customdata($session->id);
-            $session->attendees  = $this->get_session_attendees_count($session->id, MDL_F2F_STATUS_APPROVED);
+            $session->attendees  = $this->get_session_attendees($session->id, MDL_F2F_STATUS_APPROVED);
             $session->status     = $this->get_session_status($session);
             $session->trainers   = $this->get_session_trainers($session);
         }
@@ -521,7 +521,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                 $sessions[$key]->duration   = $this->minutes_to_hours($value->duration);
                 $sessions[$key]->dates      = $this->get_session_dates($value->id);
                 $sessions[$key]->customdata = $this->get_session_customdata($value->id);
-                $sessions[$key]->attendees  = $this->get_session_attendees_count($value->id, MDL_F2F_STATUS_APPROVED);
+                $sessions[$key]->attendees  = $this->get_session_attendees($value->id, MDL_F2F_STATUS_APPROVED);
                 $sessions[$key]->status     = $this->get_session_status($value);
             }
         }
@@ -727,23 +727,41 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
-     * Return number of attendees signed up to a the Face-to-Face session
+     * Return a list of attendees signed up to a the Face-to-Face session
      *
-     * @param int $session the session record ID
-     * @param int $status MDL_F2F_STATUS_* constant (optional)
-     * @return int
+     * @param int $sessionid the session record ID
+     * @return array
      */
-    public function get_session_attendees_count($session, $status=MDL_F2F_STATUS_BOOKED) {
+    public function get_session_attendees($sessionid) {
         global $CFG, $DB;
 
-        $sql = 'SELECT COUNT(s.id)
-            FROM {facetoface_signups} u
-            JOIN {facetoface_signups_status} s ON s.signupid = u.id
-                WHERE u.sessionid = :session
-                AND s.superceded = 0
-                AND s.statuscode >= :status';
+        $params = array(
+            'session1' => $sessionid,
+            'session2' => $sessionid,
+            'status1'  => MDL_F2F_STATUS_BOOKED,
+            'status2'  => MDL_F2F_STATUS_WAITLISTED,
+            'status3'  => MDL_F2F_STATUS_APPROVED,
+        );
+        $usernamefields = get_all_user_name_fields(true, 'u');
+        $attendees = $DB->get_records_sql("SELECT u.id, {$usernamefields},
+            u.email, su.id AS submissionid, s.discountcost, su.discountcode, su.notificationtype,
+            f.id AS facetofaceid, f.course, ss.grade, ss.statuscode, sign.timecreated
+                FROM {facetoface} f
+                JOIN {facetoface_sessions} s ON s.facetoface = f.id
+                JOIN {facetoface_signups} su ON s.id = su.sessionid
+                JOIN {facetoface_signups_status} ss ON su.id = ss.signupid
+                LEFT JOIN (
+                    SELECT ss.signupid, MAX(ss.timecreated) AS timecreated
+                    FROM {facetoface_signups_status} ss
+                    INNER JOIN {facetoface_signups} s ON s.id = ss.signupid AND s.sessionid = :session1
+                        WHERE ss.statuscode IN (:status1, :status2)
+                        GROUP BY ss.signupid
+                ) sign ON su.id = sign.signupid
+                JOIN {user} u ON u.id = su.userid
+                    WHERE s.id = :session2 AND ss.superceded != 1 AND ss.statuscode >= :status3
+                    ORDER BY sign.timecreated ASC, ss.timecreated ASC", $params);
 
-        return $DB->count_records_sql($sql, array('session' => $session, 'status' => $status));
+        return $attendees;
     }
 
     /**
@@ -814,6 +832,122 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         }
 
         return $string;
+    }
+
+    /**
+     * Returns the effective cost of a session depending on the presence
+     * or absence of a discount code.
+     *
+     * @param object $session the session instance
+     * @param object $attendee the attendee to check cost for
+     * @return string
+     */
+    public function format_booking_cost($session, $attendee) {
+        global $CFG, $DB;
+
+        $count = $DB->count_records_sql('SELECT COUNT(*)
+            FROM {facetoface_signups} su
+            JOIN {facetoface_sessions} se ON se.id = su.sessionid
+            WHERE su.sessionid = :session AND su.userid = :attendee AND su.discountcode IS NOT NULL',
+            array('session' => $session->id, 'attendee' => $attendee->id));
+
+        // User has used a discount code.
+        if ($count > 0) {
+            return $this->format_cost($session->discountcost);
+        } else {
+            return $this->format_cost($session->normalcost);
+        }
+    }
+
+    /**
+     * TODO: make this more flexible to allow for different currency regardless
+     * of language locale. Example Euros as this isn't found in a language pack.
+     *
+     * Return a formatted cost amount along with the appropriate currency symbol
+     *
+     * To set your currency symbol, set the appropriate 'locale' in
+     * lang/en_utf8/langconfig.php (or the equivalent file for your
+     * language).
+     *
+     * @param int $cost numerical cost of the booking without currency symbol
+     * @return string
+     */
+    public function format_cost($cost) {
+        setlocale(LC_MONETARY, get_string('locale', 'langconfig'));
+        $localeinfo = localeconv();
+        $symbol = $localeinfo['currency_symbol'];
+
+        // Cannot get the locale information, default to en_US.UTF-8.
+        if (empty($symbol)) {
+            return '$' . $cost;
+        }
+
+        // Character between the currency symbol and the amount.
+        $separator = '';
+        if ($localeinfo['p_sep_by_space']) {
+            $separator = '&nbsp;';
+        }
+
+        // The symbol can come before or after the amount.
+        if ($localeinfo['p_cs_precedes']) {
+            return $symbol . $separator . $cost;
+        } else {
+            return $cost . $separator . $symbol;
+        }
+    }
+
+    /**
+     * Return a formatted session duration value
+     *
+     * @param int $duration the session duration
+     * @return string
+     */
+    public function format_duration($duration) {
+        $durationstr = '';
+
+        // Check for bad characters.
+        if (trim(preg_match('/[^0-9:\.\s]/', $duration))) {
+            return '';
+        }
+
+        $components  = explode(':', $duration);
+        if ($components && count($components) >= 2) {
+
+            // E.g. "1:30" => "1 hour and 30 minutes".
+            $hours   = round($components[0]);
+            $minutes = round($components[1]);
+        } else {
+
+            // E.g. "1.5" => "1 hour and 30 minutes".
+            $hours   = floor($duration);
+            $minutes = round(($duration - floor($duration)) * 60);
+        }
+
+        // Check if minutes is out of bounds,
+        // return an empty string if it is.
+        if ($minutes >= 60) {
+            return $durationstr;
+        }
+
+        // Exactly one hour or has more?
+        if ($hours == 1) {
+            $durationstr = get_string('onehour', 'facetoface');
+        } else if ($hours > 1) {
+            $durationstr = get_string('xhours', 'facetoface', $hours);
+        }
+
+        // Insert separator between hours and minutes.
+        if ($durationstr != '') {
+            $durationstr .= ' ';
+        }
+
+        if ($minutes == 1) {
+            $durationstr .= get_string('oneminute', 'facetoface');
+        } else if ($minutes > 0) {
+            $durationstr .= get_string('xminutes', 'facetoface', $minutes);
+        }
+
+        return $durationstr;
     }
 
     /**

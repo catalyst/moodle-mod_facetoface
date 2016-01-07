@@ -106,29 +106,24 @@ class session_renderer extends \plugin_renderer_base {
         if ($viewattendees) {
             $capacitystr = get_string('capacity', 'facetoface');
             if ($session->allowoverbook) {
-                $allowoverbookstr = html_writer::empty_tag('br') . strtolower(get_string('allowoverbook', 'facetoface'));
+                $allowoverbookstr = html_writer::empty_tag('br')
+                    . ' (' . strtolower(get_string('allowoverbook', 'facetoface')) . ')';
             }
         }
         $table->data[] = array($capacitystr, $this->session_capacity($session, $viewattendees) . $allowoverbookstr);
-
-        // Display waitlist notification.
-        $spaces = $session->capacity - $session->attendees;
-        if ($session->allowoverbook && $spaces < 1) {
-            $table->data[] = array('', get_string('userwillbewaitlisted', 'facetoface'));
-        }
 
         // Display requires approval notification.
         if ($instance->approvalreqd) {
             $table->data[] = array('', get_string('sessionrequiresmanagerapproval', 'facetoface'));
         }
         if (!empty($session->duration)) {
-            $table->data[] = array(get_string('duration', 'facetoface'), format_duration($session->duration));
+            $table->data[] = array(get_string('duration', 'facetoface'), $instance->format_duration($session->duration));
         }
         if (!empty($session->normalcost)) {
-            $table->data[] = array(get_string('normalcost', 'facetoface'), format_cost($session->normalcost));
+            $table->data[] = array(get_string('normalcost', 'facetoface'), $instance->format_cost($session->normalcost));
         }
         if (!empty($session->discountcost)) {
-            $table->data[] = array(get_string('discountcost', 'facetoface'), format_cost($session->discountcost));
+            $table->data[] = array(get_string('discountcost', 'facetoface'), $instance->format_cost($session->discountcost));
         }
         if (!empty($session->details)) {
             $details = clean_text($session->details, FORMAT_HTML);
@@ -244,7 +239,7 @@ class session_renderer extends \plugin_renderer_base {
             $row = new html_table_row($row);
             if ($session->status == FACETOFACE_IN_PROGRESS || $session->status == FACETOFACE_FINISHED) {
                 $row->attributes = array('class' => 'dimmed_text');
-            } else if ($session->attendees >= $session->capacity && !$session->allowoverbook) {
+            } else if (count($session->attendees) >= $session->capacity && !$session->allowoverbook) {
                 $row->attributes = array('class' => 'dimmed_text');
             } else if ($submission && $submission->sessionid == $session->id) {
                 $row->attributes = array('class' => 'highlight');
@@ -350,14 +345,15 @@ class session_renderer extends \plugin_renderer_base {
      */
     public function session_capacity($session, $viewattendees) {
 
+        $attendees = count($session->attendees);
         $capacity = '';
-        if (!$session->attendees || $session->attendees == 0) {
+        if (!$attendees || $session->attendees == 0) {
             $capacity = $session->capacity;
-        } else if ($session->attendees < $session->capacity) {
+        } else if ($attendees < $session->capacity) {
             if ($viewattendees) {
-                $capacity = "{$session->attendees}/{$session->capacity}";
+                $capacity = "{$attendees}/{$session->capacity}";
             } else {
-                $stats = $session->capacity - $session->attendees;
+                $stats = $session->capacity - $attendees;
                 $capacity = max(0, $stats);
             }
         } else {
@@ -389,7 +385,7 @@ class session_renderer extends \plugin_renderer_base {
             $status = get_string('sessionover', 'facetoface');
         } else if ($submission && $submission->sessionid == $session->id) {
             $status = $instance->format_booking_status($submission->statuscode);
-        } else if ($session->attendees >= $session->capacity && !$session->allowoverbook) {
+        } else if (count($session->attendees) >= $session->capacity && !$session->allowoverbook) {
             $status = get_string('bookingfull', 'facetoface');
         }
 
@@ -463,7 +459,7 @@ class session_renderer extends \plugin_renderer_base {
                 $html .= html_writer::link($cancelurl, $cancelstr, array('title' => $cancelstr));
             }
         } else if ($session->status != FACETOFACE_IN_PROGRESS && $session->status != FACETOFACE_FINISHED) {
-            if ($session->attendees < $session->capacity || ($session->attendees >= $session->capacity && $session->allowoverbook)) {
+            if (count($session->attendees) < $session->capacity || (count($session->attendees) >= $session->capacity && $session->allowoverbook)) {
                 if (!empty($html)) {
                     $html .= html_writer::empty_tag('br');
                 }

@@ -97,7 +97,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 $totalattendees = 0;
                 if ($sessions = $facetoface->get_sessions_list()) {
                     foreach ($sessions as $session) {
-                        $totalattendees += $session->attendees;
+                        $totalattendees += count($session->attendees);
                     }
                 }
                 $data[] = $totalattendees;
