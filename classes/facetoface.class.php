@@ -494,11 +494,11 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         // Add duration and dates.
         if ($sessions) {
             foreach ($sessions as $key => $value) {
-                $sessions[$key]->duration   = $this->session_minutes_to_hours($value->duration);
-                $sessions[$key]->dates      = $this->session_get_dates($value->id);
-                $sessions[$key]->customdata = $this->session_get_customdata($value->id);
-                $sessions[$key]->attendees  = $this->get_attendees_count($value->id, MDL_F2F_STATUS_APPROVED);
-                $sessions[$key]->status     = $this->session_status($value);
+                $sessions[$key]->duration   = $this->minutes_to_hours($value->duration);
+                $sessions[$key]->dates      = $this->get_session_dates($value->id);
+                $sessions[$key]->customdata = $this->get_session_customdata($value->id);
+                $sessions[$key]->attendees  = $this->get_session_attendees_count($value->id, MDL_F2F_STATUS_APPROVED);
+                $sessions[$key]->status     = $this->get_session_status($value);
             }
         }
 
@@ -548,7 +548,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * @param int $minutes the session duration to format
      * @return int
      */
-    protected function session_minutes_to_hours($minutes) {
+    protected function minutes_to_hours($minutes) {
         if (!intval($minutes)) {
             return 0;
         }
@@ -567,7 +567,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * @param int $session the current session record ID
      * @return array
      */
-    protected function session_get_dates($session) {
+    protected function get_session_dates($session) {
         global $DB;
 
         $dates = array();
@@ -593,7 +593,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * @param integer $roleid (optional for checking specific role types)
      * @return array
      */
-    public function get_trainers($session, $roleid=null) {
+    public function get_session_trainers($session, $roleid=null) {
         global $CFG, $DB;
 
         $params  = array();
@@ -633,12 +633,12 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
-     * Get all of the customdata for a given session
+     * Get all of the custom data for a given session
      *
      * @param int $session the current session record ID
      * @return array
      */
-    protected function session_get_customdata($session) {
+    protected function get_session_customdata($session) {
         global $DB;
 
         $customdata = $DB->get_records_sql('SELECT f.shortname, d.data
@@ -661,7 +661,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * @param object $session record from the facetoface_sessions table
      * @return bool
      */
-    public function session_status($session) {
+    public function get_session_status($session) {
         $timenow = time();
         if (!$session->datetimeknown) {
             return FACETOFACE_NO_DATES;
@@ -684,12 +684,12 @@ class facetoface implements cacheable_object, IteratorAggregate  {
 
 
     /**
-     * Return a list of all customfields configured as part
+     * Return a list of all custom fields configured as part
      * of the Face-to-Face global settings
      *
      * @return array|null
      */
-    public function get_customfields() {
+    public function get_custom_fields() {
         global $DB;
 
         static $fields = null;
@@ -709,7 +709,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * @param int $status MDL_F2F_STATUS_* constant (optional)
      * @return int
      */
-    public function get_attendees_count($session, $status=MDL_F2F_STATUS_BOOKED) {
+    public function get_session_attendees_count($session, $status=MDL_F2F_STATUS_BOOKED) {
         global $CFG, $DB;
 
         $sql = 'SELECT COUNT(s.id)
@@ -722,9 +722,16 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         return $DB->count_records_sql($sql, array('session' => $session, 'status' => $status));
     }
 
-    public function get_current_booking_submission($user=0, $includecancellations=false) {
+    /**
+     * Return a users current booking submission within the Face-to-Face instance
+     *
+     * @param integer $userid the current user ID to fetch for
+     * @param bool $includecancellations if true also return a cancelled submission
+     * @return object|null
+     */
+    public function get_user_current_booking_submission($userid=0, $includecancellations=false) {
         $submission = null;
-        if ($submissions = $this->user_booking_submissions($user, $includecancellations)) {
+        if ($submissions = $this->get_user_booking_submissions($userid, $includecancellations)) {
             $submission = array_shift($submissions);
         }
 
@@ -735,17 +742,17 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * Return a users is current bookings on a session within
      * the Face-to-Face module
      *
-     * @param int $user the current user ID to fetch submissions for
+     * @param int $userid the current user ID to fetch submissions for
      * @param bool $includecancellations if true also return cancelled bookings
      * @return array
      */
-    public function user_booking_submissions($user=0, $includecancellations=false) {
+    public function get_user_booking_submissions($userid=0, $includecancellations=false) {
         global $DB, $USER;
 
-        if (!$user) {
-            $user = $USER->id;
+        if (!$userid) {
+            $userid = $USER->id;
         }
-        $params = array('facetoface' => $this->id, 'user' => $user);
+        $params = array('facetoface' => $this->id, 'user' => $userid);
 
         // Don't include cancellations.
         $where = '';
@@ -813,7 +820,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      *
      * @return array
      */
-    private function get_userfields() {
+    private function get_user_fields() {
         global $CFG;
 
         static $fields = null;
@@ -874,7 +881,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      */
     private function export_write_header(&$worksheet) {
         $pos = 0;
-        $customfields = $this->get_customfields();
+        $customfields = $this->get_custom_fields();
         foreach ($customfields as $field) {
             if (!empty($field->showinsummary)) {
                 $worksheet->write_string(0, $pos++, $field->name);
@@ -892,7 +899,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
             }
         }
 
-        $userfields = $this->get_userfields();
+        $userfields = $this->get_user_fields();
         foreach ($userfields as $shortname => $fullname) {
             $worksheet->write_string(0, $pos++, $fullname);
         }
@@ -917,9 +924,9 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     private function export_write_attendance(&$worksheet, $start=1, $location=null) {
         global $CFG, $DB;
         $params  = array();
-        $customfields = $this->get_customfields();
+        $customfields = $this->get_custom_fields();
         $trainerroles = $this->get_trainer_roles();
-        $userfields   = $this->get_userfields();
+        $userfields   = $this->get_user_fields();
 
         // Build optional location query.
         $locationsql = '';
@@ -973,7 +980,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
             // Build signups list for worksheet.
             foreach ($signups as $signup) {
                 $userid = $signup->id;
-                if ($customuserfields = facetoface_get_user_customfields($userid, $userfields)) {
+                if ($customuserfields = facetoface_get_user_custom_fields($userid, $userfields)) {
                     foreach ($customuserfields as $fieldname => $value) {
                         if (!isset($signup->$fieldname)) {
                             $signup->$fieldname = $value;
@@ -1039,7 +1046,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                     }
                 }
             }
-            $sessiontrainers = $this->get_trainers($session);
+            $sessiontrainers = $this->get_session_trainers($session);
             $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
 
             // Session has attendees.

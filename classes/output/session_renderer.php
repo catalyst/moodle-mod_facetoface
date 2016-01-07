@@ -99,7 +99,7 @@ class session_renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function sessions_table($instance, $sessions, $cm) {
-        global $OUTPUT, $USER;
+        global $OUTPUT;
 
         $context = context_module::instance($cm->id);
         $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
@@ -113,7 +113,7 @@ class session_renderer extends \plugin_renderer_base {
 
         // Add customfields to header and mark which are shown.
         $shownfields = array();
-        $customfields = $instance->get_customfields();
+        $customfields = $instance->get_custom_fields();
         foreach ($customfields as $field) {
             if (!empty($field->showinsummary) && $field->showinsummary) {
                 $table->head[$field->shortname] = format_string($field->name);
@@ -159,7 +159,7 @@ class session_renderer extends \plugin_renderer_base {
             $row['options']  = $this->session_options($instance, $session, $viewattendees, $editsessions);
 
             // Create the row and set the CSS class.
-            $submission = $instance->get_current_booking_submission($USER->id);
+            $submission = $instance->get_user_current_booking_submission();
             $row = new html_table_row($row);
             if ($session->status == FACETOFACE_IN_PROGRESS || $session->status == FACETOFACE_FINISHED) {
                 $row->attributes = array('class' => 'dimmed_text');
@@ -267,7 +267,7 @@ class session_renderer extends \plugin_renderer_base {
 
         // Get the users current booking submission on a session within
         // this Face-to-Face instance.
-        $submission = $instance->get_current_booking_submission($USER->id);
+        $submission = $instance->get_user_current_booking_submission($USER->id);
 
         $timenow = time();
         $status = get_string('bookingopen', 'facetoface');
@@ -294,8 +294,6 @@ class session_renderer extends \plugin_renderer_base {
      * @return string HTML
      */
     public function session_options($instance, $session, $viewattendees, $editsessions) {
-        global $USER;
-
         $options = array();
         if ($editsessions) {
 
@@ -337,7 +335,7 @@ class session_renderer extends \plugin_renderer_base {
         $submission = null;
         $params = array('s' => $session->id, 'backtoallsessions' => $session->facetoface);
         $signupurl = new moodle_url('/mod/facetoface/signup.php', $params);
-        if ($submissions = $instance->user_booking_submissions($USER->id)) {
+        if ($submissions = $instance->get_user_booking_submissions()) {
             $submission = array_shift($submissions);
             if ($submission && $submission->sessionid == $session->id) {
                 $html .= html_writer::empty_tag('br');

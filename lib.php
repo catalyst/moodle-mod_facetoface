@@ -1246,7 +1246,7 @@ function facetoface_get_userfields() {
  *
  * @param array $fieldstoinclude Limit the fields returned/cached to these ones (optional)
  */
-function facetoface_get_user_customfields($userid, $fieldstoinclude=false) {
+function facetoface_get_user_custom_fields($userid, $fieldstoinclude=false) {
     global $CFG, $DB;
 
     // Cache all lookup.

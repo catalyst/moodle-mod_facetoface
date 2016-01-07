@@ -95,7 +95,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             if ($viewattendees) {
                 $facetoface = facetoface::get($instance->id);
                 $totalattendees = 0;
-                if ($sessions = $facetoface->get_sessionslist()) {
+                if ($sessions = $facetoface->get_sessions_list()) {
                     foreach ($sessions as $session) {
                         $totalattendees += $session->attendees;
                     }
