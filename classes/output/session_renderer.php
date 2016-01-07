@@ -34,6 +34,7 @@ use \html_table;
 use \html_table_row;
 use \moodle_url;
 use \context_module;
+use \context_course;
 use \pix_icon;
 
 class session_renderer extends \plugin_renderer_base {
@@ -58,6 +59,86 @@ class session_renderer extends \plugin_renderer_base {
         }
 
         return '';
+    }
+
+    /**
+     * Render a single session from a Face-to-Face instance. This is a
+     * two column table with each session data displayed with key and value
+     * on a single row rather than by column.
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-Face session object
+     * @param object $cm the Face-to-Face course module
+     * @return string HTML
+     */
+    public function session($instance, $session, $cm) {
+        $context = context_module::instance($cm->id);
+
+        $table = new html_table();
+        $table->summary = get_string('sessionsdetailstablesummary', 'facetoface');
+        $table->attributes['class'] = 'generaltable facetoface-session';
+        $table->align = array('right', 'left');
+
+        // Session customfields.
+        $customfields = $instance->get_custom_fields();
+        foreach ($customfields as $field) {
+            if (!empty($session->customdata[$field->shortname])) {
+                $key   = $field->shortname;
+                $value = $session->customdata[$key]->data;
+                if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
+                    $values = explode(CUSTOMFIELD_DELIMITER, format_string($value));
+                    $data = implode(html_writer::empty_tag('br'), $values);
+                } else {
+                    $data = format_string($value);
+                }
+                $table->data[] = array(str_replace(' ', '&nbsp;', format_string($field->name)), $data);
+            }
+        }
+
+        // Dates and times.
+        $datetimestr = str_replace(' ', '&nbsp;', get_string('sessiondatetime', 'facetoface'));
+        $table->data[] = array($datetimestr, $this->session_dates_times($session));
+
+        // Capacity and if the session allows overbooking at all.
+        $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
+        $capacitystr = get_string('seatsavailable', 'facetoface');
+        $allowoverbookstr = '';
+        if ($viewattendees) {
+            $capacitystr = get_string('capacity', 'facetoface');
+            if ($session->allowoverbook) {
+                $allowoverbookstr = html_writer::empty_tag('br') . strtolower(get_string('allowoverbook', 'facetoface'));
+            }
+        }
+        $table->data[] = array($capacitystr, $this->session_capacity($session, $viewattendees) . $allowoverbookstr);
+
+        // Display waitlist notification.
+        $spaces = $session->capacity - $session->attendees;
+        if ($session->allowoverbook && $spaces < 1) {
+            $table->data[] = array('', get_string('userwillbewaitlisted', 'facetoface'));
+        }
+
+        // Display requires approval notification.
+        if ($instance->approvalreqd) {
+            $table->data[] = array('', get_string('sessionrequiresmanagerapproval', 'facetoface'));
+        }
+        if (!empty($session->duration)) {
+            $table->data[] = array(get_string('duration', 'facetoface'), format_duration($session->duration));
+        }
+        if (!empty($session->normalcost)) {
+            $table->data[] = array(get_string('normalcost', 'facetoface'), format_cost($session->normalcost));
+        }
+        if (!empty($session->discountcost)) {
+            $table->data[] = array(get_string('discountcost', 'facetoface'), format_cost($session->discountcost));
+        }
+        if (!empty($session->details)) {
+            $details = clean_text($session->details, FORMAT_HTML);
+            $table->data[] = array(get_string('details', 'facetoface'), $details);
+        }
+
+        // Session trainers.
+        echo $this->session_trainers($instance, $session, $table);
+
+        return html_writer::table($table);
     }
 
     /**
@@ -172,6 +253,37 @@ class session_renderer extends \plugin_renderer_base {
         }
 
         return html_writer::table($table);
+    }
+    /**
+     * Render the given sessions dates and times together
+     *
+     * @param object $session the Face-to-Face session object
+     * @return array
+     */
+    public function session_dates_times($session) {
+
+        $datestr = '';
+        if (!$session->datetimeknown) {
+            $datestr = get_string('wait-listed', 'facetoface');
+        } else {
+            $datetimes = array();
+            foreach ($session->dates as $date) {
+                $datetime  = userdate($date->timestart, get_string('strftimedate'));
+                $datetime .= ' ';
+                $datetime .= userdate($date->timestart, get_string('strftimetime'))
+                    . ' - ' . userdate($date->timefinish, get_string('strftimetime'));
+
+                $datetimes[] = $datetime;
+            }
+
+            // Render the strings and return to the
+            $spacer = html_writer::empty_tag('br');
+            if (!empty($datetimes)) {
+                $datestr = implode($spacer, $datetimes);
+            }
+        }
+
+        return $datestr;
     }
 
     /**
@@ -364,6 +476,46 @@ class session_renderer extends \plugin_renderer_base {
         }
 
         return get_string('none', 'facetoface');
+    }
+
+    /**
+     * Render a list of session trainers for the given instance
+     * sorted by the role type they have within the course
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-Face session object
+     * @param array $table (optional) table reference to add trainers to
+     * @return string
+     *
+     */
+    public function session_trainers($instance, $session, &$table=null) {
+        $context = context_course::instance($instance->course);
+        $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+
+        $html = '';
+        $roles = $instance->get_trainer_roles();
+        if (!empty($roles)) {
+            foreach ($roles as $id => $role) {
+                if (isset($session->trainers[$id]) && !empty($session->trainers[$id])) {
+                    $trainers = array();
+                    foreach ($session->trainers[$id] as $trainer) {
+                        $trainerurl = new moodle_url('/user/view.php', array('id' => $trainer->id));
+                        $trainers[] = html_writer::link($trainerurl, fullname($trainer, $viewfullnames));
+                    }
+                    if (!$table || !isset($table->data)) {
+                        $html .= format_string($role->name) . ': ';
+                        $html .= implode(', ', $trainers);
+                        $html .= html_writer::empty_tag('br');
+                    } else {
+                        $table->data[] = array(format_string($role->name), implode(', ', $trainers));
+                    }
+                }
+            }
+        }
+
+        if (!$table || !isset($table->data)) {
+            return $html;
+        }
     }
 }
 

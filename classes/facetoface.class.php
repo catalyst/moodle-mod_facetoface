@@ -459,6 +459,30 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
+     * Return a Face-to-Face session belonging to the instance
+     *
+     * @param int $sessionid a session ID number
+     * @return object $session
+     */
+    public function get_session($sessionid) {
+        global $DB;
+
+        // Fetch a single session.
+        $params = array($this->id, $sessionid);
+        $session = $DB->get_record_select('facetoface_sessions', 'facetoface = ? AND id = ?', $params);
+        if ($session) {
+            $session->duration   = $this->minutes_to_hours($session->duration);
+            $session->dates      = $this->get_session_dates($session->id);
+            $session->customdata = $this->get_session_customdata($session->id);
+            $session->attendees  = $this->get_session_attendees_count($session->id, MDL_F2F_STATUS_APPROVED);
+            $session->status     = $this->get_session_status($session);
+            $session->trainers   = $this->get_session_trainers($session);
+        }
+
+        return $session;
+    }
+
+    /**
      * Return the Face-to-Face instance sessions list
      *
      * @param string $location a specified location filter
@@ -801,6 +825,10 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     public function get_trainer_roles() {
         global $CFG, $DB;
 
+        $coursecontext = context_course::instance($this->course);
+        $coursenames = $DB->get_records('role_names', array('contextid' => $coursecontext->id), '', 'roleid,name');
+        $corenames   = role_fix_names(get_all_roles(), context_system::instance(), ROLENAME_ORIGINAL);
+
         // Check that roles have been selected.
         if (empty($CFG->facetoface_session_roles)) {
             return false;
@@ -809,6 +837,21 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         $roles = explode(',', $cleanroles);
         list($rolesql, $params) = $DB->get_in_or_equal($roles);
         if ($roles = $DB->get_records_select('role', "id {$rolesql} AND id <> 0", $params, '', 'id,name')) {
+            foreach ($roles as $id => $role) {
+
+                // If a local course name has been set use this.
+                if (isset($coursenames[$id]) && !empty($coursenames[$id]->name)) {
+                    $role->name = $coursenames[$id]->name;
+                }
+
+                // If no custom role name has been saved look for the system default.
+                if (empty($role->name)) {
+                    if (isset($corenames[$id]) && !empty($corenames[$id]->localname)) {
+                        $role->name = $corenames[$id]->localname;
+                    }
+                }
+            }
+
             return $roles;
         }
 

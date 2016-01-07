@@ -1,8 +1,8 @@
-body.path-mod-facetoface table.f2fsession td.c0 {
+body.path-mod-facetoface table.facetoface-session td.c0 {
     font-weight: bold;
     width: 12%;
 }
-body.path-mod-facetoface table.f2fsession {
+body.path-mod-facetoface table.facetoface-session {
     width: 100%;
 }
 table.table90 {
@@ -19,7 +19,7 @@ table.inlinetable {
 tr.highlight td.cell {
     background-color: #AAFFAA;
 }
-a.f2fsessionlinks, td.f2fsessionnotice, span.f2fsessionnotice {
+a.f2fsessionlinks, td.facetoface-sessionnotice, span.facetoface-sessionnotice {
     font-size: 11px;
     font-weight: bold;
     line-height: 14px;
@@ -44,4 +44,3 @@ body#page-mod-facetoface-view .locationfilter {
     display: block;
     clear: both;
 }
-
