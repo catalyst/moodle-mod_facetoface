@@ -74,11 +74,10 @@ class attendance_renderer extends \plugin_renderer_base {
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
      * @param object $cm the Face-to-Face course module
-     * @param int $returnto the current return to page ID
      * @param bool $takeattendance if true the user is taking attendance
      * @return string HTML
      */
-    public function session_attendees($instance, $session, $cm, $returnto=0, $takeattendance=false) {
+    public function session_attendees($instance, $session, $cm, $takeattendance=false) {
         global $OUTPUT, $USER;
 
         if (empty($session->attendees) || !$session->attendees) {
@@ -90,7 +89,7 @@ class attendance_renderer extends \plugin_renderer_base {
         if ($takeattendance) {
             $statusoptions = $instance->get_booking_status_options($takeattendance);
             if (!empty($statusoptions)) {
-                $html .= $this->start_take_attendance_form($instance, $session, $returnto);
+                $html .= $this->start_take_attendance_form($instance, $session);
             }
         }
 
@@ -140,15 +139,10 @@ class attendance_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
-     * @param int $returnto the current return to page ID
      * @return string
      */
-    private function start_take_attendance_form($instance, $session, $returnto=0) {
+    private function start_take_attendance_form($instance, $session) {
         global $USER;
-
-        if (!$returnto) {
-            $returnto = $instance->id;
-        }
 
         $url = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id, 'takeattendance' => true));
         $html  = html_writer::start_tag('div', array('class' => 'saveattendance'));
@@ -156,7 +150,6 @@ class attendance_renderer extends \plugin_renderer_base {
         $html .= html_writer::tag('p', get_string('attendanceinstructions', 'facetoface'));
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
         $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $session->id));
-        $html .= html_writer::empty_tag('input', array('type' => 'hidden', ' name' => 'backtoallsessions', 'value' => $returnto));
 
         return $html;
     }
@@ -242,15 +235,10 @@ class attendance_renderer extends \plugin_renderer_base {
      * @param object $session the Face-to-face session instance
      * @param object $cm the Face-to-Face course module
      * @param array $requests the list of signup requests to display
-     * @param int $returnto the current return to page ID
      * @return string HTML
      */
-    public function session_requests($instance, $session, $cm, $requests, $returnto=0) {
+    public function session_requests($instance, $session, $cm, $requests) {
         global $USER, $OUTPUT;
-
-        if (!$returnto) {
-            $returnto = $instance->id;
-        }
 
         $html = '';
         if (empty($requests)) {
@@ -266,7 +254,6 @@ class attendance_renderer extends \plugin_renderer_base {
                 $html .= html_writer::start_tag('form', array('action' => $action->out(), 'method' => 'post'));
                 $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
                 $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $session->id));
-                $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'backtoallsessions', 'value' => $returnto)) . html_writer::end_tag('p');
             } else {
                 $html .= html_writer::tag('p', get_string('cannotapproveatcapacity', 'facetoface'));
             }
@@ -319,10 +306,9 @@ class attendance_renderer extends \plugin_renderer_base {
      * @param object $session the Face-to-face session instance
      * @param object $cm the Face-to-Face course module
      * @param array $cancellations the list of booking cancellations to display
-     * @param int $returnto the current return to page ID
      * @return string HTML
      */
-    public function session_cancellations($instance, $session, $cm, $cancellations, $returnto=0) {
+    public function session_cancellations($instance, $session, $cm, $cancellations) {
         global $OUTPUT;
 
         $table = new html_table();
@@ -354,5 +340,41 @@ class attendance_renderer extends \plugin_renderer_base {
         }
 
         return $html;
+    }
+
+    /**
+     * Render user action links depending on the type of action they
+     * are running
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-face session instance
+     * @return string HTML
+     */
+    public function user_action_links($instance, $session) {
+        $actions = array();
+        $context = $instance->get_context();
+
+        // Return to all sessions link.
+        $returnurl = new moodle_url('/mod/facetoface/view.php', array('f' => $instance->id));
+        $actions[] = html_writer::link($returnurl, get_string('viewallsessions', 'facetoface'));
+
+        // Add or remove attendees link.
+        if (has_capability('mod/facetoface:addattendees', $context) ||
+            has_capability('mod/facetoface:removeattendees', $context)) {
+            $editurl = new moodle_url('/mod/facetoface/editattendees.php', array('s' => $session->id));
+            $actions[] = html_writer::link($editurl, get_string('addremoveattendees', 'facetoface'));
+        }
+        // Take attendance link.
+        if (has_capability('mod/facetoface:takeattendance', $context) && $session->datetimeknown && $instance->has_session_started($session)) {
+            $attendanceurl = new moodle_url('attendees.php', array('s' => $session->id, 'takeattendance' => '1'));
+            $actions[] = html_writer::link($attendanceurl, get_string('takeattendance', 'facetoface')) . ' - ';
+        }
+
+        $html = '';
+        if (!empty($actions)) {
+            $html = implode(' - ', $actions);
+        }
+
+        return trim($html, ' - ');
     }
 }
