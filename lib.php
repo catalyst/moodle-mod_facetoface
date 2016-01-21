@@ -70,10 +70,8 @@ define('F2F_CAL_NONE',   0);
 define('F2F_CAL_COURSE', 1);
 define('F2F_CAL_SITE',   2);
 
-// Signup status codes (remember to update $MDL_F2F_STATUS).
-define('MDL_F2F_STATUS_USER_CANCELLED', 10);
-
-// SESSION_CANCELLED is not yet implemented.
+// ToDo: SESSION_CANCELLED is not yet implemented.
+define('MDL_F2F_STATUS_USER_CANCELLED',     10);
 define('MDL_F2F_STATUS_SESSION_CANCELLED',  20);
 define('MDL_F2F_STATUS_DECLINED',           30);
 define('MDL_F2F_STATUS_REQUESTED',          40);
@@ -88,7 +86,6 @@ define('MDL_F2F_STATUS_FULLY_ATTENDED',     100);
  * This array must match the status codes above, and the values
  * must equal the end of the constant name but in lower case
  */
-
 global $MDL_F2F_STATUS;
 $MDL_F2F_STATUS = array(
     MDL_F2F_STATUS_USER_CANCELLED      => 'user_cancelled',

@@ -74,17 +74,33 @@ class attendance_renderer extends \plugin_renderer_base {
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
      * @param object $cm the Face-to-Face course module
+     * @param int $returnto the current return to page ID
+     * @param bool $takeattendance if true the user is taking attendance
      * @return string HTML
      */
-    public function session_attendees($instance, $session, $cm) {
+    public function session_attendees($instance, $session, $cm, $returnto=0, $takeattendance=false) {
+        global $OUTPUT, $USER;
+
+        if (empty($session->attendees) || !$session->attendees) {
+            return $OUTPUT->notification(get_string('nosignedupusers', 'facetoface'));
+        }
+        $html = '';
+
+        // Start take attendance form.
+        if ($takeattendance) {
+            $statusoptions = $instance->get_booking_status_options($takeattendance);
+            if (!empty($statusoptions)) {
+                $html .= $this->start_take_attendance_form($instance, $session, $returnto);
+            }
+        }
+
         $context = context_module::instance($cm->id);
         $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
-
         $table = new html_table();
         $table->summary = get_string('attendeestablesummary', 'facetoface');
         $table->align = array('left');
         $table->size = array('100%');
-        $this->session_attendees_table_head($table);
+        $this->session_attendees_table_head($table, $takeattendance);
 
         // List attendees and any cost, discount and booking status details.
         foreach ($session->attendees as $attendee) {
@@ -98,12 +114,68 @@ class attendance_renderer extends \plugin_renderer_base {
                 $data = array_merge($data, $costdata);
             }
 
-            // Current booking status.
+            // Current booking status and attendance.
             $data[] = str_replace(' ', '&nbsp;', $instance->format_booking_status($attendee->statuscode));
+            if ($takeattendance && !empty($statusoptions)) {
+                $optionid = 'submissionid_' . $attendee->submissionid;
+                $status = $attendee->statuscode;
+                $select = html_writer::select($statusoptions, $optionid, $status);
+                $data[] = $select;
+            }
             $table->data[] = $data;
         }
 
-        return html_writer::table($table);
+        $html .= html_writer::table($table);
+
+        // End attendance form.
+        if ($takeattendance && !empty($statusoptions)) {
+            $html .= $this->end_take_attendance_form();
+        }
+
+        return $html;
+    }
+
+    /**
+     * Helper function to render the start of the take attendance form
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-face session instance
+     * @param int $returnto the current return to page ID
+     * @return string
+     */
+    private function start_take_attendance_form($instance, $session, $returnto=0) {
+        global $USER;
+
+        if (!$returnto) {
+            $returnto = $instance->id;
+        }
+
+        $url = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id, 'takeattendance' => true));
+        $html  = html_writer::start_tag('div', array('class' => 'saveattendance'));
+        $html .= html_writer::start_tag('form', array('action' => $url, 'method' => 'post'));
+        $html .= html_writer::tag('p', get_string('attendanceinstructions', 'facetoface'));
+        $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
+        $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $session->id));
+        $html .= html_writer::empty_tag('input', array('type' => 'hidden', ' name' => 'backtoallsessions', 'value' => $returnto));
+
+        return $html;
+    }
+
+    /**
+     * Helper function to render the end of the take attendance form
+     *
+     * @return string
+     */
+    private function end_take_attendance_form() {
+        $html  = html_writer::start_tag('div', array('class' => 'saveattendance-buttons'));
+        $html .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('saveattendance', 'facetoface')));
+        $html .= '&nbsp;';
+        $html .= html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'cancelform', 'value' => get_string('cancel')));
+        $html .= html_writer::end_tag('div');
+        $html .= html_writer::end_tag('form');
+        $html .= html_writer::end_tag('div');
+
+        return $html;
     }
 
     /**
@@ -111,8 +183,9 @@ class attendance_renderer extends \plugin_renderer_base {
      * includes cost and discount columns if not hidden from display
      *
      * @param object $table by reference the table to add header info
+     * @param bool $takeattendance if true the user is taking attendance
      */
-    private function session_attendees_table_head(&$table) {
+    private function session_attendees_table_head(&$table, $takeattendance=false) {
         $table->head = array(get_string('name'));
 
         // Check if we are listing the attendees booking cost.
@@ -128,8 +201,15 @@ class attendance_renderer extends \plugin_renderer_base {
         }
 
         // Attendance or booking status.
-        $table->head[] = get_string('attendance', 'facetoface');
-        $table->align[] = 'center';
+        if ($takeattendance) {
+            $table->head[] = get_string('currentstatus', 'facetoface');
+            $table->align[] = 'center';
+            $table->head[] = get_string('attendedsession', 'facetoface');
+            $table->align[] = 'center';
+        } else {
+            $table->head[] = get_string('attendance', 'facetoface');
+            $table->align[] = 'center';
+        }
     }
 
     /**

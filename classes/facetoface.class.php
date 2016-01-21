@@ -459,6 +459,29 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
+     * Return a Face-to-Face booking status options. Optionally
+     * only the attendance statuses for marking.
+     *
+     * @param bool $takeattendance if true we are taking attendance so need post-session statuses
+     * @return array
+     */
+    public static function get_booking_status_options($takeattendance=false) {
+        global $MDL_F2F_STATUS;
+
+        $options = array();
+        if ($MDL_F2F_STATUS && !empty($MDL_F2F_STATUS)) {
+            foreach ($MDL_F2F_STATUS as $key => $value) {
+                if ($takeattendance && $key <= MDL_F2F_STATUS_BOOKED) {
+                    continue;
+                }
+                $options[$key] = get_string('status_' . $value, 'facetoface');
+            }
+        }
+
+        return $options;
+    }
+
+    /**
      * Return a Face-to-Face session belonging to the instance
      *
      * @param int $sessionid a session ID number
@@ -682,6 +705,9 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * - Not yet started
      * - In progress
      *
+     * Todo: check this as the logic with multiple dates might
+     * not be quite correct
+     *
      * @param object $session record from the facetoface_sessions table
      * @return bool
      */
@@ -706,6 +732,28 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         return $status;
     }
 
+    /**
+     * Returns true if the session has started, that is if one of the
+     * session dates is in the past.
+     *
+     * @param object $session the instance to check has started
+     * @return bool
+     */
+    public function has_session_started($session) {
+
+        if (!$session->datetimeknown) {
+            return false; // No date set.
+        }
+
+        $timenow = time();
+        foreach ($session->dates as $date) {
+            if ($date->timestart < $timenow) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /**
      * Return a list of all custom fields configured as part
@@ -724,6 +772,28 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         }
 
         return $fields;
+    }
+
+    /**
+     * Return a list of users who have requested to attend and require
+     * approval
+     *
+     * @param int $sessionid the session record ID
+     * @return array
+     */
+    public function get_session_requests($sessionid) {
+        global $DB;
+
+        $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
+        $usernamefields = get_all_user_name_fields(true);
+        $sql = "SELECT u.id, su.id AS signupid, {$usernamefields}, ss.timecreated AS timerequested
+                    FROM {facetoface_signups} su
+                    JOIN {facetoface_signups_status} ss ON su.id=ss.signupid
+                    JOIN {user} u ON u.id = su.userid
+                        WHERE su.sessionid = ? AND ss.superceded != 1 AND ss.statuscode = ?
+                        ORDER BY {$fullname}, ss.timecreated";
+
+        return $DB->get_records_sql($sql, array($sessionid, MDL_F2F_STATUS_REQUESTED));
     }
 
     /**
@@ -762,6 +832,135 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                     ORDER BY sign.timecreated ASC, ss.timecreated ASC", $params);
 
         return $attendees;
+    }
+
+    /**
+     * Take attendance for the given session with the array of submission IDs to
+     * attendance status codes
+     *
+     * @param object $session the session instance object
+     * @param array $attandance an array of submission IDs and attendance status codes
+     * @return array $errors
+     */
+    public function take_attendance($session, $attendance) {
+        global $USER;
+
+        // Session has no date or has not started yet.
+        if (!$session->datetimeknown || !$this->has_session_started($session)) {
+            return '';
+        }
+
+        $errors = array();
+        foreach ($attendance as $submissionid => $statuscode) {
+
+            $grade = null;
+            switch ($statuscode) {
+                case MDL_F2F_STATUS_NO_SHOW:
+                    $grade = 0;
+                    break;
+                case MDL_F2F_STATUS_PARTIALLY_ATTENDED:
+                    $grade = 50;
+                    break;
+                case MDL_F2F_STATUS_FULLY_ATTENDED:
+                    $grade = 100;
+                    break;
+            }
+            if (!$grade) {
+                continue;
+            }
+
+            // Set the submission booking status and then the grade as per core grading.
+            if ($this->set_user_booking_status($submissionid, $statuscode, $USER->id, '', $grade)) {
+                if (!$this->set_user_attendance_grade($submissionid, $grade)) {
+                    $errors[] = "F2F: could not mark '$submissionid' graded as " . $grade;
+                }
+            } else {
+                $errors[] = "F2F: could not mark '$submissionid' as " . $statuscode;
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Set an individual user attendance grade value
+     *
+     * @param int $submissionid the ID of the signup submission to be updated
+     * @param int $gradevalue grade value of the status if an attendance mark
+     * @return int|false the ID of the newly created signup status
+     */
+    public function set_user_attendance_grade($submissionid, $gradevalue, $userid=0) {
+        global $USER, $DB;
+
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+
+        $submission = $DB->get_record_sql("SELECT f.*, s.userid
+            FROM {facetoface_signups} s
+            JOIN {facetoface_sessions} fs ON s.sessionid = fs.id
+            JOIN {facetoface} f ON f.id = fs.facetoface
+            JOIN {course_modules} cm ON cm.instance = f.id
+            JOIN {modules} m ON m.id = cm.module
+                WHERE s.id = ? AND m.name='facetoface'", array($submissionid));
+
+        if ($submission) {
+            $timenow = time();
+
+            $grade = new stdclass();
+            $grade->userid       = $submission->userid;
+            $grade->rawgrade     = $gradevalue;
+            $grade->rawgrademin  = 0;
+            $grade->rawgrademax  = 100;
+            $grade->timecreated  = $timenow;
+            $grade->timemodified = $timenow;
+            $grade->usermodified = $userid;
+
+            // Core grade_item_update.
+            return facetoface_grade_item_update($submission, $grade);
+        }
+
+        return false;
+    }
+
+    /**
+     * Update the signup status of a particular booking submission
+     *
+     * @param int $submissionid the ID of the signup submission to be updated
+     * @param int $statuscode status code to set the signup submission to
+     * @param int $userid user ID of the user causing the status update
+     * @param string $note cancellation reason or other notes for the submission
+     * @param int $grade grade value of the status if an attendance mark
+     * @return int|false the ID of the newly created signup status
+     */
+    public function set_user_booking_status($submissionid, $statuscode, $userid=0, $note='', $grade=null) {
+        global $DB, $USER;
+
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+        $timenow = time();
+
+        $newstatus = new stdclass;
+        $newstatus->signupid    = $submissionid;
+        $newstatus->statuscode  = $statuscode;
+        $newstatus->createdby   = $userid;
+        $newstatus->timecreated = $timenow;
+        $newstatus->note        = $note;
+        $newstatus->grade       = $grade;
+        $newstatus->superceded  = 0;
+        $newstatus->mailed      = 0;
+        if ($newstatus->id = $DB->insert_record('facetoface_signups_status', $newstatus)) {
+
+            // Mark any previous signup_statuses as superceded.
+            $params   = array($submissionid, $newstatus->id);
+            $wheresql = 'signupid = ? AND ( superceded = 0 OR superceded IS NULL ) AND id != ?';
+            $DB->set_field_select('facetoface_signups_status', 'superceded', 1, $wheresql, $params);
+
+            return $newstatus->id;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -1016,7 +1215,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
         return $fields;
     }
 
-    /* Export attendance functionality */
+    /* Export attendance */
 
     /**
      * Export the attendance for a set of Face-to-Face sessions
@@ -1090,7 +1289,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
      * Write in the worksheet the given Face-to-Face attendance information
      * filtered by location
      *
-     * This function includes lots of custom SQL because it's otherwise
+     * This includes lots of custom SQL because it's otherwise
      * way too slow.
      *
      * @param object $worksheet currently open worksheet
