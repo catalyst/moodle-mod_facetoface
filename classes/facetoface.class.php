@@ -793,6 +793,39 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
+     * Return a list of users who have cancelled their booking to
+     * the given session
+     *
+     * @param object $session the session object instance
+     * @return array
+     */
+    public function get_session_cancellations($session) {
+        global $CFG, $DB;
+
+        // Previous successful booking that was superceded by a cancellation.
+        $instatus = array(MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED, MDL_F2F_STATUS_REQUESTED);
+        list($insql, $params) = $DB->get_in_or_equal($instatus, SQL_PARAMS_NAMED);
+        $params['cancelled'] = MDL_F2F_STATUS_USER_CANCELLED;
+        $params['session'] = $session->id;
+
+        // ToDo: can we fix this nasty SQL?
+        // Nasty SQL follows: load currently cancelled users, include most recent booked/waitlisted time also.
+        $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
+        $usernamefields = get_all_user_name_fields(true, 'u');
+        $sql = "SELECT u.id, {$usernamefields}, su.id AS signupid, MAX(ss.timecreated) AS timesignedup,
+                   c.timecreated AS timecancelled, " . $DB->sql_compare_text('c.note') . " AS cancelreason
+                FROM {facetoface_signups} su
+                JOIN {user} u ON u.id = su.userid
+                JOIN {facetoface_signups_status} c ON su.id = c.signupid AND c.statuscode = :cancelled AND c.superceded = 0
+                LEFT JOIN {facetoface_signups_status} ss ON su.id = ss.signupid AND ss.statuscode $insql AND ss.superceded = 1
+                    WHERE su.sessionid = :session
+            GROUP BY u.id, su.id, {$usernamefields}, c.timecreated, " . $DB->sql_compare_text('c.note') . "
+            ORDER BY {$fullname}, c.timecreated";
+
+        return $DB->get_records_sql($sql, $params);
+    }
+
+    /**
      * Return a list of users who have requested to attend and require
      * approval
      *

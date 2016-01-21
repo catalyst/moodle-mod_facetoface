@@ -311,4 +311,48 @@ class attendance_renderer extends \plugin_renderer_base {
 
         return $html;
     }
+
+    /**
+     * Render a list of session cancellations
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-face session instance
+     * @param object $cm the Face-to-Face course module
+     * @param array $cancellations the list of booking cancellations to display
+     * @param int $returnto the current return to page ID
+     * @return string HTML
+     */
+    public function session_cancellations($instance, $session, $cm, $cancellations, $returnto=0) {
+        global $OUTPUT;
+
+        $table = new html_table();
+        $table->summary = get_string('cancellationstablesummary', 'facetoface');
+        $table->head = array(
+            get_string('name'),
+            get_string('timesignedup', 'facetoface'),
+            get_string('timecancelled', 'facetoface'),
+            get_string('cancelreason', 'facetoface')
+        );
+        $table->align = array('left', 'center', 'center');
+
+        $context = context_module::instance($cm->id);
+        $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+        foreach ($cancellations as $attendee) {
+            $data = array();
+            $link = new moodle_url('/user/view.php', array('id' => $attendee->id, 'course' => $instance->course));
+            $data[] = html_writer::link($link, format_string(fullname($attendee, $viewfullnames)));
+            $data[] = userdate($attendee->timesignedup, get_string('strftimedatetime'));
+            $data[] = userdate($attendee->timecancelled, get_string('strftimedatetime'));
+            $data[] = format_string($attendee->cancelreason);
+            $table->data[] = $data;
+        }
+
+        $html = '';
+        if (!empty($table->data)) {
+            $html  = $OUTPUT->heading(get_string('cancellations', 'facetoface'));
+            $html .= html_writer::table($table);
+        }
+
+        return $html;
+    }
 }
