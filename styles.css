@@ -39,6 +39,7 @@ body#page-mod-facetoface-view #facetoface-previous-sessions {
     clear: both;
     margin: auto 5px;
 }
+body#page-mod-facetoface-attendees .saverequests-buttons,
 body#page-mod-facetoface-attendees .saveattendance-buttons,
 body#page-mod-facetoface-view .locationfilter {
     float: right;

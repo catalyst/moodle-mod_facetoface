@@ -497,7 +497,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
             $session->duration   = $this->minutes_to_hours($session->duration);
             $session->dates      = $this->get_session_dates($session->id);
             $session->customdata = $this->get_session_customdata($session->id);
-            $session->attendees  = $this->get_session_attendees($session->id, MDL_F2F_STATUS_APPROVED);
+            $session->attendees  = $this->get_session_attendees($session->id);
             $session->status     = $this->get_session_status($session);
             $session->trainers   = $this->get_session_trainers($session);
         }
@@ -544,7 +544,7 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                 $sessions[$key]->duration   = $this->minutes_to_hours($value->duration);
                 $sessions[$key]->dates      = $this->get_session_dates($value->id);
                 $sessions[$key]->customdata = $this->get_session_customdata($value->id);
-                $sessions[$key]->attendees  = $this->get_session_attendees($value->id, MDL_F2F_STATUS_APPROVED);
+                $sessions[$key]->attendees  = $this->get_session_attendees($value->id);
                 $sessions[$key]->status     = $this->get_session_status($value);
             }
         }
@@ -756,6 +756,24 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     }
 
     /**
+     * Return whether or not the session has any capacity left
+     * for further signups
+     *
+     * @param object $session the current session instance
+     * @param object $context the Face-to-Face context instance
+     * @return bool
+     */
+    public function session_has_capacity($session, $context) {
+        if ($session->attendees >= $session->capacity) {
+            if (!$context || !has_capability('mod/facetoface:overbook', $context)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
      * Return a list of all custom fields configured as part
      * of the Face-to-Face global settings
      *
@@ -794,6 +812,185 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                         ORDER BY {$fullname}, ss.timecreated";
 
         return $DB->get_records_sql($sql, array($sessionid, MDL_F2F_STATUS_REQUESTED));
+    }
+
+    /**
+     * Mark session booking requests as approved, denied or still to be
+     * decided
+     *
+     * @param object $session the current session instance
+     * @param array $requests the list of user booking requests
+     * @return bool
+     */
+    public function session_approve_requests($session, $requests=array()) {
+        global $USER, $DB;
+
+        foreach ($requests as $userid => $status) {
+            if (!$attendee = $this->get_session_attendee($session, $userid)) {
+                continue;
+            }
+
+            // Update booking status.
+            switch ($status) {
+                case 1:
+                    $this->set_user_booking_status($attendee->submissionid, MDL_F2F_STATUS_DECLINED, $USER->id);
+                    // ToDo: send cancellation notice.
+                    break;
+                case 2:
+                    $this->set_user_booking_status($attendee->submissionid, MDL_F2F_STATUS_APPROVED, $USER->id);
+                    if ($this->session_has_capacity($session, $this->get_context())) {
+                        $status = MDL_F2F_STATUS_BOOKED;
+                    } else {
+                        if ($session->allowoverbook) {
+                            $status = MDL_F2F_STATUS_WAITLISTED;
+                        }
+                    }
+
+                    // Sign user up to session.
+                    if (!$this->user_signup($session, $status, $attendee->id, $attendee->discountcode, $attendee->notificationtype)) {
+                        continue;
+                    }
+                    break;
+
+                case 0:
+                default:
+                    continue;
+            }
+        }
+
+        return true;
+    }
+
+    // ToDo: implement add_session_to_calendar.
+    //public function add_session_to_calendar(...) {
+    //}
+
+    // ToDo: implement send_user_notification.
+    //public function send_user_notification(...) {
+    //}
+
+    /**
+     * Sign a user up to a session and optionally notify them of their booking
+     *
+     * @param object $session the session to sign up to
+     * @param int $statuscode the booking status code to use
+     * @param int $userid optional user ID otherwise logged in user is selected
+     * @param string $dicountcode optional booking discount code
+     * @param int $notification optional the type of notification to send the user
+     * @param bool $notify optional if false no notification will be sent at all
+     * @return int|false
+     */
+    public function user_signup($session, $statuscode, $userid=0, $discountcode=null, $notification=null, $notify=true) {
+        global $CFG, $DB, $USER;
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+
+        // Fetch existing signup record or build a new one.
+        if (!$signup = $DB->get_record('facetoface_signups', array('sessionid' => $session->id, 'userid' => $userid))) {
+            $signup = new stdclass;
+            $signup->sessionid = $session->id;
+            $signup->userid    = $userid;
+        }
+        $signup->mailedreminder   = 0;
+        $signup->notificationtype = $notification;
+        $signup->discountcode     = null;
+        if ($discountcode && !empty($discountcode)) {
+            $signup->discountcode = trim(strtoupper($discountcode));
+        }
+
+        // Update/insert the signup record.
+        if (!empty($signup->id)) {
+            if (!$DB->update_record('facetoface_signups', $signup)) {
+                $signup->id = null;
+            }
+        } else {
+            $signup->id = $DB->insert_record('facetoface_signups', $signup);
+        }
+        if (!$signup->id) {
+            print_error('error:couldnotupdatef2frecord', 'facetoface');
+            return false;
+        }
+
+        // Compare status against any approval requirements.
+        if ($this->approvalreqd) {
+            $currentstatus = $DB->get_field('facetoface_signups_status', 'statuscode', array('signupid' => $signup->id, 'superceded' => 0));
+            if ($currentstatus != MDL_F2F_STATUS_APPROVED) {
+                if ($session->datetimeknown) {
+                    $statuscode = MDL_F2F_STATUS_REQUESTED;
+                } else {
+                    $statuscode = MDL_F2F_STATUS_WAITLISTED;
+                }
+            }
+        }
+
+        // Update actual status record.
+        if (!$this->set_user_booking_status($signup->id, $statuscode, $userid)) {
+            print_error('error:f2ffailedupdatestatus', 'facetoface');
+            return false;
+        }
+
+        // If the session was booked or wait-listed update some other features.
+        if (in_array($statuscode, array(MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED))) {
+            $timenow = time();
+
+            // Add to user calendar -- if Face-to-Face usercalentry is set to true.
+            if ($this->usercalentry) {
+                // ToDo: update calendar entry.
+                //$this->add_session_to_calendar(...);
+            }
+
+            // Set completion to in-progress.
+            $course = get_course($this->course);
+            $completion = new completion_info($course);
+            if ($completion->is_enabled()) {
+                $ccdetails = array(
+                    'course' => $course->id,
+                    'userid' => $userid,
+                );
+
+                $cc = new completion_completion($ccdetails);
+                $cc->mark_inprogress($timenow);
+            }
+        }
+
+        // If set to notify the user and the session has not
+        // yet started send the notifications.
+        if ($notify && !$this->has_session_started($session)) {
+            // ToDo: send user notification.
+            //$this->send_user_notification(...);
+        }
+
+        return $signup->id;
+    }
+
+    /**
+     * Return a single session attendee and their current booking
+     * status
+     *
+     * @param object $session the current session object instance
+     * @param int $userid the user ID to return the booking for
+     * @return object|false
+     */
+    public function get_session_attendee($session, $userid) {
+        global $CFG, $DB;
+
+        $attendee = $DB->get_record_sql("
+            SELECT u.id, su.id AS submissionid, u.firstname, u.lastname,
+            u.email, s.discountcost, su.discountcode, su.notificationtype,
+            f.id AS facetofaceid, f.course, ss.grade, ss.statuscode
+                FROM {facetoface} f
+                JOIN {facetoface_sessions} s ON s.facetoface = f.id
+                JOIN {facetoface_signups} su ON s.id = su.sessionid
+                JOIN {facetoface_signups_status} ss ON su.id = ss.signupid
+                JOIN {user} u ON u.id = su.userid
+                    WHERE s.id = ? AND ss.superceded != 1 AND u.id = ?", array($session->id, $userid));
+
+        if (!$attendee) {
+            return false;
+        }
+
+        return $attendee;
     }
 
     /**

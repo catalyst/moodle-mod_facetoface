@@ -234,4 +234,81 @@ class attendance_renderer extends \plugin_renderer_base {
 
         return false;
     }
+
+    /**
+     * Render a list of session attendees (signed up users)
+     *
+     * @param object $instance the Face-to-face record instance
+     * @param object $session the Face-to-face session instance
+     * @param object $cm the Face-to-Face course module
+     * @param array $requests the list of signup requests to display
+     * @param int $returnto the current return to page ID
+     * @return string HTML
+     */
+    public function session_requests($instance, $session, $cm, $requests, $returnto=0) {
+        global $USER, $OUTPUT;
+
+        if (!$returnto) {
+            $returnto = $instance->id;
+        }
+
+        $html = '';
+        if (empty($requests)) {
+            $html .= $OUTPUT->notification(get_string('noactionableunapprovedrequests', 'facetoface'));
+        } else {
+            $context = context_module::instance($cm->id);
+            $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
+
+            $attendees = count($session->attendees);
+            $canbookuser = $instance->session_has_capacity($session, $context);
+            if ($canbookuser) {
+                $action = new moodle_url('attendees.php', array('s' => $session->id));
+                $html .= html_writer::start_tag('form', array('action' => $action->out(), 'method' => 'post'));
+                $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
+                $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $session->id));
+                $html .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'backtoallsessions', 'value' => $returnto)) . html_writer::end_tag('p');
+            } else {
+                $html .= html_writer::tag('p', get_string('cannotapproveatcapacity', 'facetoface'));
+            }
+
+            $table = new html_table();
+            $table->summary = get_string('requeststablesummary', 'facetoface');
+            $table->head = array(get_string('name'), get_string('timerequested', 'facetoface'));
+            $table->align = array('left', 'center');
+            if ($canbookuser) {
+                $table->head[] = get_string('decidelater', 'facetoface');
+                $table->head[] = get_string('decline', 'facetoface');
+                $table->head[] = get_string('approve', 'facetoface');
+                $table->align[] = 'center';
+                $table->align[] = 'center';
+                $table->align[] = 'center';
+            }
+
+            foreach ($requests as $attendee) {
+                $data = array();
+                $link = new moodle_url('/user/view.php', array('id' => $attendee->id, 'course' => $instance->course));
+                $data[] = html_writer::link($link, format_string(fullname($attendee, $viewfullnames)));
+                $data[] = userdate($attendee->timerequested, get_string('strftimedatetime'));
+
+                if ($canbookuser) {
+                    $name = "requests[{$attendee->id}]";
+                    $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => $name, 'value' => '0', 'checked' => 'checked'));
+                    $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => $name, 'value' => '1'));
+                    $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => $name, 'value' => '2'));
+                }
+                $table->data[] = $data;
+            }
+            $html .= html_writer::table($table);
+
+            // End of requests form.
+            if ($canbookuser) {
+                $html .= html_writer::start_tag('div', array('class' => 'saverequests-buttons'));
+                $html .= html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('updaterequests', 'facetoface')));
+                $html .= html_writer::end_tag('div');
+                $html .= html_writer::end_tag('form');
+            }
+        }
+
+        return $html;
+    }
 }
