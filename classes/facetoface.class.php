@@ -897,6 +897,10 @@ class facetoface implements cacheable_object, IteratorAggregate  {
     //public function add_session_to_calendar(...) {
     //}
 
+    // ToDo: implement delete_session_from_calendar.
+    //public function delete_session_from_calendar(...) {
+    //}
+
     // ToDo: implement send_user_notification.
     //public function send_user_notification(...) {
     //}
@@ -1024,6 +1028,10 @@ class facetoface implements cacheable_object, IteratorAggregate  {
 
         return $attendee;
     }
+
+    // ToDo: implement update_session_attendees($session).
+    //public function update_session_attendees($session) {
+    //}
 
     /**
      * Return a list of attendees signed up to a the Face-to-Face session
@@ -1242,6 +1250,35 @@ class facetoface implements cacheable_object, IteratorAggregate  {
                     AND ss.superceded != 1
                     {$where}
                     ORDER BY s.timecreated DESC", $params);
+    }
+
+    /**
+     * Returns the effective cost of a session depending on the presence
+     * or absence of a discount code.
+     *
+     * @param object $session the session instance
+     * @param string $reason the reason for the cancellation
+     * @param int $userid the ID of the user who is cancelling the booking
+     * @return array $errors
+     */
+    public function cancel_user_booking($session, $reason=null, $userid=0) {
+        global $USER;
+        if (!$userid) {
+            $userid = $USER->id;
+        }
+
+        if ($submission = $this->get_user_current_booking_submission($userid)) {
+            if ($this->set_user_booking_status($submission->id, MDL_F2F_STATUS_USER_CANCELLED, $userid, $reason)) {
+                // ToDo: implement delete_session_from_calendar(...);
+                // $this->delete_session_from_calendar(...);
+
+                // ToDo: implement update_session_attendees($session);
+                // $this->update_session_attendees($session);
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

@@ -32,23 +32,18 @@ defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/lib/formslib.php');
 
-class mod_facetoface_cancelsignup_form extends moodleform {
+class mod_facetoface_reason_form extends moodleform {
 
     public function definition() {
+        global $OUTPUT;
         $mform =& $this->_form;
-
-        $mform->addElement('header', 'general', get_string('cancelbooking', 'facetoface'));
 
         $mform->addElement('hidden', 's', $this->_customdata['s']);
         $mform->setType('s', PARAM_INT);
 
-        $mform->addElement('hidden', 'backtoallsessions', $this->_customdata['backtoallsessions']);
-        $mform->setType('backtoallsessions', PARAM_INT);
-
-        $mform->addElement('html', get_string('cancellationconfirm', 'facetoface')); // Instructions.
-
-        $mform->addElement('text', 'cancelreason', get_string('cancelreason', 'facetoface'), 'size="60" maxlength="255"');
-        $mform->setType('cancelreason', PARAM_TEXT);
+        $styles = 'cols="50" rows="10" maxlength="255"';
+        $mform->addElement('textarea', 'reason', get_string('cancelreason', 'facetoface'), $styles);
+        $mform->setType('reason', PARAM_TEXT);
 
         $buttonarray = array();
         $buttonarray[] =& $mform->createElement('submit', 'submitbutton', get_string('yes'));
