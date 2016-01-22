@@ -125,19 +125,19 @@ if (!$takeattendance) {
     // Render the more detailed session information view.
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('facetofacesession', 'facetoface'));
-    echo $sessionrenderer->session($facetoface, $session, $cm);
+    echo $sessionrenderer->session($facetoface, $session);
 
     // Session attendees list.
     require_capability('mod/facetoface:viewattendees', $context);
     echo $OUTPUT->heading(get_string('attendees', 'facetoface'));
-    echo $attendancerenderer->session_attendees($facetoface, $session, $cm);
+    echo $attendancerenderer->session_attendees($facetoface, $session);
 
     // If there are booking requests show these.
     if (has_capability('mod/facetoface:takeattendance', $context)) {
-        $requests = $facetoface->get_session_requests($session->id);
+        $requests = $facetoface->get_session_requests($session);
         if ($requests && !empty($requests)) {
             echo $OUTPUT->heading(get_string('unapprovedrequests', 'facetoface'));
-            echo $attendancerenderer->session_requests($facetoface, $session, $cm, $requests);
+            echo $attendancerenderer->session_requests($facetoface, $session, $requests);
         }
     }
 
@@ -145,7 +145,7 @@ if (!$takeattendance) {
     if (has_capability('mod/facetoface:viewcancellations', $context)) {
         $cancellations = $facetoface->get_session_cancellations($session);
         if ($cancellations && !empty($cancellations)) {
-            echo $attendancerenderer->session_cancellations($facetoface, $session, $cm, $cancellations);
+            echo $attendancerenderer->session_cancellations($facetoface, $session, $cancellations);
         }
     }
 
@@ -198,7 +198,7 @@ if (!$takeattendance) {
     // Render the more detailed session information view.
     echo $OUTPUT->header();
     echo $OUTPUT->heading(get_string('facetofacesession', 'facetoface'));
-    echo $sessionrenderer->session($facetoface, $session, $cm);
+    echo $sessionrenderer->session($facetoface, $session);
 
 
     // Make sure the session has already started to take attendance.
@@ -206,7 +206,7 @@ if (!$takeattendance) {
     if ($session->datetimeknown && !$facetoface->has_session_started($session)) {
         echo $OUTPUT->notification(get_string('error:canttakeattendanceforunstartedsession', 'facetoface'));
     } else {
-        echo $attendancerenderer->session_attendees($facetoface, $session, $cm, $takeattendance);
+        echo $attendancerenderer->session_attendees($facetoface, $session, $takeattendance);
     }
 }
 

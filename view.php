@@ -104,7 +104,7 @@ echo $renderer->introduction($facetoface, $cm);
 
 // Add new session link.
 $sessionrenderer = $PAGE->get_renderer('mod_facetoface', 'session');
-echo $sessionrenderer->add_session_link($facetoface, $cm);
+echo $sessionrenderer->add_session_link($facetoface);
 
 // Session location filter.
 $locations = $facetoface->get_locations();
@@ -115,12 +115,12 @@ if (!empty($locations)) {
 // Session listing.
 $sessions = $facetoface->get_sessions_list($location);
 $sortedsessions = $facetoface->sort_sessions_list($sessions);
-echo $sessionrenderer->view_sessions_list($facetoface, $sortedsessions, $cm);
+echo $sessionrenderer->view_sessions_list($facetoface, $sortedsessions);
 
 // Attendance export form.
 if (!empty($sortedsessions)) {
     $attendancerenderer = $PAGE->get_renderer('mod_facetoface', 'attendance');
-    echo $attendancerenderer->attendees_export_form($facetoface, $cm, $location);
+    echo $attendancerenderer->attendees_export_form($facetoface, $location);
 }
 
 echo $OUTPUT->footer($course);

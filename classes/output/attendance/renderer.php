@@ -40,14 +40,13 @@ class attendance_renderer extends \plugin_renderer_base {
      * Render a form to export attendees for the Face-to-Face sessions
      *
      * @param object $instance the Face-to-face record instance
-     * @param object $cm the Face-to-Face course module
      * @param string $location the location filter string if used
      * @return string HTML
      */
-    public function attendees_export_form($instance, $cm, $location) {
+    public function attendees_export_form($instance, $location) {
 
         $html = '';
-        $context = context_module::instance($cm->id);
+        $context = $instance->get_context();
         if (has_capability('mod/facetoface:viewattendees', $context)) {
             $formats = array(
                 'excel' => get_string('excelformat', 'facetoface'),
@@ -73,11 +72,10 @@ class attendance_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
-     * @param object $cm the Face-to-Face course module
      * @param bool $takeattendance if true the user is taking attendance
      * @return string HTML
      */
-    public function session_attendees($instance, $session, $cm, $takeattendance=false) {
+    public function session_attendees($instance, $session, $takeattendance=false) {
         global $OUTPUT, $USER;
 
         if (empty($session->attendees) || !$session->attendees) {
@@ -93,7 +91,7 @@ class attendance_renderer extends \plugin_renderer_base {
             }
         }
 
-        $context = context_module::instance($cm->id);
+        $context = $instance->get_context();
         $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
         $table = new html_table();
         $table->summary = get_string('attendeestablesummary', 'facetoface');
@@ -233,18 +231,17 @@ class attendance_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
-     * @param object $cm the Face-to-Face course module
      * @param array $requests the list of signup requests to display
      * @return string HTML
      */
-    public function session_requests($instance, $session, $cm, $requests) {
+    public function session_requests($instance, $session, $requests) {
         global $USER, $OUTPUT;
 
         $html = '';
         if (empty($requests)) {
             $html .= $OUTPUT->notification(get_string('noactionableunapprovedrequests', 'facetoface'));
         } else {
-            $context = context_module::instance($cm->id);
+            $context = $instance->get_context();
             $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 
             $attendees = count($session->attendees);
@@ -304,11 +301,10 @@ class attendance_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-face session instance
-     * @param object $cm the Face-to-Face course module
      * @param array $cancellations the list of booking cancellations to display
      * @return string HTML
      */
-    public function session_cancellations($instance, $session, $cm, $cancellations) {
+    public function session_cancellations($instance, $session, $cancellations) {
         global $OUTPUT;
 
         $table = new html_table();
@@ -321,7 +317,7 @@ class attendance_renderer extends \plugin_renderer_base {
         );
         $table->align = array('left', 'center', 'center');
 
-        $context = context_module::instance($cm->id);
+        $context = $instance->get_context();
         $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
         foreach ($cancellations as $attendee) {
             $data = array();

@@ -43,13 +43,12 @@ class session_renderer extends \plugin_renderer_base {
      * Render a link to add a new session to the Face-to-Face instance
      *
      * @param object $instance the Face-to-face record instance
-     * @param object $cm the Face-to-Face course module
      * @return string HTML
      */
-    public function add_session_link($instance, $cm) {
+    public function add_session_link($instance) {
         global $OUTPUT;
 
-        $context = context_module::instance($cm->id);
+        $context = $instance->get_context();
         if (has_capability('mod/facetoface:editsessions', $context)) {
             $addstr = get_string('addsession', 'facetoface');
             $addlink =new moodle_url('/mod/facetoface/sessions.php', array('f' => $instance->id));
@@ -68,11 +67,10 @@ class session_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param object $session the Face-to-Face session object
-     * @param object $cm the Face-to-Face course module
      * @return string HTML
      */
-    public function session($instance, $session, $cm) {
-        $context = context_module::instance($cm->id);
+    public function session($instance, $session) {
+        $context = $instance->get_context();
 
         $table = new html_table();
         $table->summary = get_string('sessionsdetailstablesummary', 'facetoface');
@@ -142,10 +140,9 @@ class session_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param array $sortedsessions the Face-to-Face sessions
-     * @param object $cm the Face-to-Face course module
      * @return string HTML
      */
-    public function view_sessions_list($instance, $sortedsessions, $cm) {
+    public function view_sessions_list($instance, $sortedsessions) {
         global $CFG, $OUTPUT, $PAGE;
 
         $html = '';
@@ -158,7 +155,7 @@ class session_renderer extends \plugin_renderer_base {
             if (!empty($sessions)) {
                 $html .= $OUTPUT->box_start('generalbox', "facetoface-{$key}-sessions");
                 $html .= $OUTPUT->heading(get_string("{$key}sessions", 'facetoface'), '4');
-                $html .= $this->sessions_table($instance, $sessions, $cm);
+                $html .= $this->sessions_table($instance, $sessions);
                 $html .= $OUTPUT->box_end();
             }
         }
@@ -171,13 +168,12 @@ class session_renderer extends \plugin_renderer_base {
      *
      * @param object $instance the Face-to-face record instance
      * @param array $sessions the Face-to-Face sessions
-     * @param object $cm the Face-to-Face course module
      * @return string HTML
      */
-    public function sessions_table($instance, $sessions, $cm) {
+    public function sessions_table($instance, $sessions) {
         global $OUTPUT;
 
-        $context = context_module::instance($cm->id);
+        $context = $instance->get_context();
         $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
         $editsessions = has_capability('mod/facetoface:editsessions', $context);
 
@@ -485,7 +481,7 @@ class session_renderer extends \plugin_renderer_base {
      *
      */
     public function session_trainers($instance, $session, &$table=null) {
-        $context = context_course::instance($instance->course);
+        $context = $instance->get_context();
         $viewfullnames = has_capability('moodle/site:viewfullnames', $context);
 
         $html = '';
