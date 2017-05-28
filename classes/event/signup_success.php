@@ -38,7 +38,7 @@ defined('MOODLE_INTERNAL') || die();
  * @author     Stacey Walker <stacey@catalyst-eu.net>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class signup extends \core\event\base {
+class signup_success extends \core\event\base {
 
     /**
      * Init method.
