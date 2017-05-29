@@ -84,6 +84,9 @@ $context = context_course::instance($course->id);
 $modulecontext = context_module::instance($cm->id);
 require_capability('mod/facetoface:editsessions', $context);
 
+$PAGE->set_cm($cm);
+$PAGE->set_url('/mod/facetoface/sessions.php', array('f' => $f));
+
 $returnurl = "view.php?f=$facetoface->id";
 
 $editoroptions = array(
@@ -332,8 +335,7 @@ if ($c) {
 
 $pagetitle = format_string($facetoface->name);
 
-$PAGE->set_cm($cm);
-$PAGE->set_url('/mod/facetoface/sessions.php', array('f' => $f));
+
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($course->fullname);
 
