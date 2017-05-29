@@ -75,7 +75,7 @@ class backup_facetoface_activity_structure_step extends backup_activity_structur
             'confirmationinstrmngr', 'confirmationmessage', 'waitlistedsubject', 'waitlistedmessage',
             'cancellationsubject', 'cancellationmessage', 'remindersubject', 'reminderinstrmngr',
             'remindermessage', 'reminderperiod', 'requestsubject', 'requestinstrmngr', 'requestmessage',
-            'timecreated', 'timemodified', 'shortname', 'description', 'showoncalendar', 'approvalreqd'));
+            'timecreated', 'timemodified', 'shortname', 'intro', 'introformat', 'showoncalendar', 'approvalreqd'));
 
         $sessions = new backup_nested_element('sessions');
 
