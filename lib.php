@@ -73,9 +73,7 @@ define('F2F_CAL_COURSE', 1);
 define('F2F_CAL_SITE',   2);
 
 // Signup status codes (remember to update $MDL_F2F_STATUS).
-define('MDL_F2F_STATUS_USER_CANCELLED', 10);
-
-// SESSION_CANCELLED is not yet implemented.
+define('MDL_F2F_STATUS_USER_CANCELLED',     10);
 define('MDL_F2F_STATUS_SESSION_CANCELLED',  20);
 define('MDL_F2F_STATUS_DECLINED',           30);
 define('MDL_F2F_STATUS_REQUESTED',          40);
@@ -94,7 +92,7 @@ define('MDL_F2F_STATUS_FULLY_ATTENDED',     100);
 global $MDL_F2F_STATUS;
 $MDL_F2F_STATUS = array(
     MDL_F2F_STATUS_USER_CANCELLED      => 'user_cancelled',
-//  MDL_F2F_STATUS_SESSION_CANCELLED   => 'session_cancelled', // Not yet implemented.
+    MDL_F2F_STATUS_SESSION_CANCELLED   => 'session_cancelled',
     MDL_F2F_STATUS_DECLINED            => 'declined',
     MDL_F2F_STATUS_REQUESTED           => 'requested',
     MDL_F2F_STATUS_APPROVED            => 'approved',
@@ -647,6 +645,38 @@ function facetoface_get_facetoface_menu() {
 function facetoface_delete_session($session) {
     global $CFG, $DB;
 
+    $transaction = $DB->start_delegated_transaction();
+
+    // Delete session details.
+    $DB->delete_records('facetoface_sessions', array('id' => $session->id));
+    $DB->delete_records('facetoface_sessions_dates', array('sessionid' => $session->id));
+    $DB->delete_records_select(
+        'facetoface_signups_status',
+        "signupid IN
+        (
+            SELECT
+                id
+            FROM
+                {facetoface_signups}
+            WHERE
+                sessionid = {$session->id}
+        )
+        ");
+    $DB->delete_records('facetoface_signups', array('sessionid' => $session->id));
+    $transaction->allow_commit();
+
+    return true;
+}
+
+/**
+ * Cancel entry from the facetoface_sessions table along with all
+ * related details in other tables
+ *
+ * @param object $session Record from facetoface_sessions
+ */
+function facetoface_cancel_session($session) {
+    global $CFG, $DB;
+
     $facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface));
 
     // Cancel user signups (and notify users).
@@ -667,7 +697,7 @@ function facetoface_delete_session($session) {
 
     if ($signedupusers and count($signedupusers) > 0) {
         foreach ($signedupusers as $user) {
-            if (facetoface_user_cancel($session, $user->userid, true)) {
+            if (facetoface_session_cancel($session, $user->userid, true)) {
                 facetoface_send_cancellation_notice($facetoface, $session, $user->userid);
             } else {
                 return false; // Cannot rollback since we notified users already.
@@ -692,23 +722,10 @@ function facetoface_delete_session($session) {
         // Remove entry from site-wide calendar.
         facetoface_remove_session_from_calendar($session, SITEID);
     }
-
-    // Delete session details.
-    $DB->delete_records('facetoface_sessions', array('id' => $session->id));
-    $DB->delete_records('facetoface_sessions_dates', array('sessionid' => $session->id));
-    $DB->delete_records_select(
-        'facetoface_signups_status',
-        "signupid IN
-        (
-            SELECT
-                id
-            FROM
-                {facetoface_signups}
-            WHERE
-                sessionid = {$session->id}
-        )
-        ");
-    $DB->delete_records('facetoface_signups', array('sessionid' => $session->id));
+    $obj = new stdClass();
+    $obj->id = $session->id;
+    $obj->state = 1;
+    $DB->update_record('facetoface_sessions', $obj);
     $transaction->allow_commit();
 
     return true;
@@ -976,6 +993,22 @@ function facetoface_has_session_started($session, $timenow) {
         if ($date->timestart < $timenow) {
             return true;
         }
+    }
+
+    return false;
+}
+
+/**
+ * Returns true if the session has started, that is if one of the
+ * session dates is in the past.
+ *
+ * @param class $session record from the facetoface_sessions table
+ * @param integer $timenow current time
+ */
+function facetoface_is_session_cancelled($session) {
+
+    if ($session->state == 1) {
+        return true;
     }
 
     return false;
@@ -2010,6 +2043,45 @@ function facetoface_user_cancel($session, $userid=false, $forcecancel=false, &$e
 }
 
 /**
+ * Cancel a user who signed up earlier
+ *
+ * @param class $session       Record from the facetoface_sessions table
+ * @param integer $userid      ID of the user to remove from the session
+ * @param bool $forcecancel    Forces cancellation of sessions that have already occurred
+ * @param string $errorstr     Passed by reference. For setting error string in calling function
+ * @param string $cancelreason Optional justification for cancelling the signup
+ */
+function facetoface_session_cancel($session, $userid=false, $forcecancel=false, &$errorstr=null, $cancelreason='') {
+    global $USER;
+
+    if (!$userid) {
+        $userid = $USER->id;
+    }
+
+    // If $forcecancel is set, cancel session even if already occurred used by facetotoface_delete_session().
+    if (!$forcecancel) {
+        $timenow = time();
+
+        // Don't allow user to cancel a session that has already occurred.
+        if (facetoface_has_session_started($session, $timenow)) {
+            $errorstr = get_string('error:eventoccurred', 'facetoface');
+            return false;
+        }
+    }
+
+    if (facetoface_session_cancel_submission($session->id, $userid, $cancelreason)) {
+        facetoface_remove_session_from_calendar($session, 0, $userid);
+        facetoface_update_attendees($session);
+        return true;
+    }
+
+    // Todo: is this necessary?
+    $errorstr = get_string('error:cancelbooking', 'facetoface');
+
+    return false;
+}
+
+/**
  * Common code for sending confirmation and cancellation notices
  *
  * @param string $postsubject Subject of the email
@@ -3023,6 +3095,25 @@ function facetoface_user_cancel_submission($sessionid, $userid, $cancelreason=''
     }
 
     return facetoface_update_signup_status($signup->id, MDL_F2F_STATUS_USER_CANCELLED, $userid, $cancelreason);
+}
+
+/**
+ * Cancel users' submission to a facetoface session
+ *
+ * @param integer $sessionid   ID of the facetoface_sessions record
+ * @param integer $userid      ID of the user record
+ * @param string $cancelreason Short justification for cancelling the signup
+ * @return boolean success
+ */
+function facetoface_session_cancel_submission($sessionid, $userid, $cancelreason='') {
+    global $DB;
+
+    $signup = $DB->get_record('facetoface_signups', array('sessionid' => $sessionid, 'userid' => $userid));
+    if (!$signup) {
+        return true; // Not signed up, nothing to do.
+    }
+
+    return facetoface_update_signup_status($signup->id, MDL_F2F_STATUS_SESSION_CANCELLED, $userid, $cancelreason);
 }
 
 /**

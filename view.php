@@ -165,12 +165,14 @@ function print_session_list($courseid, $facetofaceid, $location) {
 
     $upcomingarray = array();
     $previousarray = array();
+    $cancelledarray = array();
     $upcomingtbdarray = array();
 
     if ($sessions = facetoface_get_sessions($facetofaceid, $location) ) {
         foreach ($sessions as $session) {
 
             $sessionstarted = false;
+            $sessioncancelled = false;
             $sessionfull = false;
             $sessionwaitlisted = false;
             $isbookedsession = false;
@@ -195,9 +197,14 @@ function print_session_list($courseid, $facetofaceid, $location) {
                 $sessionstarted = true;
             }
 
+            // Check if session is cancelled.
+            $sessioncancelled = facetoface_is_session_cancelled($session);
+
             // Put the row in the right table.
             if ($sessionstarted) {
                 $previousarray[] = $sessiondata;
+            } else if ($sessioncancelled) {
+                $cancelledarray[] = $sessiondata;
             } else if ($sessionwaitlisted) {
                 $upcomingtbdarray[] = $sessiondata;
             } else { // Normal scheduled session.
@@ -227,6 +234,12 @@ function print_session_list($courseid, $facetofaceid, $location) {
     if (!empty($previousarray)) {
         echo $OUTPUT->heading(get_string('previoussessions', 'facetoface'));
         echo $f2frenderer->print_session_list_table($customfields, $previousarray, $viewattendees, $editsessions);
+    }
+
+    // Cancelled sessions.
+    if (!empty($cancelledarray)) {
+        echo $OUTPUT->heading(get_string('cancelledsessions', 'facetoface'));
+        echo $f2frenderer->print_session_list_table($customfields, $cancelledarray, $viewattendees, $editsessions);
     }
 }
 
