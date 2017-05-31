@@ -2500,6 +2500,36 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
 
     return facetoface_grade_item_update($record, $grade);
 }
+/**
+ * Used in many places to obtain properly-formatted session date and time info
+ *
+ * @param int $start a start time Unix timestamp
+ * @param int $end an end time Unix timestamp
+ * @param string $tz a session timezone
+ * @return object Formatted date, start time, end time and timezone info
+ */
+function facetoface_format_session_times($start, $end, $tz) {
+
+    $displaytimezones = get_config(null, 'facetoface_displaysessiontimezones');
+
+    $formattedsession = new stdClass();
+    if (empty($tz) or empty($displaytimezones)) {
+        $targetTZ = core_date::get_user_timezone();
+    } else {
+        $targetTZ = core_date::get_user_timezone($tz);
+    }
+
+    $formattedsession->startdate = userdate($start, get_string('strftimedate', 'langconfig'), $targetTZ);
+    $formattedsession->starttime = userdate($start, get_string('strftimetime', 'langconfig'), $targetTZ);
+    $formattedsession->enddate = userdate($end, get_string('strftimedate', 'langconfig'), $targetTZ);
+    $formattedsession->endtime = userdate($end, get_string('strftimetime', 'langconfig'), $targetTZ);
+    if (empty($displaytimezones)) {
+        $formattedsession->timezone = '';
+    } else {
+        $formattedsession->timezone = core_date::get_localised_timezone($targetTZ);
+    }
+    return $formattedsession;
+}
 
 /**
  * Used by course/lib.php to display a few sessions besides the
@@ -2509,168 +2539,212 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
  * @global class $USER used to get the current userid
  * @global class $CFG used to get the path to the module
  */
-function facetoface_cm_info_view(cm_info $cm) {
-    global $CFG, $USER, $DB, $OUTPUT;
+function facetoface_cm_info_view(cm_info $coursemodule) {
+    global $USER, $DB;
+    $output = '';
 
-    $contextmodule = context_module::instance($cm->id);
-    if (!has_capability('mod/facetoface:view', $contextmodule)) {
-        return ''; // Not allowed to view this activity.
+    if (!($facetoface = $DB->get_record('facetoface', array('id' => $coursemodule->instance)))) {
+        return null;
     }
+
+    $coursemodule->set_name($facetoface->name);
+
+    $contextmodule = context_module::instance($coursemodule->id);
+    if (!has_capability('mod/facetoface:view', $contextmodule)) {
+        return null; // Not allowed to view this activity.
+    }
+    // Can view attendees.
+    $viewattendees = has_capability('mod/facetoface:viewattendees', $contextmodule);
+    // Can see "view all sessions" link even if activity is hidden/currently unavailable.
+    $iseditor = has_any_capability(array('mod/facetoface:viewattendees', 'mod/facetoface:editsessions',
+        'mod/facetoface:addattendees', 'mod/facetoface:addattendees',
+        'mod/facetoface:takeattendance'), $contextmodule);
 
     $timenow = time();
-    $facetoface = $DB->get_record('facetoface', array('id' => $cm->instance));
-    if (!$facetoface) {
-        error_log("mod/facetoface: ask to print coursemodule info for a non-existent activity ($cm->instance)");
-        return '';
-    }
 
-    // View all sessions link.
-    $htmlviewallsessions  = html_writer::link(
-        new moodle_url('/mod/facetoface/view.php', array('f' => $facetoface->id)),
-        get_string('viewallsessions', 'facetoface'),
-        array('class' => 'f2fsessionlinks f2fviewallsessions', 'title' => get_string('viewallsessions', 'facetoface'))
-    );
+    $strviewallsessions = get_string('viewallsessions', 'facetoface');
+    $sessions_url = new moodle_url('/mod/facetoface/view.php', array('f' => $facetoface->id));
+    $htmlviewallsessions = html_writer::link($sessions_url, $strviewallsessions, array('class' => 'f2fsessionlinks f2fviewallsessions', 'title' => $strviewallsessions));
 
-    $table = new html_table();
-    $table->attributes['class'] = 'table90 inlinetable';
-    $table->data[] = array(html_writer::empty_tag('hr'));
     if ($submissions = facetoface_get_user_submissions($facetoface->id, $USER->id)) {
-        $submission = array_shift($submissions); // First submission.
-
         // User has signedup for the instance.
-        if ($session = facetoface_get_session($submission->sessionid)) {
-            $sessiondate = '';
-            $sessiontime = '';
-            if ($session->datetimeknown) {
-                foreach ($session->sessiondates as $date) {
-                    if (!empty($sessiondate)) {
-                        $sessiondate .= html_writer::empty_tag('br');
-                    }
-                    $sessiondate .= userdate($date->timestart, get_string('strftimedate'));
-                    if (!empty($sessiontime)) {
-                        $sessiontime .= html_writer::empty_tag('br');
-                    }
-                    $sessiontime .= userdate($date->timestart, get_string('strftimetime')) .
-                        ' - ' . userdate($date->timefinish, get_string('strftimetime'));
-                }
-            } else {
-                $sessiondate = get_string('wait-listed', 'facetoface');
-                $sessiontime = get_string('wait-listed', 'facetoface');
-            }
 
-            $location = '&nbsp;';
-            $customfielddata = facetoface_get_customfielddata($session->id);
-            if (!empty($customfielddata['location'])) {
-                $location = ' ' . $customfielddata['location']->data;
-            }
-            $venue = '&nbsp;';
-            if (!empty($customfielddata['venue'])) {
-                $venue = ' ' . $customfielddata['venue']->data;
-            }
+        foreach ($submissions as $submission) {
 
-            // Don't include the link to view attendees if user is lacking capability.
-            $attendeeslink = '';
-            if (has_capability('mod/facetoface:viewattendees', context_course::instance($cm->course))) {
-                $strattendees  = get_string('seeattendees', 'facetoface');
-                $attendeesurl  = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id));
-                $attendeeslink = ' ' . html_writer::link($attendeesurl, $strattendees, array('class' => 'f2fsessionlinks f2fviewattendees', 'title' => $strattendees));
-            }
-
-            // Don't include the link to cancel a session if it has already occurred.
-            $cancellink = '';
-            if (!facetoface_has_session_started($session, $timenow) && $session->allowcancellations) {
-                $strcancel  = get_string('cancelbooking', 'facetoface');
-                $cancelurl  = new moodle_url('/mod/facetoface/cancelsignup.php', array('s' => $session->id));
-                $cancellink = ' ' . html_writer::link($cancelurl, $strcancel, array('class' => 'f2fsessionlinks f2fcancel', 'title' => $strcancel));
-            }
-
-            // Add table data.
-            $table->data[] = array(get_string('bookingstatus', 'facetoface') . ': ');
-            $table->data[] = array($location, $venue, $sessiondate, $sessiontime);
-            $table->data[] = array(
-                html_writer::tag('span', get_string('options', 'facetoface') . ': ' .
-                html_writer::link(
-                    new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id)),
-                    get_string('moreinfo', 'facetoface'),
-                    array('class' => 'f2fsessionlinks f2fsessioninfolink', 'title' => get_string('moreinfo', 'facetoface'))
-                ) . "{$attendeeslink}{$cancellink}"
-            ));
-            $table->data[] = array($htmlviewallsessions);
-        }
-    } else if ($facetoface->display > 0 && ($sessions = facetoface_get_sessions($facetoface->id))) {
-        $table->data[] = array(get_string('signupforsession', 'facetoface'));
-
-        $count = 0;
-        foreach ($sessions as $session) {
-
-            // Don't display past or in-progress sessions.
-            if ($session->datetimeknown && (facetoface_has_session_started($session, $timenow))) {
-                continue;
-            }
-
-            // Don't diisplay full sessions.
-            if (!facetoface_session_has_capacity($session, $contextmodule)) {
-                continue;
-            }
-
-            // Check display count.
-            $count++;
-            if ($count > $facetoface->display) {
-                break;
-            }
-
-            $multiday    = '';
-            $sessiondate = '';
-            $sessiontime = '';
-            if ($session->datetimeknown) {
-                if (empty($session->sessiondates)) {
-                    $sessiondate = get_string('unknowndate', 'facetoface');
-                    $sessiontime = get_string('unknowntime', 'facetoface');
+            if ($session = facetoface_get_session($submission->sessionid)) {
+                $userisinwaitlist = facetoface_is_user_on_waitlist($session, $USER->id);
+                if ($session->datetimeknown && facetoface_has_session_started($session, $timenow) && facetoface_is_session_in_progress($session, $timenow)) {
+                    $status = get_string('sessioninprogress', 'facetoface');
+                } else if ($session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
+                    $status = get_string('sessionover', 'facetoface');
+                } else if ($userisinwaitlist) {
+                    $status = get_string('waitliststatus', 'facetoface');
                 } else {
-                    $sessiondate = userdate($session->sessiondates[0]->timestart, get_string('strftimedate'));
-                    $sessiontime = userdate($session->sessiondates[0]->timestart, get_string('strftimetime')) .
-                        ' - ' . userdate($session->sessiondates[0]->timefinish, get_string('strftimetime'));
-
-                    if (count($session->sessiondates) > 1) {
-                        $multiday = ' (' . get_string('multiday', 'facetoface') . ')';
-                    }
+                    $status = get_string('bookingstatus', 'facetoface');
                 }
-            } else {
-                $sessiondate = get_string('wait-listed', 'facetoface');
-            }
 
-            $locationstr  = '';
-            $customfielddata = facetoface_get_customfielddata($session->id);
-            if (!empty($customfielddata['location']) && trim($customfielddata['location']->data) != '') {
-                $locationstr = $customfielddata['location']->data . ', ';
-            }
-            if ($cm->uservisible) {
-                $signupurl = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
-                $row = array(html_writer::link($signupurl,
-                    "{$locationstr} {$sessiondate} {$sessiontime} {$multiday}",
-                    array('class' => 'f2fsessiontime')
-                ));
-            } else {
-                $row = array(html_writer::tag('span',
-                    "{$locationstr} {$sessiondate} {$sessiontime} {$multiday}",
-                    array('class' => 'f2fsessiontime')
-                ));
-            }
+                // Add booking information.
+                $session->bookedsession = $submission;
 
-            // Add to table.
-            $table->data[] = $row;
+                $sessiondates = '';
+
+                if ($session->datetimeknown) {
+                    foreach ($session->sessiondates as $date) {
+                        if (!empty($sessiondates)) {
+                            $sessiondates .= html_writer::empty_tag('br');
+                        }
+                        $sessionobj = facetoface_format_session_times($date->timestart, $date->timefinish, null);
+                        if ($sessionobj->startdate == $sessionobj->enddate) {
+                            $sessiondatelangkey = !empty($sessionobj->timezone) ? 'sessionstartdateandtime' : 'sessionstartdateandtimewithouttimezone';
+                            $sessiondates .= get_string($sessiondatelangkey, 'facetoface', $sessionobj);
+                        } else {
+                            $sessiondatelangkey = !empty($sessionobj->timezone) ? 'sessionstartfinishdateandtime' : 'sessionstartfinishdateandtimewithouttimezone';
+                            $sessiondates .= get_string($sessiondatelangkey, 'facetoface', $sessionobj);
+                        }
+                    }
+                } else {
+                    $sessiondates = get_string('wait-listed', 'facetoface');
+                }
+
+                $span = html_writer::tag('span', get_string('options', 'facetoface').':', array('class' => 'f2fsessionnotice'));
+
+                // Don't include the link to cancel a session if it has already occurred.
+                $moreinfolink = '';
+                $cancellink = '';
+                if (!facetoface_has_session_started($session, $timenow)) {
+                    $strmoreinfo  = get_string('moreinfo', 'facetoface');
+                    $signup_url   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
+                    $moreinfolink = html_writer::link($signup_url, $strmoreinfo, array('class' => 'f2fsessionlinks f2fsessioninfolink', 'title' => $strmoreinfo));
+                }
+
+                // Don't include the link to view attendees if user is lacking capability.
+                $attendeeslink = '';
+                if ($viewattendees) {
+                    $strseeattendees = get_string('seeattendees', 'facetoface');
+                    $attendees_url = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id));
+                    $attendeeslink = html_writer::link($attendees_url, $strseeattendees, array('class' => 'f2fsessionlinks f2fviewattendees', 'title' => $strseeattendees));
+                }
+
+
+                $output .= html_writer::start_tag('div', array('class' => 'f2fsessiongroup'))
+                    . html_writer::tag('span', $status, array('class' => 'f2fsessionnotice'))
+                    . html_writer::start_tag('div', array('class' => 'f2fsession f2fsignedup'))
+                    . html_writer::tag('div', $sessiondates, array('class' => 'f2fsessiontime'))
+                    . html_writer::tag('div', $span . $moreinfolink . $attendeeslink . $cancellink, array('class' => 'f2foptions'))
+                    . html_writer::end_tag('div')
+                    . html_writer::end_tag('div');
+            }
         }
-        if ($cm->uservisible) {
-            $table->data[] = array($htmlviewallsessions);
+        // Add "view all sessions" row to table.
+        $output .= $htmlviewallsessions;
+
+    } else if ($sessions = facetoface_get_sessions($facetoface->id)) {
+        if ($facetoface->display > 0) {
+            $j=1;
+
+            $sessionsinprogress = array();
+            $futuresessions = array();
+
+            foreach ($sessions as $session) {
+                if (!facetoface_session_has_capacity($session, $contextmodule, MDL_F2F_STATUS_WAITLISTED) && !$session->allowoverbook) {
+                    continue;
+                }
+
+                if ($session->datetimeknown && facetoface_has_session_started($session, $timenow) && !facetoface_is_session_in_progress($session, $timenow)) {
+                    // Finished session, don't display.
+                    continue;
+                } else {
+                    $signup_url   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
+                    $signuptext   = 'signup';
+                    $moreinfolink = html_writer::link($signup_url, get_string($signuptext, 'facetoface'), array('class' => 'f2fsessionlinks f2fsessioninfolink'));
+
+                    $span = html_writer::tag('span', get_string('options', 'facetoface').':', array('class' => 'f2fsessionnotice'));
+                }
+
+                $multidate = '';
+                $sessiondate = '';
+                if ($session->datetimeknown) {
+                    if (empty($session->sessiondates)) {
+                        $sessiondate = get_string('unknowndate', 'facetoface');
+                    } else {
+                        $sessionobj = facetoface_format_session_times($session->sessiondates[0]->timestart, $session->sessiondates[0]->timefinish, null);
+                        if ($sessionobj->startdate == $sessionobj->enddate) {
+                            $sessiondatelangkey = !empty($sessionobj->timezone) ? 'sessionstartdateandtime' : 'sessionstartdateandtimewithouttimezone';
+                            $sessiondate = get_string($sessiondatelangkey, 'facetoface', $sessionobj);
+                        } else {
+                            $sessiondatelangkey = !empty($sessionobj->timezone) ? 'sessionstartfinishdateandtime' : 'sessionstartfinishdateandtimewithouttimezone';
+                            $sessiondate .= get_string($sessiondatelangkey, 'facetoface', $sessionobj);
+                        }
+                        if (count($session->sessiondates) > 1) {
+                            $multidate = html_writer::empty_tag('br') . get_string('multidate', 'facetoface');
+                        }
+                    }
+                } else {
+                    $sessiondate = get_string('wait-listed', 'facetoface');
+                }
+
+                $sessionobject = new stdClass();
+                $sessionobject->date = $sessiondate;
+                $sessionobject->multidate = $multidate;
+
+                if ($session->datetimeknown && (facetoface_has_session_started($session, $timenow)) && facetoface_is_session_in_progress($session, $timenow)) {
+                    $sessionsinprogress[] = $sessionobject;
+                } else {
+                    $sessionobject->options = $span;
+                    $sessionobject->moreinfolink = $moreinfolink;
+                    $futuresessions[] = $sessionobject;
+                }
+
+                $j++;
+                if ($j > $facetoface->display) {
+                    break;
+                }
+            }
+
+            if (!empty($sessionsinprogress)) {
+                $output .= html_writer::start_tag('div', array('class' => 'f2fsessiongroup'));
+                $output .= html_writer::tag('span', get_string('sessioninprogress', 'facetoface'), array('class' => 'f2fsessionnotice'));
+
+                foreach ($sessionsinprogress as $session) {
+                    $output .= html_writer::start_tag('div', array('class' => 'f2fsession f2finprogress'))
+                        . html_writer::tag('span', $session->date.$session->multidate, array('class' => 'f2fsessiontime'))
+                        . html_writer::end_tag('div');
+                }
+                $output .= html_writer::end_tag('div');
+            }
+
+            if (!empty($futuresessions)) {
+                $output .= html_writer::start_tag('div', array('class' => 'f2fsessiongroup'));
+                $output .= html_writer::tag('span', get_string('signupforsession', 'facetoface'), array('class' => 'f2fsessionnotice'));
+
+                foreach ($futuresessions as $session) {
+                    $output .= html_writer::start_tag('div', array('class' => 'f2fsession f2ffuture'))
+                        . html_writer::tag('div', $session->date.$session->multidate, array('class' => 'f2fsessiontime'))
+                        . html_writer::tag('div', $session->options . $session->moreinfolink, array('class' => 'f2foptions'))
+                        . html_writer::end_tag('div');
+                }
+                $output .= html_writer::end_tag('div');
+            }
+
+            $output .= ($iseditor || ($coursemodule->visible && $coursemodule->available)) ? $htmlviewallsessions : $strviewallsessions;
+
         } else {
-            $table->data[] = array($strviewallsessions);
+            // Show only name if session display is set to zero.
+            $content = html_writer::tag('span', $htmlviewallsessions, array('class' => 'f2fsessionnotice f2factivityname'));
+            $coursemodule->set_content($content);
+            return;
         }
+    } else if (has_capability('mod/facetoface:viewemptyactivities', $contextmodule)) {
+        $content = html_writer::tag('span', $htmlviewallsessions, array('class' => 'f2fsessionnotice f2factivityname'));
+        $coursemodule->set_content($content);
+        return;
     } else {
         // Nothing to display to this user.
+        $coursemodule->set_content('');
         return;
     }
 
-    $cm->set_after_link(html_writer::table($table));
+    $coursemodule->set_content($output);
 }
 
 /**
@@ -2848,6 +2922,31 @@ function facetoface_ical_escape($text, $converthtml=false) {
     $text = wordwrap($text, 75, "\n ", true);
 
     return $text;
+}
+
+/**
+ * Determine if a user is in the waitlist of a session.
+ *
+ * @param object $session A session object
+ * @param int $userid The user ID
+ * @return bool True if the user is on waitlist, false otherwise.
+ */
+function facetoface_is_user_on_waitlist($session, $userid = null) {
+    global $DB, $USER;
+
+    if ($userid === null) {
+        $userid = $USER->id;
+    }
+
+    $sql = "SELECT 1
+            FROM {facetoface_signups} su
+            JOIN {facetoface_signups_status} ss ON su.id = ss.signupid
+            WHERE su.sessionid = ?
+              AND ss.superceded != 1
+              AND su.userid = ?
+              AND ss.statuscode = ?";
+
+    return $DB->record_exists_sql($sql, array($session->id, $userid, MDL_F2F_STATUS_WAITLISTED));
 }
 
 /**
