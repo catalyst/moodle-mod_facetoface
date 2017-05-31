@@ -71,17 +71,18 @@ class backup_facetoface_activity_structure_step extends backup_activity_structur
 
         // Define each element separated.
         $facetoface = new backup_nested_element('facetoface', array('id'), array(
-            'name', 'thirdparty', 'thirdpartywaitlist', 'display', 'confirmationsubject',
-            'confirmationinstrmngr', 'confirmationmessage', 'waitlistedsubject', 'waitlistedmessage',
-            'cancellationsubject', 'cancellationmessage', 'remindersubject', 'reminderinstrmngr',
+            'name', 'intro', 'introformat', 'thirdparty', 'thirdpartywaitlist', 'display',
+            'timecreated', 'timemodified', 'shortname', 'showoncalendar', 'usercalentry',
+            'confirmationsubject', 'confirmationinstrmngr', 'confirmationmessage', 'waitlistedsubject', 'waitlistedmessage',
+            'cancellationsubject', 'cancellationinstrmngr', 'cancellationmessage', 'remindersubject', 'reminderinstrmngr',
             'remindermessage', 'reminderperiod', 'requestsubject', 'requestinstrmngr', 'requestmessage',
-            'timecreated', 'timemodified', 'shortname', 'intro', 'introformat', 'showoncalendar', 'approvalreqd'));
+            'approvalreqd', 'allowcancellationsdefault'));
 
         $sessions = new backup_nested_element('sessions');
 
         $session = new backup_nested_element('session', array('id'), array(
             'facetoface', 'capacity', 'allowoverbook', 'details', 'datetimeknown', 'duration', 'normalcost',
-            'discountcost', 'timecreated', 'timemodified'));
+            'discountcost', 'allowcancellations', 'timecreated', 'timemodified'));
 
         $signups = new backup_nested_element('signups');
 
