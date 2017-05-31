@@ -605,7 +605,8 @@ The **Description** also displays in the training calendar.';
 $string['details_help'] = 'Details are tracked per session basis.
 If text is populated in the details field, the details text will be displayed on the user signup page.
 By default, the details text also appears in the confirmation, reminder, waitlist and cancellation email messages.';
-
+$string['discountcodelearner'] = 'Discount Code';
+$string['discountcodelearner_help'] = 'If you know the discount code enter it here. If you leave this field blank you will be charged the normal cost for this event';
 $string['discountcode_help'] = 'Discount code is the code required for the discount cost to be tracked for the training of a staff member.
 If the staff member does not enter the discount code, the normal cost appears in the training record.';
 
