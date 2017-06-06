@@ -248,7 +248,7 @@ You have been registered. If the date does not suit you anymore, please unregist
 $string['modulename'] = 'Face-to-Face';
 $string['modulenameplural'] = 'Face-to-Face';
 $string['moreinfo'] = 'More info';
-$string['multiday'] = 'multi-day';
+$string['multidate'] = '(multi-date)';
 $string['newmanageremailaddress'] = 'Manager\'s email address';
 $string['noactionableunapprovedrequests'] = 'No actionable unapproved requests';
 $string['nocustomfields'] = '<p>No custom fields are defined.</p>';
