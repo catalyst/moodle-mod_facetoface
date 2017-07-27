@@ -71,3 +71,8 @@ span.errorstring {
 body#page-mod-facetoface-view div#page-content table.sessions {
     width: 100%;
 }
+
+body#page-mod-facetoface-view div#page-content .formlocation {
+    float: right;
+    margin-bottom: 6px;
+}
