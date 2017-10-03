@@ -309,6 +309,7 @@ $string['saveallfeedback'] = 'Save all responses';
 $string['saveattendance'] = 'Save attendance';
 $string['scheduledsession'] = 'Scheduled session';
 $string['scheduledsessions'] = 'Scheduled sessions';
+$string['search:activity'] = 'Facetoface activities';
 $string['seatsavailable'] = 'Seats available';
 $string['seeattendees'] = 'See attendees';
 $string['sentremindermanager'] = 'Sent reminder email to user manager';
