@@ -98,8 +98,8 @@ class mod_facetoface_session_form extends moodleform {
         $repeatcount = $this->_customdata['nbdays'];
 
         $repeatoptions = array();
-        $repeatoptions['timestart']['disabledif'] = array('datetimeknown', 'eq', 0);
-        $repeatoptions['timefinish']['disabledif'] = array('datetimeknown', 'eq', 0);
+        $repeatoptions['timestart']['hideif'] = array('datetimeknown', 'eq', 0);
+        $repeatoptions['timefinish']['hideif'] = array('datetimeknown', 'eq', 0);
         $mform->setType('timestart', PARAM_INT);
         $mform->setType('timefinish', PARAM_INT);
 
