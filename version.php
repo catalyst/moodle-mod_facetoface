@@ -30,8 +30,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2017090101;
+$plugin->version   = 2018053000;
 $plugin->requires  = 2016120502;  // Requires this Moodle version.
-$plugin->release   = '3.2.1 (Build: 2017090100)';
+$plugin->release   = '3.2.2 (Build: 2018053000)';
 $plugin->component = 'mod_facetoface';
 $plugin->maturity  = MATURITY_STABLE;
