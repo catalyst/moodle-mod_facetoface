@@ -1,3 +1,12 @@
+3.2.2 (2018-05-30):
+Bug fixes:
+- Site, course and user calendar events now work properly. They no longer all end up being course events.
+- Creating, updating and deleting Face-to-face sessions no longer leave orphan and duplicate events in the events table.
+- Deleting an instance of Face-to-face from a course no longer leave orphan calendar events in the events table.
+
+Improvements:
+- Now compatible with Moodle 3.2 to 3.5
+
 2.3.1 (2014-03-06):
 Bug fixes:
 - fix SQL group by
