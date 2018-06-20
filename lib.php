@@ -1487,39 +1487,8 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
 
         if (!empty($sessionsignups[$session->id])) {
             foreach ($sessionsignups[$session->id] as $attendee) {
-                $i++; $j = 0;
-
-                // Custom session fields.
-                foreach ($customsessionfields as $field) {
-                    if (empty($field->showinsummary)) {
-                        continue; // Skip.
-                    }
-
-                    $data = '-';
-                    if (!empty($customdata[$field->id])) {
-                        if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
-                            $data = str_replace(CUSTOMFIELD_DELIMITER, "\n", $customdata[$field->id]->data);
-                        } else {
-                            $data = $customdata[$field->id]->data;
-                        }
-                    }
-                    $worksheet->write_string($i, $j++, $data);
-                }
-
-                if (empty($sessiondate)) {
-                    $worksheet->write_string($i, $j++, $status); // Session date.
-                } else {
-                    if (method_exists($worksheet, 'write_date')) {
-                        $worksheet->write_date($i, $j++, $sessiondate, $dateformat);
-                    } else {
-                        $worksheet->write_string($i, $j++, $sessiondate);
-                    }
-                }
-                $worksheet->write_string($i, $j++, $starttime);
-                $worksheet->write_string($i, $j++, $finishtime);
-                $worksheet->write_number($i, $j++, (int)$session->duration);
-                $worksheet->write_string($i, $j++, $status);
-
+                $i++;
+                facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime);
                 if ($trainerroles) {
                     foreach (array_keys($trainerroles) as $roleid) {
                         if (!empty($sessiontrainers[$roleid])) {
@@ -1576,38 +1545,10 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
             }
         } else {
             // No one is sign-up, so let's just print the basic info.
-            $i++; $j = 0;
+            $i++;
+            // helper
+            $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime);
 
-            // Custom session fields.
-            foreach ($customsessionfields as $field) {
-                if (empty($field->showinsummary)) {
-                    continue; // Skip.
-                }
-
-                $data = '-';
-                if (!empty($customdata[$field->id])) {
-                    if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
-                        $data = str_replace(CUSTOMFIELD_DELIMITER, "\n", $customdata[$field->id]->data);
-                    } else {
-                        $data = $customdata[$field->id]->data;
-                    }
-                }
-                $worksheet->write_string($i, $j++, $data);
-            }
-
-            if (empty($sessiondate)) {
-                $worksheet->write_string($i, $j++, $status); // Session date.
-            } else {
-                if (method_exists($worksheet, 'write_date')) {
-                    $worksheet->write_date($i, $j++, $sessiondate, $dateformat);
-                } else {
-                    $worksheet->write_string($i, $j++, $sessiondate);
-                }
-            }
-            $worksheet->write_string($i, $j++, $starttime);
-            $worksheet->write_string($i, $j++, $finishtime);
-            $worksheet->write_number($i, $j++, (int)$session->duration);
-            $worksheet->write_string($i, $j++, $status);
             foreach ($userfields as $unused) {
                 $worksheet->write_string($i, $j++, '-');
             }
@@ -1623,6 +1564,53 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
     }
 
     return $i;
+}
+
+/**
+ * Helper function for write_activity_attendance.
+ * Could do with further tidying.
+ *
+ * @param object $worksheet  The worksheet to modify (passed by reference)
+ * @param int $i The current row being used.
+ * @param object $session
+ * @return int The next Column in the sheet.
+ */
+
+function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime) {
+    $j = 0;
+
+    // Custom session fields.
+    foreach ($customsessionfields as $field) {
+        if (empty($field->showinsummary)) {
+            continue; // Skip.
+        }
+
+        $data = '-';
+        if (!empty($customdata[$field->id])) {
+            if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
+                $data = str_replace(CUSTOMFIELD_DELIMITER, "\n", $customdata[$field->id]->data);
+            } else {
+                $data = $customdata[$field->id]->data;
+            }
+        }
+        $worksheet->write_string($i, $j++, $data);
+    }
+
+    if (empty($sessiondate)) {
+        $worksheet->write_string($i, $j++, $status); // Session date.
+    } else {
+        if (method_exists($worksheet, 'write_date')) {
+            $worksheet->write_date($i, $j++, $sessiondate, $dateformat);
+        } else {
+            $worksheet->write_string($i, $j++, $sessiondate);
+        }
+    }
+    $worksheet->write_string($i, $j++, $starttime);
+    $worksheet->write_string($i, $j++, $finishtime);
+    $worksheet->write_number($i, $j++, (int)$session->duration);
+    $worksheet->write_string($i, $j++, $status);
+
+    return $j;
 }
 
 /**
