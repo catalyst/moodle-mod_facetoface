@@ -70,7 +70,8 @@ class moodle1_mod_facetoface_handler extends moodle1_mod_handler {
             new convert_path('facetoface_sessions', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FACETOFACE/SESSIONS'),
             new convert_path('facetoface_session', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FACETOFACE/SESSIONS/SESSION'),
             new convert_path('facetoface_sessions_dates', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FACETOFACE/SESSIONS/SESSION/DATES'),
-            new convert_path('facetoface_sessions_date', '/MOODLE_BACKUP/COURSE/MODULES/MOD/FACETOFACE/SESSIONS/SESSION/DATES/DATE'),
+            new convert_path('facetoface_sessions_date',
+                '/MOODLE_BACKUP/COURSE/MODULES/MOD/FACETOFACE/SESSIONS/SESSION/DATES/DATE'),
         );
     }
 

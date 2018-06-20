@@ -228,11 +228,13 @@ if ($canviewattendees || $cantakeattendance) {
             echo html_writer::tag('p', get_string('attendanceinstructions', 'facetoface'));
             echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
             echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $s));
-            echo html_writer::empty_tag('input', array('type' => 'hidden', ' name' => 'backtoallsessions', 'value' => $backtoallsessions)) . '</p>';
+            echo html_writer::empty_tag('input', array('type' => 'hidden', ' name' => 'backtoallsessions',
+                    'value' => $backtoallsessions)) . '</p>';
 
             // Prepare status options array.
+            $statuses = facetoface_statuses();
             $statusoptions = array();
-            foreach ($MDL_F2F_STATUS as $key => $value) {
+            foreach ($statuses as $key => $value) {
                 if ($key <= MDL_F2F_STATUS_BOOKED) {
                     continue;
                 }
@@ -287,7 +289,8 @@ if ($canviewattendees || $cantakeattendance) {
                         $data[] = $attendee->discountcode;
                     }
                 }
-                $data[] = str_replace(' ', '&nbsp;', get_string('status_'.facetoface_get_status($attendee->statuscode), 'facetoface'));
+                $data[] = str_replace(' ', '&nbsp;',
+                    get_string('status_'.facetoface_get_status($attendee->statuscode), 'facetoface'));
             }
             $table->data[] = $data;
         }
@@ -297,7 +300,8 @@ if ($canviewattendees || $cantakeattendance) {
         if ($takeattendance) {
             echo html_writer::start_tag('p');
             echo html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('saveattendance', 'facetoface')));
-            echo '&nbsp;' . html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'cancelform', 'value' => get_string('cancel')));
+            echo '&nbsp;' . html_writer::empty_tag('input', array('type' => 'submit', 'name' => 'cancelform',
+                    'value' => get_string('cancel')));
             echo html_writer::end_tag('p') . html_writer::end_tag('form');
         } else {
 
@@ -306,7 +310,8 @@ if ($canviewattendees || $cantakeattendance) {
             if ($cantakeattendance && $session->datetimeknown && facetoface_has_session_started($session, time())) {
 
                 // Take attendance.
-                $attendanceurl = new moodle_url('attendees.php', array('s' => $session->id, 'takeattendance' => '1', 'backtoallsessions' => $backtoallsessions));
+                $attendanceurl = new moodle_url('attendees.php', array('s' => $session->id, 'takeattendance' => '1',
+                    'backtoallsessions' => $backtoallsessions));
                 echo html_writer::link($attendanceurl, get_string('takeattendance', 'facetoface')) . ' - ';
             }
         }
@@ -352,12 +357,14 @@ if ($canapproverequests) {
         echo html_writer::start_tag('form', array('action' => $action->out(), 'method' => 'post'));
         echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'sesskey', 'value' => $USER->sesskey));
         echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 's', 'value' => $s));
-        echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'backtoallsessions', 'value' => $backtoallsessions)) . html_writer::end_tag('p');
+        echo html_writer::empty_tag('input', array('type' => 'hidden', 'name' => 'backtoallsessions',
+                'value' => $backtoallsessions)) . html_writer::end_tag('p');
 
         $table = new html_table();
         $table->summary = get_string('requeststablesummary', 'facetoface');
         $table->head = array(get_string('name'), get_string('timerequested', 'facetoface'),
-                            get_string('decidelater', 'facetoface'), get_string('decline', 'facetoface'), get_string('approve', 'facetoface'));
+                get_string('decidelater', 'facetoface'), get_string('decline', 'facetoface'),
+                get_string('approve', 'facetoface'));
         $table->align = array('left', 'center', 'center', 'center', 'center');
 
         foreach ($requests as $attendee) {
@@ -365,16 +372,20 @@ if ($canapproverequests) {
             $attendeelink = new moodle_url('/user/view.php', array('id' => $attendee->id, 'course' => $course->id));
             $data[] = html_writer::link($attendeelink, format_string(fullname($attendee)));
             $data[] = userdate($attendee->timerequested, get_string('strftimedatetime'));
-            $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => 'requests['.$attendee->id.']', 'value' => '0', 'checked' => 'checked'));
-            $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => 'requests['.$attendee->id.']', 'value' => '1'));
+            $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => 'requests['.$attendee->id.']',
+                'value' => '0', 'checked' => 'checked'));
+            $data[] = html_writer::empty_tag('input', array('type' => 'radio', 'name' => 'requests['.$attendee->id.']',
+                'value' => '1'));
             $disabled = ($canbookuser) ? array() : array('disabled' => 'disabled');
-            $data[] = html_writer::empty_tag('input', array_merge(array('type' => 'radio', 'name' => 'requests['.$attendee->id.']', 'value' => '2'), $disabled));
+            $data[] = html_writer::empty_tag('input', array_merge(array('type' => 'radio', 'name' => 'requests['.$attendee->id.']',
+                'value' => '2'), $disabled));
             $table->data[] = $data;
         }
 
         echo html_writer::table($table);
 
-        echo html_writer::tag('p', html_writer::empty_tag('input', array('type' => 'submit', 'value' => get_string('updaterequests', 'facetoface'))));
+        echo html_writer::tag('p', html_writer::empty_tag('input', array('type' => 'submit',
+            'value' => get_string('updaterequests', 'facetoface'))));
         echo html_writer::end_tag('form');
     }
 }

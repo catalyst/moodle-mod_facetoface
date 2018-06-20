@@ -28,38 +28,6 @@
  * @author     Francois Marier <francois@catalyst.net.nz>
  */
 
-// This is the "graphical" structure of the Faceto-face module:
-//
-//          facetoface                  facetoface_sessions
-//         (CL, pk->id)-------------(CL, pk->id, fk->facetoface)
-//                                          |  |  |  |
-//                                          |  |  |  |
-//            facetoface_signups------------+  |  |  |
-//        (UL, pk->id, fk->sessionid)          |  |  |
-//                     |                       |  |  |
-//         facetoface_signups_status           |  |  |
-//         (UL, pk->id, fk->signupid)          |  |  |
-//                                             |  |  |
-//                                             |  |  |
-//         facetoface_session_roles------------+  |  |
-//        (UL, pk->id, fk->sessionid)             |  |
-//                                                |  |
-//                                                |  |
-//     facetoface_session_field                   |  |
-//          (SL, pk->id)  |                       |  |
-//                        |                       |  |
-//             facetoface_session_data------------+  |
-//    (CL, pk->id, fk->sessionid, fk->fieldid)       |
-//                                                   |
-//                                    facetoface_sessions_dates
-//                                    (CL, pk->id, fk->session)
-//
-// Meaning: pk->primary key field of the table
-//          fk->foreign key to link with parent
-//          SL->system level info
-//          CL->course level info
-//          UL->user level info
-
 defined('MOODLE_INTERNAL') || die();
 
 class backup_facetoface_activity_structure_step extends backup_activity_structure_step {

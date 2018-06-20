@@ -70,7 +70,7 @@ define('F2F_CAL_NONE',   0);
 define('F2F_CAL_COURSE', 1);
 define('F2F_CAL_SITE',   2);
 
-// Signup status codes (remember to update $MDL_F2F_STATUS).
+// Signup status codes (remember to update facetoface_statuses()).
 define('MDL_F2F_STATUS_USER_CANCELLED', 10);
 
 // SESSION_CANCELLED is not yet implemented.
@@ -84,24 +84,29 @@ define('MDL_F2F_STATUS_NO_SHOW',            80);
 define('MDL_F2F_STATUS_PARTIALLY_ATTENDED', 90);
 define('MDL_F2F_STATUS_FULLY_ATTENDED',     100);
 
-/*
- * This array must match the status codes above, and the values
- * must equal the end of the constant name but in lower case
+/**
+ * Returns the list of possible facetoface status.
+ *
+ * @param int $statuscode One of the MDL_F2F_STATUS* constants
+ * @return string $string Human readable code
  */
+function facetoface_statuses() {
+    // This array must match the status codes above, and the values
+    // must equal the end of the constant name but in lower case.
 
-global $MDL_F2F_STATUS;
-$MDL_F2F_STATUS = array(
-    MDL_F2F_STATUS_USER_CANCELLED      => 'user_cancelled',
-//  MDL_F2F_STATUS_SESSION_CANCELLED   => 'session_cancelled', // Not yet implemented.
-    MDL_F2F_STATUS_DECLINED            => 'declined',
-    MDL_F2F_STATUS_REQUESTED           => 'requested',
-    MDL_F2F_STATUS_APPROVED            => 'approved',
-    MDL_F2F_STATUS_WAITLISTED          => 'waitlisted',
-    MDL_F2F_STATUS_BOOKED              => 'booked',
-    MDL_F2F_STATUS_NO_SHOW             => 'no_show',
-    MDL_F2F_STATUS_PARTIALLY_ATTENDED  => 'partially_attended',
-    MDL_F2F_STATUS_FULLY_ATTENDED      => 'fully_attended',
-);
+    return array(
+        MDL_F2F_STATUS_USER_CANCELLED      => 'user_cancelled',
+        // MDL_F2F_STATUS_SESSION_CANCELLED   => 'session_cancelled', // Not yet implemented.
+        MDL_F2F_STATUS_DECLINED            => 'declined',
+        MDL_F2F_STATUS_REQUESTED           => 'requested',
+        MDL_F2F_STATUS_APPROVED            => 'approved',
+        MDL_F2F_STATUS_WAITLISTED          => 'waitlisted',
+        MDL_F2F_STATUS_BOOKED              => 'booked',
+        MDL_F2F_STATUS_NO_SHOW             => 'no_show',
+        MDL_F2F_STATUS_PARTIALLY_ATTENDED  => 'partially_attended',
+        MDL_F2F_STATUS_FULLY_ATTENDED      => 'fully_attended',
+    );
+}
 
 /**
  * Returns the human readable code for a face-to-face status
@@ -110,15 +115,15 @@ $MDL_F2F_STATUS = array(
  * @return string $string Human readable code
  */
 function facetoface_get_status($statuscode) {
-    global $MDL_F2F_STATUS;
+    $statuses = facetoface_statuses();
 
     // Check code exists.
-    if (!isset($MDL_F2F_STATUS[$statuscode])) {
+    if (!isset($statuses[$statuscode])) {
         print_error('F2F status code does not exist: ' . $statuscode);
     }
 
     // Get code.
-    $string = $MDL_F2F_STATUS[$statuscode];
+    $string = $statuses[$statuscode];
 
     // Check to make sure the status array looks to be up-to-date.
     if (constant('MDL_F2F_STATUS_' . strtoupper($string)) != $statuscode) {
@@ -405,11 +410,11 @@ function cleanup_session_data($session) {
 
     // Only numbers allowed here.
     $session->capacity = preg_replace('/[^\d]/', '', $session->capacity);
-    $MAX_CAPACITY = 100000;
+    $maxcap = 100000;
     if ($session->capacity < 1) {
         $session->capacity = 1;
-    } else if ($session->capacity > $MAX_CAPACITY) {
-        $session->capacity = $MAX_CAPACITY;
+    } else if ($session->capacity > $maxcap) {
+        $session->capacity = $maxcap;
     }
 
     // Get the decimal point separator.
@@ -2299,13 +2304,13 @@ function facetoface_take_attendance($data) {
 
     // Load session.
     if (!$session = facetoface_get_session($sessionid)) {
-        error_log('F2F: Could not load facetoface session');
+        // error_log('F2F: Could not load facetoface session');
         return false;
     }
 
     // Check facetoface has finished.
     if ($session->datetimeknown && !facetoface_has_session_started($session, time())) {
-        error_log('F2F: Can not take attendance for a session that has not yet started');
+        // error_log('F2F: Can not take attendance for a session that has not yet started');
         return false;
     }
 
@@ -2346,7 +2351,7 @@ function facetoface_take_attendance($data) {
 
             facetoface_update_signup_status($submissionid, $value, $USER->id, '', $grade);
             if (!facetoface_take_individual_attendance($submissionid, $grade)) {
-                error_log("F2F: could not mark '$submissionid' as " . $value);
+                // error_log("F2F: could not mark '$submissionid' as " . $value);
                 return false;
             }
         }
@@ -2366,7 +2371,7 @@ function facetoface_approve_requests($data) {
 
     // Check request data.
     if (empty($data->requests) || !is_array($data->requests)) {
-        error_log('F2F: No request data supplied');
+        // error_log('F2F: No request data supplied');
         return false;
     }
 
@@ -2374,19 +2379,19 @@ function facetoface_approve_requests($data) {
 
     // Load session.
     if (!$session = facetoface_get_session($sessionid)) {
-        error_log('F2F: Could not load facetoface session');
+        // error_log('F2F: Could not load facetoface session');
         return false;
     }
 
     // Load facetoface.
     if (!$facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface))) {
-        error_log('F2F: Could not load facetoface instance');
+        // error_log('F2F: Could not load facetoface instance');
         return false;
     }
 
     // Load course.
     if (!$course = $DB->get_record('course', array('id' => $facetoface->course))) {
-        error_log('F2F: Could not load course');
+        // error_log('F2F: Could not load course');
         return false;
     }
 
@@ -2400,7 +2405,7 @@ function facetoface_approve_requests($data) {
 
         // Load user submission.
         if (!$attendee = facetoface_get_attendee($sessionid, $key)) {
-            error_log('F2F: User '.$key.' not an attendee of this session');
+            // error_log('F2F: User '.$key.' not an attendee of this session');
             continue;
         }
 
@@ -2512,19 +2517,19 @@ function facetoface_format_session_times($start, $end, $tz) {
 
     $formattedsession = new stdClass();
     if (empty($tz) or empty($displaytimezones)) {
-        $targetTZ = core_date::get_user_timezone();
+        $targettz = core_date::get_user_timezone();
     } else {
-        $targetTZ = core_date::get_user_timezone($tz);
+        $targettz = core_date::get_user_timezone($tz);
     }
 
-    $formattedsession->startdate = userdate($start, get_string('strftimedate', 'langconfig'), $targetTZ);
-    $formattedsession->starttime = userdate($start, get_string('strftimetime', 'langconfig'), $targetTZ);
-    $formattedsession->enddate = userdate($end, get_string('strftimedate', 'langconfig'), $targetTZ);
-    $formattedsession->endtime = userdate($end, get_string('strftimetime', 'langconfig'), $targetTZ);
+    $formattedsession->startdate = userdate($start, get_string('strftimedate', 'langconfig'), $targettz);
+    $formattedsession->starttime = userdate($start, get_string('strftimetime', 'langconfig'), $targettz);
+    $formattedsession->enddate = userdate($end, get_string('strftimedate', 'langconfig'), $targettz);
+    $formattedsession->endtime = userdate($end, get_string('strftimetime', 'langconfig'), $targettz);
     if (empty($displaytimezones)) {
         $formattedsession->timezone = '';
     } else {
-        $formattedsession->timezone = core_date::get_localised_timezone($targetTZ);
+        $formattedsession->timezone = core_date::get_localised_timezone($targettz);
     }
     return $formattedsession;
 }
@@ -2561,8 +2566,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
     $timenow = time();
 
     $strviewallsessions = get_string('viewallsessions', 'facetoface');
-    $sessions_url = new moodle_url('/mod/facetoface/view.php', array('f' => $facetoface->id));
-    $htmlviewallsessions = html_writer::link($sessions_url, $strviewallsessions, array('class' => 'f2fsessionlinks f2fviewallsessions', 'title' => $strviewallsessions));
+    $sessionsurl = new moodle_url('/mod/facetoface/view.php', array('f' => $facetoface->id));
+    $htmlviewallsessions = html_writer::link($sessionsurl, $strviewallsessions, array('class' => 'f2fsessionlinks f2fviewallsessions', 'title' => $strviewallsessions));
 
     if ($submissions = facetoface_get_user_submissions($facetoface->id, $USER->id)) {
         // User has signedup for the instance.
@@ -2611,18 +2616,17 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                 $cancellink = '';
                 if (!facetoface_has_session_started($session, $timenow)) {
                     $strmoreinfo  = get_string('moreinfo', 'facetoface');
-                    $signup_url   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
-                    $moreinfolink = html_writer::link($signup_url, $strmoreinfo, array('class' => 'f2fsessionlinks f2fsessioninfolink', 'title' => $strmoreinfo));
+                    $signupurl   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
+                    $moreinfolink = html_writer::link($signupurl, $strmoreinfo, array('class' => 'f2fsessionlinks f2fsessioninfolink', 'title' => $strmoreinfo));
                 }
 
                 // Don't include the link to view attendees if user is lacking capability.
                 $attendeeslink = '';
                 if ($viewattendees) {
                     $strseeattendees = get_string('seeattendees', 'facetoface');
-                    $attendees_url = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id));
-                    $attendeeslink = html_writer::link($attendees_url, $strseeattendees, array('class' => 'f2fsessionlinks f2fviewattendees', 'title' => $strseeattendees));
+                    $attendeesurl = new moodle_url('/mod/facetoface/attendees.php', array('s' => $session->id));
+                    $attendeeslink = html_writer::link($attendeesurl, $strseeattendees, array('class' => 'f2fsessionlinks f2fviewattendees', 'title' => $strseeattendees));
                 }
-
 
                 $output .= html_writer::start_tag('div', array('class' => 'f2fsessiongroup'))
                     . html_writer::tag('span', $status, array('class' => 'f2fsessionnotice'))
@@ -2638,7 +2642,7 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
 
     } else if ($sessions = facetoface_get_sessions($facetoface->id)) {
         if ($facetoface->display > 0) {
-            $j=1;
+            $j = 1;
 
             $sessionsinprogress = array();
             $futuresessions = array();
@@ -2652,9 +2656,9 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                     // Finished session, don't display.
                     continue;
                 } else {
-                    $signup_url   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
+                    $signupurl   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
                     $signuptext   = 'signup';
-                    $moreinfolink = html_writer::link($signup_url, get_string($signuptext, 'facetoface'), array('class' => 'f2fsessionlinks f2fsessioninfolink'));
+                    $moreinfolink = html_writer::link($signupurl, get_string($signuptext, 'facetoface'), array('class' => 'f2fsessionlinks f2fsessioninfolink'));
 
                     $span = html_writer::tag('span', get_string('options', 'facetoface').':', array('class' => 'f2fsessionnotice'));
                 }
@@ -2757,7 +2761,7 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
     global $CFG, $DB;
 
     // First, generate all the VEVENT blocks.
-    $VEVENTS = '';
+    $vevents = '';
     foreach ($session->sessiondates as $date) {
 
         /*
@@ -2765,7 +2769,7 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
          * we use the time the session was created
          * http://www.kanzaki.com/docs/ical/dtstamp.html
          */
-        $DTSTAMP = facetoface_ical_generate_timestamp($session->timecreated);
+        $dtstamp = facetoface_ical_generate_timestamp($session->timecreated);
 
         // UIDs should be globally unique.
         $urlbits = parse_url($CFG->wwwroot);
@@ -2778,19 +2782,19 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
                 AND sus.statuscode = ? ";
         $params = array($user->id, $session->id, MDL_F2F_STATUS_USER_CANCELLED);
 
-        $UID = $DTSTAMP .
+        $uid = $dtstamp .
             '-' . substr(md5($CFG->siteidentifier . $session->id . $date->id), -8) .   // Unique identifier, salted with site identifier.
             '-' . $DB->count_records_sql($sql, $params) .                              // New UID if this is a re-signup.
             '@' . $urlbits['host'];                                                    // Hostname for this moodle installation.
 
-        $DTSTART = facetoface_ical_generate_timestamp($date->timestart);
-        $DTEND   = facetoface_ical_generate_timestamp($date->timefinish);
+        $dtstart = facetoface_ical_generate_timestamp($date->timestart);
+        $dtend   = facetoface_ical_generate_timestamp($date->timefinish);
 
         // FIXME: currently we are not sending updates if the times of the session are changed. This is not ideal!
-        $SEQUENCE = ($method & MDL_F2F_CANCEL) ? 1 : 0;
+        $sequence = ($method & MDL_F2F_CANCEL) ? 1 : 0;
 
-        $SUMMARY     = facetoface_ical_escape($facetoface->name);
-        $DESCRIPTION = facetoface_ical_escape($session->details, true);
+        $summary     = facetoface_ical_escape($facetoface->name);
+        $description = facetoface_ical_escape($session->details, true);
 
         // Get the location data from custom fields if they exist.
         $customfielddata = facetoface_get_customfielddata($session->id);
@@ -2817,45 +2821,45 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
          * and shows the newlines as [0x0A] junk. So we switch it for commas
          * here. Remember commas need to be escaped too.
          */
-        $LOCATION = str_replace('\n', '\, ', facetoface_ical_escape($locationstring));
+        $location = str_replace('\n', '\, ', facetoface_ical_escape($locationstring));
 
-        $ORGANISEREMAIL = get_config(null, 'facetoface_fromaddress');
+        $organiseremail = get_config(null, 'facetoface_fromaddress');
 
-        $ROLE = 'REQ-PARTICIPANT';
-        $CANCELSTATUS = '';
+        $role = 'REQ-PARTICIPANT';
+        $cancelstatus = '';
         if ($method & MDL_F2F_CANCEL) {
-            $ROLE = 'NON-PARTICIPANT';
-            $CANCELSTATUS = "\nSTATUS:CANCELLED";
+            $role = 'NON-PARTICIPANT';
+            $cancelstatus = "\nSTATUS:CANCELLED";
         }
 
         $icalmethod = ($method & MDL_F2F_INVITE) ? 'REQUEST' : 'CANCEL';
 
         // FIXME: if the user has input their name in another language, we need to set the LANGUAGE property parameter here.
-        $USERNAME = fullname($user);
-        $MAILTO   = $user->email;
+        $username = fullname($user);
+        $mailto   = $user->email;
 
         // The extra newline at the bottom is so multiple events start on their own lines. The very last one is trimmed outside the loop.
-        $VEVENTS .= <<<EOF
+        $vevents .= <<<EOF
 BEGIN:VEVENT
-UID:{$UID}
-DTSTAMP:{$DTSTAMP}
-DTSTART:{$DTSTART}
-DTEND:{$DTEND}
-SEQUENCE:{$SEQUENCE}
-SUMMARY:{$SUMMARY}
-LOCATION:{$LOCATION}
-DESCRIPTION:{$DESCRIPTION}
+UID:{$uid}
+DTSTAMP:{$dtstamp}
+DTSTART:{$dtstart}
+DTEND:{$dtend}
+SEQUENCE:{$sequence}
+SUMMARY:{$summary}
+LOCATION:{$location}
+DESCRIPTION:{$description}
 CLASS:PRIVATE
-TRANSP:OPAQUE{$CANCELSTATUS}
-ORGANIZER;CN={$ORGANISEREMAIL}:MAILTO:{$ORGANISEREMAIL}
-ATTENDEE;CUTYPE=INDIVIDUAL;ROLE={$ROLE};PARTSTAT=NEEDS-ACTION;
- RSVP=FALSE;CN={$USERNAME};LANGUAGE=en:MAILTO:{$MAILTO}
+TRANSP:OPAQUE{$cancelstatus}
+ORGANIZER;CN={$organiseremail}:MAILTO:{$organiseremail}
+ATTENDEE;CUTYPE=INDIVIDUAL;ROLE={$role};PARTSTAT=NEEDS-ACTION;
+ RSVP=FALSE;CN={$username};LANGUAGE=en:MAILTO:{$mailto}
 END:VEVENT
 
 EOF;
     }
 
-    $VEVENTS = trim($VEVENTS);
+    $vevents = trim($vevents);
 
     // TODO: remove the hard-coded timezone!.
     $template = <<<EOF
@@ -2882,7 +2886,7 @@ TZOFFSETFROM:+1200
 TZOFFSETTO:+1300
 END:DAYLIGHT
 END:VTIMEZONE
-{$VEVENTS}
+{$vevents}
 END:VCALENDAR
 EOF;
 
@@ -3878,7 +3882,7 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
                 $select->setMultiple(true);
                 break;
             default:
-                error_log("facetoface: invalid field type for custom field ID $field->id");
+                // error_log("facetoface: invalid field type for custom field ID $field->id");
                 continue;
         }
 

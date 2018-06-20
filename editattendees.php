@@ -86,7 +86,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
             // Make sure that the user is enroled in the course.
             if (!has_capability('moodle/course:view', $context, $adduser)) {
                 $user = $DB->get_record('user', array('id' => $adduser));
-                // Make sure that the user is enroled in the course
+                // Make sure that the user is enroled in the course.
                 if (!is_enrolled($context, $user)) {
                     if (!enrol_try_internal_enrol($course->id, $user->id)) {
                         $errors[] = get_string('error:enrolmentfailed', 'facetoface', fullname($user));
@@ -178,23 +178,30 @@ $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => "ses
 $table = new html_table();
 $table->attributes['class'] = "generaltable generalbox boxaligncenter";
 $cells = array();
-$content = html_writer::start_tag('p') . html_writer::tag('label', get_string('attendees', 'facetoface'), array('for' => 'removeselect')) . html_writer::end_tag('p');
+$content = html_writer::start_tag('p') . html_writer::tag('label', get_string('attendees', 'facetoface'),
+        array('for' => 'removeselect')) . html_writer::end_tag('p');
 $content .= $existinguserselector->display(true);
 $cell = new html_table_cell($content);
 $cell->attributes['id'] = 'existingcell';
 $cells[] = $cell;
-$content = html_writer::tag('div', html_writer::empty_tag('input', array('type' => 'submit', 'id' => 'add', 'name' => 'add', 'title' => get_string('add'), 'value' => $OUTPUT->larrow().' '.get_string('add'))), array('id' => 'addcontrols'));
-$content .= html_writer::tag('div', html_writer::empty_tag('input', array('type' => 'submit', 'id' => 'remove', 'name' => 'remove', 'title' => get_string('remove'), 'value' => $OUTPUT->rarrow().' '.get_string('remove'))), array('id' => 'removecontrols'));
+$content = html_writer::tag('div', html_writer::empty_tag('input',
+    array('type' => 'submit', 'id' => 'add', 'name' => 'add', 'title' => get_string('add'),
+        'value' => $OUTPUT->larrow().' '.get_string('add'))), array('id' => 'addcontrols'));
+$content .= html_writer::tag('div', html_writer::empty_tag('input',
+    array('type' => 'submit', 'id' => 'remove', 'name' => 'remove', 'title' => get_string('remove'),
+        'value' => $OUTPUT->rarrow().' '.get_string('remove'))), array('id' => 'removecontrols'));
 $cell = new html_table_cell($content);
 $cell->attributes['id'] = 'buttonscell';
 $cells[] = $cell;
-$content = html_writer::start_tag('p') . html_writer::tag('label', get_string('potentialattendees', 'facetoface'), array('for' => 'addselect')) . html_writer::end_tag('p');
+$content = html_writer::start_tag('p') . html_writer::tag('label',
+        get_string('potentialattendees', 'facetoface'), array('for' => 'addselect')) . html_writer::end_tag('p');
 $content .= $potentialuserselector->display(true);
 $cell = new html_table_cell($content);
 $cell->attributes['id'] = 'potentialcell';
 $cells[] = $cell;
 $table->data[] = new html_table_row($cells);
-$content = html_writer::checkbox('suppressemail', 1, $suppressemail, get_string('suppressemail', 'facetoface'), array('id' => 'suppressemail'));
+$content = html_writer::checkbox('suppressemail', 1, $suppressemail, get_string('suppressemail', 'facetoface'),
+    array('id' => 'suppressemail'));
 $content .= $OUTPUT->help_icon('suppressemail', 'facetoface');
 $cell = new html_table_cell($content);
 $cell->attributes['id'] = 'backcell';

@@ -143,21 +143,33 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             // Options.
             $options = '';
             if ($editsessions) {
-                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id)), new pix_icon('t/edit', get_string('edit', 'facetoface')), null, array('title' => get_string('editsession', 'facetoface'))) . ' ';
-                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id, 'c' => 1)), new pix_icon('t/copy', get_string('copy', 'facetoface')), null, array('title' => get_string('copysession', 'facetoface'))) . ' ';
-                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id, 'd' => 1)), new pix_icon('t/delete', get_string('delete', 'facetoface')), null, array('title' => get_string('deletesession', 'facetoface'))) . ' ';
+                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id)),
+                        new pix_icon('t/edit', get_string('edit', 'facetoface')), null,
+                        array('title' => get_string('editsession', 'facetoface'))) . ' ';
+                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id, 'c' => 1)),
+                        new pix_icon('t/copy', get_string('copy', 'facetoface')), null,
+                        array('title' => get_string('copysession', 'facetoface'))) . ' ';
+                $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id, 'd' => 1)),
+                        new pix_icon('t/delete', get_string('delete', 'facetoface')), null,
+                        array('title' => get_string('deletesession', 'facetoface'))) . ' ';
                 $options .= html_writer::empty_tag('br');
             }
             if ($viewattendees) {
-                $options .= html_writer::link('attendees.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('attendees', 'facetoface'), array('title' => get_string('seeattendees', 'facetoface'))) . html_writer::empty_tag('br');
+                $options .= html_writer::link('attendees.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,
+                        get_string('attendees', 'facetoface'),
+                        array('title' => get_string('seeattendees', 'facetoface'))) . html_writer::empty_tag('br');
             }
             if ($isbookedsession) {
-                $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('moreinfo', 'facetoface'), array('title' => get_string('moreinfo', 'facetoface'))) . html_writer::empty_tag('br');
+                $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,
+                        get_string('moreinfo', 'facetoface'),
+                        array('title' => get_string('moreinfo', 'facetoface'))) . html_writer::empty_tag('br');
                 if ($session->allowcancellations) {
-                    $options .= html_writer::link('cancelsignup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface, get_string('cancelbooking', 'facetoface'), array('title' => get_string('cancelbooking', 'facetoface')));
+                    $options .= html_writer::link('cancelsignup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
+                        get_string('cancelbooking', 'facetoface'), array('title' => get_string('cancelbooking', 'facetoface')));
                 }
             } else if (!$sessionstarted and !$bookedsession) {
-                $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface, get_string('signup', 'facetoface'));
+                $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,
+                    get_string('signup', 'facetoface'));
             }
             if (empty($options)) {
                 $options = get_string('none', 'facetoface');

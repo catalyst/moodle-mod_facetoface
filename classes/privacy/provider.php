@@ -286,7 +286,8 @@ class provider implements
 
                 $transaction = $DB->start_delegated_transaction();
                 $DB->delete_records_select('facetoface_signups_status',
-                    'signupid IN (SELECT id FROM {facetoface_signups} WHERE userid = :userid AND sessionid ' . $f2fselect . ')', $params);
+                    'signupid IN (SELECT id FROM {facetoface_signups} WHERE userid = :userid AND sessionid ' . $f2fselect . ')',
+                    $params);
                 $DB->delete_records_select('facetoface_signups', 'userid = :userid AND sessionid ' . $f2fselect, $params);
                 $DB->delete_records_select('facetoface_session_roles', 'userid = :userid AND sessionid ' . $f2fselect, $params);
 
