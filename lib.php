@@ -1447,28 +1447,11 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
 
     $i = $i - 1; // Will be incremented BEFORE each row is written.
     foreach ($sessions as $session) {
-        $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
-
-        $sessiondate = false;
-        $starttime   = get_string('wait-listed', 'facetoface');
-        $finishtime  = get_string('wait-listed', 'facetoface');
         $status      = get_string('wait-listed', 'facetoface');
 
         $sessiontrainers = facetoface_get_trainers($session->id);
 
         if ($session->datetimeknown) {
-
-            // Display only the first date.
-            if (method_exists($worksheet, 'write_date')) {
-
-                // Needs the patch in MDL-20781.
-                $sessiondate = (int)$session->timestart;
-            } else {
-                $sessiondate = userdate($session->timestart, get_string('strftimedate', 'langconfig'));
-            }
-            $starttime   = userdate($session->timestart, get_string('strftimetime', 'langconfig'));
-            $finishtime  = userdate($session->timefinish, get_string('strftimetime', 'langconfig'));
-
             if ($session->timestart < $timenow) {
                 $status = get_string('sessionover', 'facetoface');
             } else {
@@ -1488,7 +1471,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
         if (!empty($sessionsignups[$session->id])) {
             foreach ($sessionsignups[$session->id] as $attendee) {
                 $i++;
-                $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime);
+                $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat);
                 if ($trainerroles) {
                     foreach (array_keys($trainerroles) as $roleid) {
                         if (!empty($sessiontrainers[$roleid])) {
@@ -1547,7 +1530,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
             // No one is sign-up, so let's just print the basic info.
             $i++;
             // helper
-            $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime);
+            $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat);
 
             foreach ($userfields as $unused) {
                 $worksheet->write_string($i, $j++, '-');
@@ -1576,10 +1559,21 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
  * @return int The next Column in the sheet.
  */
 
-function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime) {
+function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat) {
+    global $DB;
+
+    $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
     $j = 0;
 
-    // Custom session fields.
+    $starttime   = get_string('wait-listed', 'facetoface');
+    $finishtime  = get_string('wait-listed', 'facetoface');
+
+    if ($session->datetimeknown) {
+        $sessiondate = userdate($session->timestart, get_string('strftimedate', 'langconfig'));
+        $starttime   = userdate($session->timestart, get_string('strftimetime', 'langconfig'));
+        $finishtime  = userdate($session->timefinish, get_string('strftimetime', 'langconfig'));
+    }
+
     foreach ($customsessionfields as $field) {
         if (empty($field->showinsummary)) {
             continue; // Skip.
