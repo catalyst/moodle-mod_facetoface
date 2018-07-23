@@ -1569,7 +1569,13 @@ function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, 
     $finishtime  = get_string('wait-listed', 'facetoface');
 
     if ($session->datetimeknown) {
-        $sessiondate = userdate($session->timestart, get_string('strftimedate', 'langconfig'));
+        if (method_exists($worksheet, 'write_date')) {
+            // Needs the patch in MDL-20781.
+            $sessiondate = (int)$session->timestart;
+        } else {
+            $sessiondate = userdate($session->timestart, get_string('strftimedate', 'langconfig'));
+        }
+
         $starttime   = userdate($session->timestart, get_string('strftimetime', 'langconfig'));
         $finishtime  = userdate($session->timefinish, get_string('strftimetime', 'langconfig'));
     }
