@@ -1497,27 +1497,14 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
 
                     if ('firstaccess' == $shortname || 'lastaccess' == $shortname ||
                         'lastlogin' == $shortname || 'currentlogin' == $shortname) {
-
-                        if (method_exists($worksheet, 'write_date')) {
-                            $worksheet->write_date($i, $j++, (int)$value, $dateformat);
-                        } else {
-                            $worksheet->write_string($i, $j++, userdate($value, get_string('strftimedate', 'langconfig')));
-                        }
+                        $worksheet->write_date($i, $j++, (int)$value, $dateformat);
                     } else {
                         $worksheet->write_string($i, $j++, $value);
                     }
                 }
                 $worksheet->write_string($i, $j++, $attendee->grade);
 
-                if (method_exists($worksheet, 'write_date')) {
-                    $worksheet->write_date($i, $j++, (int)$attendee->timecreated, $dateformat);
-                } else {
-                    $signupdate = userdate($attendee->timecreated, get_string('strftimedatetime', 'langconfig'));
-                    if (empty($signupdate)) {
-                        $signupdate = '-';
-                    }
-                    $worksheet->write_string($i, $j++, $signupdate);
-                }
+                $worksheet->write_date($i, $j++, (int)$attendee->timecreated, $dateformat);
 
                 if (!empty($coursename)) {
                     $worksheet->write_string($i, $j++, $coursename);
