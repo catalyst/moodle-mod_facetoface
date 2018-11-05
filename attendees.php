@@ -55,6 +55,14 @@ if (!$cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course
 // Load attendees.
 $attendees = facetoface_get_attendees($session->id);
 
+function sort_attendees($a, $b) {
+    if ( $a->firstname < $b->firstname ) return -1;
+    if ( $a->firstname > $b->firstname ) return 1;
+    return 0;
+}
+
+uasort($attendees, 'sort_attendees');
+
 // Load cancellations.
 $cancellations = facetoface_get_cancellations($session->id);
 
