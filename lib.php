@@ -2423,7 +2423,7 @@ function facetoface_approve_requests($data) {
                         $status,
                         $attendee->id
                     )) {
-                    continue;
+                    break;
                 }
 
                 break;
@@ -2431,7 +2431,7 @@ function facetoface_approve_requests($data) {
             case 0:
             default:
                 // Change nothing.
-                continue;
+                break;
         }
     }
 
@@ -3848,7 +3848,7 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
                 break;
             default:
                 // error_log("facetoface: invalid field type for custom field ID $field->id");
-                continue;
+                break;
         }
 
         $mform->setType($fieldname, PARAM_TEXT);
