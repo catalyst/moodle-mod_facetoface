@@ -3835,7 +3835,7 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
                 break;
             default:
                 // error_log("facetoface: invalid field type for custom field ID $field->id");
-                break;
+                continue 2;
         }
 
         $mform->setType($fieldname, PARAM_TEXT);
