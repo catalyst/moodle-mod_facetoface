@@ -3376,12 +3376,8 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
     global $CFG, $DB;
 
     $table = new html_table();
-    $table->summary = get_string('sessionsdetailstablesummary', 'facetoface');
     $table->attributes['class'] = 'generaltable f2fsession';
     $table->align = array('right', 'left');
-    if ($calendaroutput) {
-        $table->tablealign = 'left';
-    }
 
     $customfields = facetoface_get_session_customfields();
     $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
@@ -3798,8 +3794,6 @@ function facetoface_list_of_sitenotices() {
 
     if ($notices = $DB->get_records('facetoface_notice', array(), 'name', 'id, name')) {
         $table = new html_table();
-        $table->width = '50%';
-        $table->tablealign = 'left';
         $table->data = array();
         $table->size = array('100%');
         foreach ($notices as $notice) {

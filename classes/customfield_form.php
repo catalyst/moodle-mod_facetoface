@@ -45,7 +45,7 @@ class mod_facetoface_customfield_form extends moodleform {
 
         $mform->addElement('text', 'name', get_string('name'), 'maxlength="255" size="50"');
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->setType('name', PARAM_MULTILANG);
+        $mform->setType('name', PARAM_TEXT);
 
         $mform->addElement('text', 'shortname', get_string('shortname'), 'maxlength="255" size="25"');
         $mform->addRule('shortname', null, 'required', null, 'client');
@@ -61,10 +61,10 @@ class mod_facetoface_customfield_form extends moodleform {
         $mform->setDefault('type', 0);
 
         $mform->addElement('text', 'defaultvalue', get_string('setting:defaultvalue', 'facetoface'), 'maxlength="255" size="30"');
-        $mform->setType('defaultvalue', PARAM_MULTILANG);
+        $mform->setType('defaultvalue', PARAM_TEXT);
 
         $mform->addElement('textarea', 'possiblevalues', get_string('setting:possiblevalues', 'facetoface'), 'rows="5" cols="30"');
-        $mform->setType('possiblevalues', PARAM_MULTILANG);
+        $mform->setType('possiblevalues', PARAM_TEXT);
         $mform->disabledIf('possiblevalues', 'type', 'eq', 0);
 
         $mform->addElement('checkbox', 'required', get_string('required'));
