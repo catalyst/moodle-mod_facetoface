@@ -245,7 +245,6 @@ if ($canviewattendees || $cantakeattendance) {
 
         $table = new html_table();
         $table->head = array(get_string('name'));
-        $table->summary = get_string('attendeestablesummary', 'facetoface');
         $table->align = array('left');
         $table->size = array('100%');
 
@@ -361,7 +360,6 @@ if ($canapproverequests) {
                 'value' => $backtoallsessions)) . html_writer::end_tag('p');
 
         $table = new html_table();
-        $table->summary = get_string('requeststablesummary', 'facetoface');
         $table->head = array(get_string('name'), get_string('timerequested', 'facetoface'),
                 get_string('decidelater', 'facetoface'), get_string('decline', 'facetoface'),
                 get_string('approve', 'facetoface'));

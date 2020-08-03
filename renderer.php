@@ -57,7 +57,6 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         $timenow = time();
 
         $table = new html_table();
-        $table->summary = get_string('previoussessionslist', 'facetoface');
         $table->head = $tableheader;
         $table->data = array();
 

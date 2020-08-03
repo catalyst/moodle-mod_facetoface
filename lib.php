@@ -1471,7 +1471,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
         if (!empty($sessionsignups[$session->id])) {
             foreach ($sessionsignups[$session->id] as $attendee) {
                 $i++;
-                $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat);
+                $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $session->timestart, $session->timefinish);
                 if ($trainerroles) {
                     foreach (array_keys($trainerroles) as $roleid) {
                         if (!empty($sessiontrainers[$roleid])) {
@@ -1517,7 +1517,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
             // No one is sign-up, so let's just print the basic info.
             $i++;
             // helper
-            $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat);
+            $j = facetoface_write_activity_attendance_helper($worksheet, $i, $session, $customsessionfields, $status, $dateformat, $session->timestart, $session->timefinish);
 
             foreach ($userfields as $unused) {
                 $worksheet->write_string($i, $j++, '-');
@@ -1546,21 +1546,10 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
  * @return int The next Column in the sheet.
  */
 
-function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat) {
-    global $DB;
-
-    $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
+function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime) {
     $j = 0;
 
-    $starttime   = get_string('wait-listed', 'facetoface');
-    $finishtime  = get_string('wait-listed', 'facetoface');
-
-    if ($session->datetimeknown) {
-        $sessiondate = (int)$session->timestart;
-        $starttime   = userdate($session->timestart, get_string('strftimetime', 'langconfig'));
-        $finishtime  = userdate($session->timefinish, get_string('strftimetime', 'langconfig'));
-    }
-
+    // Custom session fields.
     foreach ($customsessionfields as $field) {
         if (empty($field->showinsummary)) {
             continue; // Skip.
@@ -1580,10 +1569,14 @@ function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, 
     if (empty($sessiondate)) {
         $worksheet->write_string($i, $j++, $status); // Session date.
     } else {
-        $worksheet->write_date($i, $j++, $sessiondate, $dateformat);
+        if (method_exists($worksheet, 'write_date')) {
+            $worksheet->write_date($i, $j++, $sessiondate, $dateformat);
+        } else {
+            $worksheet->write_string($i, $j++, $sessiondate);
+        }
     }
-    $worksheet->write_string($i, $j++, $starttime);
-    $worksheet->write_string($i, $j++, $finishtime);
+    $worksheet->write_string($i, $j++, userdate($starttime));
+    $worksheet->write_string($i, $j++, userdate($finishtime));
     $worksheet->write_number($i, $j++, (int)$session->duration);
     $worksheet->write_string($i, $j++, $status);
 
@@ -3376,12 +3369,8 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
     global $CFG, $DB;
 
     $table = new html_table();
-    $table->summary = get_string('sessionsdetailstablesummary', 'facetoface');
     $table->attributes['class'] = 'generaltable f2fsession';
     $table->align = array('right', 'left');
-    if ($calendaroutput) {
-        $table->tablealign = 'left';
-    }
 
     $customfields = facetoface_get_session_customfields();
     $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
@@ -3798,8 +3787,6 @@ function facetoface_list_of_sitenotices() {
 
     if ($notices = $DB->get_records('facetoface_notice', array(), 'name', 'id, name')) {
         $table = new html_table();
-        $table->width = '50%';
-        $table->tablealign = 'left';
         $table->data = array();
         $table->size = array('100%');
         foreach ($notices as $notice) {
@@ -3848,7 +3835,7 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
                 break;
             default:
                 // error_log("facetoface: invalid field type for custom field ID $field->id");
-                break;
+                continue 2;
         }
 
         $mform->setType($fieldname, PARAM_TEXT);

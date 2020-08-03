@@ -45,7 +45,7 @@ class mod_facetoface_sitenotice_form extends moodleform {
 
         $mform->addElement('text', 'name', get_string('name'), 'maxlength="255" size="50"');
         $mform->addRule('name', null, 'required', null, 'client');
-        $mform->setType('name', PARAM_MULTILANG);
+        $mform->setType('name', PARAM_TEXT);
 
         $mform->addElement('editor', 'text', get_string('noticetext', 'facetoface'), array('rows'  => 10, 'cols'  => 64));
         $mform->setType('text', PARAM_RAW);

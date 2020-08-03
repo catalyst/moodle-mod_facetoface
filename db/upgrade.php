@@ -87,14 +87,14 @@ function xmldb_facetoface_upgrade($oldversion=0) {
     if ($result && $oldversion < 2008050500) {
         $table = new xmldb_table('facetoface');
         $field = new xmldb_field('thirdpartywaitlist');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'thirdparty');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, '0', 'thirdparty');
         $result = $result && $dbman->add_field($table, $field);
     }
 
     if ($result && $oldversion < 2008061000) {
         $table = new xmldb_table('facetoface_submissions');
         $field = new xmldb_field('notificationtype');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0', 'timemodified');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0', 'timemodified');
         $result = $result && $dbman->add_field($table, $field);
     }
 
@@ -146,7 +146,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         // Define field timemodified to be added to facetoface_submissions.
         $table = new xmldb_table('facetoface_submissions');
         $field = new xmldb_field('timecancelled');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '20', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'timemodified');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '20', true, XMLDB_NOTNULL, null, 0, 'timemodified');
 
         // Launch add field.
         $result = $result && $dbman->add_field($table, $field);
@@ -165,29 +165,29 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         $result = $result && $dbman->add_field($table, $field2);
 
         $field3 = new xmldb_field('showoncalendar');
-        $field3->set_attributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1', 'description');
+        $field3->set_attributes(XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, '1', 'description');
         $result = $result && $dbman->add_field($table, $field3);
     }
 
     if ($result && $oldversion < 2009111600) {
 
         $table1 = new xmldb_table('facetoface_session_field');
-        $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table1->add_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null);
         $table1->add_field('shortname', XMLDB_TYPE_CHAR, '255', null, null, null, null);
-        $table1->add_field('type', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table1->add_field('type', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0');
         $table1->add_field('possiblevalues', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
-        $table1->add_field('required', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table1->add_field('required', XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, '0');
         $table1->add_field('defaultvalue', XMLDB_TYPE_CHAR, '255', null, null, null, null);
-        $table1->add_field('isfilter', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1');
-        $table1->add_field('showinsummary', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '1');
+        $table1->add_field('isfilter', XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, '1');
+        $table1->add_field('showinsummary', XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, '1');
         $table1->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $result = $result && $dbman->create_table($table1);
 
         $table2 = new xmldb_table('facetoface_session_data');
-        $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table2->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
-        $table2->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table2->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0');
+        $table2->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0');
         $table2->add_field('data', XMLDB_TYPE_CHAR, '255', null, null, null, null);
         $table2->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $result = $result && $dbman->create_table($table2);
@@ -343,36 +343,36 @@ function xmldb_facetoface_upgrade($oldversion=0) {
 
         // Create table facetoface_session_roles.
         $table = new xmldb_table('facetoface_session_roles');
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('roleid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('roleid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('sessionid', XMLDB_KEY_FOREIGN, array('sessionid'), 'facetoface_sessions', array('id'));
         $result = $result && $dbman->create_table($table);
 
         // Create table facetoface_signups.
         $table = new xmldb_table('facetoface_signups');
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('mailedreminder', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('sessionid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('userid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('mailedreminder', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
         $table->add_field('discountcode', XMLDB_TYPE_TEXT, 'small', null, null, null, null);
-        $table->add_field('notificationtype', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('notificationtype', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('sessionid', XMLDB_KEY_FOREIGN, array('sessionid'), 'facetoface_sessions', array('id'));
         $result = $result && $dbman->create_table($table);
 
         // Create table facetoface_signups_status.
         $table = new xmldb_table('facetoface_signups_status');
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('signupid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('statuscode', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('superceded', XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
-        $table->add_field('createdby', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('signupid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('statuscode', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('superceded', XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, null);
+        $table->add_field('createdby', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
         $table->add_field('grade', XMLDB_TYPE_NUMBER, '10, 5', null, null, null, '0');
         $table->add_field('note', XMLDB_TYPE_TEXT, 'small', null, null, null, null);
-        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, null);
+        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, null);
         $table->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table->add_key('signupid', XMLDB_KEY_FOREIGN, array('signupid'), 'facetoface_signups', array('id'));
         $result = $result && $dbman->create_table($table);
@@ -456,7 +456,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         // New field necessary for overbooking.
         $table = new xmldb_table('facetoface_sessions');
         $field1 = new xmldb_field('allowoverbook');
-        $field1->set_attributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'capacity');
+        $field1->set_attributes(XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, 0, 'capacity');
         $result = $result && $dbman->add_field($table, $field1);
     }
 
@@ -474,7 +474,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         // New field for storing manager approval requirement.
         $table = new xmldb_table('facetoface');
         $field = new xmldb_field('approvalreqd');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, '1', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 0, 'showoncalendar');
+        $field->set_attributes(XMLDB_TYPE_INTEGER, '1', true, XMLDB_NOTNULL, null, 0, 'showoncalendar');
         $result = $result && $dbman->add_field($table, $field);
     }
 
@@ -520,16 +520,16 @@ function xmldb_facetoface_upgrade($oldversion=0) {
 
         // Add tables required for site notices.
         $table1 = new xmldb_table('facetoface_notice');
-        $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table1->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table1->add_field('name', XMLDB_TYPE_CHAR, '255', null, null, null, null);
         $table1->add_field('text', XMLDB_TYPE_TEXT, 'medium', null, null, null, null);
         $table1->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $result = $result && $dbman->create_table($table1);
 
         $table2 = new xmldb_table('facetoface_notice_data');
-        $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table2->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
-        $table2->add_field('noticeid', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED, XMLDB_NOTNULL, null, '0');
+        $table2->add_field('id', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table2->add_field('fieldid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0');
+        $table2->add_field('noticeid', XMLDB_TYPE_INTEGER, '10', true, XMLDB_NOTNULL, null, '0');
         $table2->add_field('data', XMLDB_TYPE_CHAR, '255', null, null, null, null);
         $table2->add_key('primary', XMLDB_KEY_PRIMARY, array('id'));
         $table2->add_index('facetoface_notice_date_fieldid', XMLDB_INDEX_NOTUNIQUE, array('fieldid'));
@@ -704,7 +704,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         // Add a field for the user calendar entry checkbox.
         $table = new xmldb_table('facetoface');
         $field = new xmldb_field('usercalentry');
-        $field->set_attributes(XMLDB_TYPE_INTEGER, 1, XMLDB_UNSIGNED, XMLDB_NOTNULL, null, 1);
+        $field->set_attributes(XMLDB_TYPE_INTEGER, 1, true, XMLDB_NOTNULL, null, 1);
         if (!$dbman->field_exists($table, $field)) {
             $dbman->add_field($table, $field);
         }

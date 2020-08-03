@@ -75,7 +75,6 @@ if (!$facetofaces = get_all_instances_in_course('facetoface', $course)) {
 $timenow = time();
 
 $table = new html_table();
-$table->width = '100%';
 
 if ($course->format == 'weeks' && has_capability('mod/facetoface:viewattendees', $context)) {
     $table->head  = array ($strweek, $strfacetofacename, get_string('sign-ups', 'facetoface'));
