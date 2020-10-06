@@ -28,9 +28,11 @@ defined('MOODLE_INTERNAL') || die();
 
 use core_privacy\local\metadata\collection;
 use core_privacy\local\request\approved_contextlist;
+use core_privacy\local\request\approved_userlist;
 use core_privacy\local\request\contextlist;
 use core_privacy\local\request\deletion_criteria;
 use core_privacy\local\request\transform;
+use core_privacy\local\request\userlist;
 use core_privacy\local\request\writer;
 
 /**
@@ -42,6 +44,9 @@ use core_privacy\local\request\writer;
 class provider implements
     // This plugin stores personal data.
     \core_privacy\local\metadata\provider,
+
+    // This plugin deals with user lists
+    \core_privacy\local\request\core_userlist_provider,
 
     // This plugin is a core_user_data_provider.
     \core_privacy\local\request\plugin\provider {
@@ -294,5 +299,67 @@ class provider implements
                 $transaction->allow_commit();
             }
         }
+    }
+
+    /**
+     * Get the list of users who have data within a context.
+     *
+     * @param userlist $userlist The userlist containing the list of users who have data in this context/plugin combination
+     */
+    public static function get_users_in_context(userlist $userlist) {
+        $context = $userlist->get_context();
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        $sql = "
+            SELECT f2fsignups.userid
+            FROM {course_modules} cm
+                INNER JOIN {modules} m ON m.id = cm.module AND m.name = 'facetoface'
+                INNER JOIN {context} c ON c.instanceid = cm.id
+                INNER JOIN {facetoface} f2f ON f2f.id = cm.instance
+                INNER JOIN {facetoface_sessions} f2fsessions ON f2fsessions.facetoface = f2f.id
+                INNER JOIN {facetoface_signups} f2fsignups ON f2fsignups.sessionid = f2fsessions.id
+            WHERE c.contextlevel = :contextlevel AND c.id = :contextid";
+
+        $params = [
+            'contextlevel' => CONTEXT_MODULE,
+            'contextid'    => $context->id
+        ];
+        $userlist->add_from_sql('userid', $sql, $params);
+    }
+
+    /**
+     * Delete multiple users within a single context
+     *
+     * @param approved_userlist $userlist The approved context and user information to delete information for.
+     */
+    public static function delete_data_for_users(approved_userlist $userlist) {
+        global $DB;
+        $context = $userlist->get_context();
+        if (!is_a($context, \context_module::class)) {
+            return;
+        }
+
+        $cm = get_coursemodule_from_id('facetoface', $context->instanceid);
+        $userids = $userlist->get_userids();
+        list ($insql, $inparams) = $DB->get_in_or_equal($userids, SQL_PARAMS_NAMED);
+
+        // Get session id from module id
+        $sessionid = $DB->get_records_select(
+            'facetoface_sessions',
+            "facetoface = :facetoface",
+            [
+                'facetoface' => $cm->instance
+            ]
+        );
+
+        $inparams['sessionid'] = $sessionid;
+
+        $DB->delete_records_select(
+            'facetoface_signups',
+            "sessionid = :sessionid AND userid $insql",
+            $inparams
+        );
     }
 }
