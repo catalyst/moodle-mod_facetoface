@@ -122,8 +122,10 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->setType('confirmationsubject', PARAM_TEXT);
         $mform->setDefault('confirmationsubject', get_string('setting:defaultconfirmationsubjectdefault', 'facetoface'));
 
-        $mform->addElement('textarea', 'confirmationmessage', get_string('email:message', 'facetoface'), 'wrap="virtual" rows="15" cols="70"');
-        $mform->setDefault('confirmationmessage', get_string('setting:defaultconfirmationmessagedefault', 'facetoface'));
+        $editoroptions = ['trusttext' => true];
+        $mform->addElement('editor', 'confirmationmessage', get_string('email:message', 'facetoface'), null, $editoroptions);
+        $mform->setType('confirmationmessage', PARAM_RAW);
+        $mform->setDefault('confirmationmessage', get_string('setting:defaultconfirmationmessagedefault2', 'facetoface'));
 
         $mform->addElement('checkbox', 'emailmanagerconfirmation', get_string('emailmanager', 'facetoface'));
         $mform->addHelpButton('emailmanagerconfirmation', 'emailmanagerconfirmation', 'facetoface');
