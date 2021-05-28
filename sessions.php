@@ -330,13 +330,13 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 }
 
 if ($c) {
-    $heading = get_string('copyingsession', 'facetoface', $facetoface->name);
+    $heading = get_string('copyingsession', 'facetoface', format_string($facetoface->name));
 } else if ($d) {
-    $heading = get_string('deletingsession', 'facetoface', $facetoface->name);
+    $heading = get_string('deletingsession', 'facetoface', format_string($facetoface->name));
 } else if ($id || $f) {
-    $heading = get_string('addingsession', 'facetoface', $facetoface->name);
+    $heading = get_string('addingsession', 'facetoface', format_string($facetoface->name));
 } else {
-    $heading = get_string('editingsession', 'facetoface', $facetoface->name);
+    $heading = get_string('editingsession', 'facetoface', format_string($facetoface->name));
 }
 
 $pagetitle = format_string($facetoface->name);

@@ -101,10 +101,10 @@ foreach ($facetofaces as $facetoface) {
 
     if (!$facetoface->visible) {
         // Show dimmed if the mod is hidden.
-        $link = html_writer::link("view.php?f=$facetoface->id", $facetoface->name, array('class' => 'dimmed'));
+        $link = html_writer::link("view.php?f=$facetoface->id", format_string($facetoface->name), array('class' => 'dimmed'));
     } else {
         // Show normal if the mod is visible.
-        $link = html_writer::link("view.php?f=$facetoface->id", $facetoface->name);
+        $link = html_writer::link("view.php?f=$facetoface->id", format_string($facetoface->name));
     }
 
     $printsection = '';

@@ -131,7 +131,7 @@ $PAGE->set_heading($course->fullname);
 
 echo $OUTPUT->header();
 
-$heading = get_string('cancelbookingfor', 'facetoface', $facetoface->name);
+$heading = get_string('cancelbookingfor', 'facetoface', format_string($facetoface->name));
 
 $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
 $signedup = facetoface_check_signup($facetoface->id);

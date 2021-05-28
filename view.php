@@ -107,7 +107,7 @@ if (empty($cm->visible) and !has_capability('mod/facetoface:viewemptyactivities'
     notice(get_string('activityiscurrentlyhidden'));
 }
 echo $OUTPUT->box_start();
-echo $OUTPUT->heading(get_string('allsessionsin', 'facetoface', $facetoface->name), 2);
+echo $OUTPUT->heading(get_string('allsessionsin', 'facetoface', format_string($facetoface->name)), 2);
 
 if ($facetoface->intro) {
     echo $OUTPUT->box_start('generalbox', 'description');
