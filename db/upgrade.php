@@ -46,8 +46,8 @@ function facetoface_send_admin_upgrade_msg($data) {
 
     $table = new html_table();
     $table->head = array('Custom field ID',
-                         'Custom field original shortname',
-                         'Custom field new shortname');
+        'Custom field original shortname',
+        'Custom field new shortname');
     $table->data = $data;
     $table->align = array ('center', 'center', 'center');
 
@@ -745,6 +745,21 @@ function xmldb_facetoface_upgrade($oldversion=0) {
 
         // Facetoface savepoint reached.
         upgrade_mod_savepoint(true, 2017053000, 'facetoface');
+    }
+
+    if ($oldversion < 2020080401) {
+
+        // Define field confirmationmessageformat to be added to facetoface.
+        $table = new xmldb_table('facetoface');
+        $field = new xmldb_field('confirmationmessageformat', XMLDB_TYPE_INTEGER, '2', null, XMLDB_NOTNULL, null, '0', 'confirmationmessage');
+
+        // Conditionally launch add field confirmationmessageformat.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Facetoface savepoint reached.
+        upgrade_mod_savepoint(true, 2020080401, 'facetoface');
     }
 
     return $result;
