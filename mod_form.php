@@ -122,7 +122,15 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->setType('confirmationsubject', PARAM_TEXT);
         $mform->setDefault('confirmationsubject', get_string('setting:defaultconfirmationsubjectdefault', 'facetoface'));
 
-        $editoroptions = ['trusttext' => true];
+        $editoroptions = [
+            'subdirs' => false,
+            'maxbytes' => $CFG->maxbytes,
+            'maxfiles' => -1,
+            'changeformat' => false,
+            'context' => $this->context,
+            'noclean' => true,
+            'trusttext' => false,
+        ];
         $mform->addElement('editor', 'confirmationmessage', get_string('email:message', 'facetoface'), null, $editoroptions);
         $mform->setType('confirmationmessage', PARAM_RAW);
         $mform->setDefault('confirmationmessage', get_string('setting:defaultconfirmationmessagedefault2', 'facetoface'));
@@ -205,6 +213,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
     }
 
     public function data_preprocessing(&$defaultvalues) {
+        global $CFG;
 
         // Fix manager emails.
         if (empty($defaultvalues['confirmationinstrmngr'])) {
@@ -223,6 +232,31 @@ class mod_facetoface_mod_form extends moodleform_mod {
             $defaultvalues['cancellationinstrmngr'] = null;
         } else {
             $defaultvalues['emailmanagercancellation'] = 1;
+        }
+
+        if ($this->current->instance) {
+            $draftitemid = file_get_submitted_draft_itemid('confirmationmessage');
+            $defaultvalues['confirmationmessage'] = [
+                'format' => FORMAT_HTML,
+                'text' => file_prepare_draft_area(
+                    $draftitemid,
+                    $this->context->id,
+                    'mod_facetoface',
+                    'confirmationmessage',
+                    0,
+                    [
+                        'subdirs' => 1,
+                        'maxbytes' => $CFG->maxbytes,
+                        'maxfiles' => 0,
+                        'changeformat' => false,
+                        'context' => $this->context,
+                        'noclean' => true,
+                        'trusttext' => false,
+                    ],
+                    $defaultvalues['confirmationmessage']
+                ),
+                'itemid' => $draftitemid,
+            ];
         }
     }
 }
