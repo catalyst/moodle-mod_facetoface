@@ -177,7 +177,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
 echo $OUTPUT->header();
 
-$heading = get_string('signupfor', 'facetoface', $facetoface->name);
+$heading = get_string('signupfor', 'facetoface', format_string($facetoface->name));
 
 $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
 $signedup = facetoface_check_signup($facetoface->id);

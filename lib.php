@@ -635,7 +635,7 @@ function facetoface_get_facetoface_menu() {
         $i = 1;
         foreach ($facetofaces as $facetoface) {
             $f = $facetoface->id;
-            $facetofacemenu[$f] = $facetoface->shortname . ' --- ' . $facetoface->name;
+            $facetofacemenu[$f] = $facetoface->shortname . ' --- ' . format_string($facetoface->name);
             $i++;
         }
 
@@ -1848,7 +1848,7 @@ function facetoface_send_request_notice($facetoface, $session, $userid) {
 
     $postsubject = facetoface_email_substitutions(
             $facetoface->requestsubject,
-            $facetoface->name,
+            format_string($facetoface->name),
             $facetoface->reminderperiod,
             $user,
             $session,
@@ -1857,7 +1857,7 @@ function facetoface_send_request_notice($facetoface, $session, $userid) {
 
     $posttext = facetoface_email_substitutions(
             $facetoface->requestmessage,
-            $facetoface->name,
+            format_string($facetoface->name),
             $facetoface->reminderperiod,
             $user,
             $session,
@@ -1866,7 +1866,7 @@ function facetoface_send_request_notice($facetoface, $session, $userid) {
 
     $posttextmgrheading = facetoface_email_substitutions(
             $facetoface->requestinstrmngr,
-            $facetoface->name,
+            format_string($facetoface->name),
             $facetoface->reminderperiod,
             $user,
             $session,
@@ -2033,9 +2033,9 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
                 $session->sessiondates = array($sessiondate); // One day at a time.
 
                 $filename = facetoface_get_ical_attachment($notificationtype, $facetoface, $session, $user);
-                $subject = facetoface_email_substitutions($postsubject, $facetoface->name, $facetoface->reminderperiod,
+                $subject = facetoface_email_substitutions($postsubject, format_string($facetoface->name), $facetoface->reminderperiod,
                                                           $user, $session, $session->id);
-                $body = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod,
+                $body = facetoface_email_substitutions($posttext, format_string($facetoface->name), $facetoface->reminderperiod,
                                                        $user, $session, $session->id);
                  $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
                 $htmlbody = $htmlmessage;
@@ -2047,9 +2047,9 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
             $session->sessiondates = $sessiondates;
         } else {
             $filename = facetoface_get_ical_attachment($notificationtype, $facetoface, $session, $user);
-            $subject = facetoface_email_substitutions($postsubject, $facetoface->name, $facetoface->reminderperiod,
+            $subject = facetoface_email_substitutions($postsubject, format_string($facetoface->name), $facetoface->reminderperiod,
                                                       $user, $session, $session->id);
-            $body = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod,
+            $body = facetoface_email_substitutions($posttext, format_string($facetoface->name), $facetoface->reminderperiod,
                                                    $user, $session, $session->id);
              $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
             $htmlbody = $htmlmessage; 
@@ -2059,12 +2059,12 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
     }
 
     // Fill-in the email placeholders.
-    $postsubject = facetoface_email_substitutions($postsubject, $facetoface->name, $facetoface->reminderperiod,
+    $postsubject = facetoface_email_substitutions($postsubject, format_string($facetoface->name), $facetoface->reminderperiod,
                                                   $user, $session, $session->id);
-    $posttext = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod,
+    $posttext = facetoface_email_substitutions($posttext, format_string($facetoface->name), $facetoface->reminderperiod,
                                                $user, $session, $session->id);
 
-    $posttextmgrheading = facetoface_email_substitutions($posttextmgrheading, $facetoface->name, $facetoface->reminderperiod,
+    $posttextmgrheading = facetoface_email_substitutions($posttextmgrheading, format_string($facetoface->name), $facetoface->reminderperiod,
                                                          $user, $session, $session->id);
 
     $posthtml = ''; // FIXME.
@@ -2963,7 +2963,7 @@ function facetoface_grade_item_update($facetoface, $grades=null) {
         $facetoface->cmidnumber = $DB->get_field_sql($sql, array($facetoface->id));
     }
 
-    $params = array('itemname' => $facetoface->name,
+    $params = array('itemname' => format_string($facetoface->name),
                     'idnumber' => $facetoface->cmidnumber);
 
     $params['gradetype'] = GRADE_TYPE_VALUE;
@@ -3446,7 +3446,7 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
     }
     if (!empty($session->details)) {
         $details = clean_text($session->details, FORMAT_HTML);
-        $table->data[] = array(get_string('details', 'facetoface'), $details);
+        $table->data[] = array(get_string('details', 'facetoface'), format_text($details, FORMAT_HTML, array('context' => context_system::instance())));
     }
 
     // Display trainers.
