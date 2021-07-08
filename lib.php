@@ -1547,9 +1547,12 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
  */
 
 function facetoface_write_activity_attendance_helper(&$worksheet, $i, $session, $customsessionfields, $status, $dateformat, $starttime, $finishtime) {
+    global $DB;
+
     $j = 0;
 
     // Custom session fields.
+    $customdata = $DB->get_records('facetoface_session_data', array('sessionid' => $session->id), '', 'fieldid, data');
     foreach ($customsessionfields as $field) {
         if (empty($field->showinsummary)) {
             continue; // Skip.
