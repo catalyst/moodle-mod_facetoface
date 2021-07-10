@@ -410,6 +410,7 @@ To re-schedule your booking you need to cancel this booking and then re-book a n
 
 You will receive a reminder [reminderperiod] business days before this course.
 ';
+$string['setting:defaultconfirmationmessagedefault2'] = '<p><b>Thank you for signing up!</b>';
 $string['setting:defaultconfirmationsubject'] = 'Default subject line for confirmation emails.';
 $string['setting:defaultconfirmationsubject_caption'] = 'Confirmation subject';
 $string['setting:defaultconfirmationsubjectdefault'] = 'Course booking confirmation: [facetofacename], [starttime]-[finishtime], [sessiondate]';
