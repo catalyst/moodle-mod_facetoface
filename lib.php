@@ -3827,13 +3827,13 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
 
         switch ($field->type) {
             case CUSTOMFIELD_TYPE_TEXT:
-                $mform->addElement('text', $fieldname, $field->name);
+                $mform->addElement('text', $fieldname, format_string($field->name));
                 break;
             case CUSTOMFIELD_TYPE_SELECT:
-                $mform->addElement('select', $fieldname, $field->name, $options);
+                $mform->addElement('select', $fieldname, format_string($field->name), $options);
                 break;
             case CUSTOMFIELD_TYPE_MULTISELECT:
-                $select = &$mform->addElement('select', $fieldname, $field->name, $options);
+                $select = &$mform->addElement('select', $fieldname, format_string($field->name), $options);
                 $select->setMultiple(true);
                 break;
             default:
