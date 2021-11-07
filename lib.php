@@ -1106,7 +1106,7 @@ function facetoface_get_grade($userid, $courseid, $facetofaceid) {
 function facetoface_get_attendees($sessionid) {
     global $CFG, $DB;
 
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    $usernamefields = facetoface_get_all_user_name_fields(true, 'u');
     $records = $DB->get_records_sql("
         SELECT u.id, {$usernamefields},
             u.email,
@@ -3719,7 +3719,7 @@ function facetoface_get_trainer_roles() {
 function facetoface_get_trainers($sessionid, $roleid = null) {
     global $CFG, $DB;
 
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    $usernamefields = facetoface_get_all_user_name_fields(true, 'u');
     $sql = "
         SELECT
             u.id,
@@ -3860,7 +3860,7 @@ function facetoface_get_cancellations($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
-    $usernamefields = get_all_user_name_fields(true, 'u');
+    $usernamefields = facetoface_get_all_user_name_fields(true, 'u');
     $instatus = array(MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED, MDL_F2F_STATUS_REQUESTED);
     list($insql, $inparams) = $DB->get_in_or_equal($instatus);
 
@@ -3917,7 +3917,7 @@ function facetoface_get_requests($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
-    $usernamefields = get_all_user_name_fields(true);
+    $usernamefields = facetoface_get_all_user_name_fields(true, 'u');
 
     $params = array($sessionid, MDL_F2F_STATUS_REQUESTED);
 
@@ -3944,7 +3944,7 @@ function facetoface_get_declines($sessionid) {
     global $CFG, $DB;
 
     $fullname = $DB->sql_fullname('u.firstname', 'u.lastname');
-    $usernamefields = get_all_user_name_fields(true);
+    $usernamefields = facetoface_get_all_user_name_fields(true, 'u');
 
     $params = array($sessionid, MDL_F2F_STATUS_DECLINED);
 
@@ -3983,6 +3983,26 @@ function facetoface_supports($feature) {
         default:
             return null;
     }
+}
+
+/**
+ * A centralised location for the all name fields. Returns an array / sql string snippet.
+ *
+ * @param bool $returnsql True for an sql select field snippet.
+ * @param string $tableprefix table query prefix to use in front of each field.
+ * @return array|string All name fields.
+ */
+function facetoface_get_all_user_name_fields($returnsql = false, $tableprefix = null) {
+    global $CFG;
+
+    $ret = \core_user\fields::get_name_fields();
+    if (!empty($tableprefix)) {
+        $ret = substr_replace($ret, $tableprefix . '.', 0, 0);
+    }
+    if ($returnsql) {
+        $ret = join(',', $ret);
+    }
+    return $ret;
 }
 
 /*

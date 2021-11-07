@@ -100,7 +100,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
                 }
             }
 
-            $usernamefields = get_all_user_name_fields(true);
+            $usernamefields = facetoface_get_all_user_name_fields(true);
             if (facetoface_get_user_submissions($facetoface->id, $adduser)) {
                 $erruser = $DB->get_record('user', array('id' => $adduser), "id, {$usernamefields}");
                 $errors[] = get_string('error:addalreadysignedupattendee', 'facetoface', fullname($erruser));
@@ -146,7 +146,7 @@ if (optional_param('remove', false, PARAM_BOOL) && confirm_sesskey()) {
                 }
             } else {
                 $errors[] = $cancelerr;
-                $usernamefields = get_all_user_name_fields(true);
+                $usernamefields = facetoface_get_all_user_name_fields(true);
                 $erruser = $DB->get_record('user', array('id' => $removeuser), "id, {$usernamefields}");
                 $errors[] = get_string('error:removeattendee', 'facetoface', fullname($erruser));
             }
@@ -216,7 +216,7 @@ $out .= html_writer::table($table);
 
 // Get all signed up non-attendees.
 $nonattendees = 0;
-$usernamefields = get_all_user_name_fields(true, 'u');
+$usernamefields = facetoface_get_all_user_name_fields(true, 'u');
 $nonattendeesrs = $DB->get_recordset_sql(
      "SELECT
             u.id,

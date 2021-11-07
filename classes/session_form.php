@@ -164,7 +164,7 @@ class mod_facetoface_session_form extends moodleform {
                 $rolename = $rolename->name;
 
                 // Attempt to load users with this role in this course.
-                $usernamefields = get_all_user_name_fields(true);
+                $usernamefields = facetoface_get_all_user_name_fields(true);
                 $rs = $DB->get_recordset_sql("
                     SELECT
                         u.id,
