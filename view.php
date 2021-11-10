@@ -254,7 +254,7 @@ function get_locations($facetofaceid) {
 
         $i = 1;
         foreach ($records as $record) {
-            $locationmenu[$record->location] = $record->location;
+            $locationmenu[$record->location] = format_string($record->location);
             $i++;
         }
 

@@ -780,7 +780,7 @@ function facetoface_email_substitutions($msg, $facetofacename, $reminderperiod, 
     if (empty($data->details)) {
         $msg = str_replace(get_string('placeholder:details', 'facetoface'), '', $msg);
     } else {
-        $msg = str_replace(get_string('placeholder:details', 'facetoface'), html_to_text($data->details), $msg);
+        $msg = str_replace(get_string('placeholder:details', 'facetoface'), html_to_text(format_text($data->details)), $msg);
     }
     $msg = str_replace(get_string('placeholder:reminderperiod', 'facetoface'), $reminderperiod, $msg);
 
@@ -900,9 +900,9 @@ function facetoface_cron() {
             continue;
         }
 
-        $postsubject = facetoface_email_substitutions($postsubject, $signupdata->facetofacename, $signupdata->reminderperiod,
+        $postsubject = facetoface_email_substitutions($postsubject, format_string($signupdata->facetofacename), $signupdata->reminderperiod,
                                                       $user, $signupdata, $signupdata->sessionid);
-        $posttext = facetoface_email_substitutions($posttext, $signupdata->facetofacename, $signupdata->reminderperiod,
+        $posttext = facetoface_email_substitutions($posttext, format_string($signupdata->facetofacename), $signupdata->reminderperiod,
                                                    $user, $signupdata, $signupdata->sessionid);
         $posttextmgrheading = facetoface_email_substitutions($posttextmgrheading, $signupdata->facetofacename, $signupdata->reminderperiod,
                                                              $user, $signupdata, $signupdata->sessionid);
@@ -2754,26 +2754,26 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
         // FIXME: currently we are not sending updates if the times of the session are changed. This is not ideal!
         $sequence = ($method & MDL_F2F_CANCEL) ? 1 : 0;
 
-        $summary     = facetoface_ical_escape($facetoface->name);
-        $description = facetoface_ical_escape($session->details, true);
+        $summary     = facetoface_ical_escape(format_string($facetoface->name));
+        $description = facetoface_ical_escape(format_text($session->details), true);
 
         // Get the location data from custom fields if they exist.
         $customfielddata = facetoface_get_customfielddata($session->id);
         $locationstring = '';
         if (!empty($customfielddata['room'])) {
-            $locationstring .= $customfielddata['room']->data;
+            $locationstring .= format_string($customfielddata['room']->data);
         }
         if (!empty($customfielddata['venue'])) {
             if (!empty($locationstring)) {
                 $locationstring .= "\n";
             }
-            $locationstring .= $customfielddata['venue']->data;
+            $locationstring .= format_string($customfielddata['venue']->data);
         }
         if (!empty($customfielddata['location'])) {
             if (!empty($locationstring)) {
                 $locationstring .= "\n";
             }
-            $locationstring .= $customfielddata['location']->data;
+            $locationstring .= format_string($customfielddata['location']->data);
         }
 
         /*
@@ -3821,7 +3821,7 @@ function facetoface_add_customfields_to_form(&$mform, $customfields, $alloptiona
         foreach (explode(CUSTOMFIELD_DELIMITER, $field->possiblevalues) as $value) {
             $v = trim($value);
             if (!empty($v)) {
-                $options[$v] = $v;
+                $options[$v] = format_string($v);
             }
         }
 
