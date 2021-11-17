@@ -41,26 +41,26 @@ $download = optional_param('download', '', PARAM_ALPHA); // Download attendance.
 
 if ($id) {
     if (!$cm = $DB->get_record('course_modules', array('id' => $id))) {
-        print_error('error:incorrectcoursemoduleid', 'facetoface');
+        throw new moodle_exception('error:incorrectcoursemoduleid', 'facetoface');
     }
     if (!$course = $DB->get_record('course', array('id' => $cm->course))) {
-        print_error('error:coursemisconfigured', 'facetoface');
+        throw new moodle_exception('error:coursemisconfigured', 'facetoface');
     }
     if (!$facetoface = $DB->get_record('facetoface', array('id' => $cm->instance))) {
-        print_error('error:incorrectcoursemodule', 'facetoface');
+        throw new moodle_exception('error:incorrectcoursemodule', 'facetoface');
     }
 } else if ($f) {
     if (!$facetoface = $DB->get_record('facetoface', array('id' => $f))) {
-        print_error('error:incorrectfacetofaceid', 'facetoface');
+        throw new moodle_exception('error:incorrectfacetofaceid', 'facetoface');
     }
     if (!$course = $DB->get_record('course', array('id' => $facetoface->course))) {
-        print_error('error:coursemisconfigured', 'facetoface');
+        throw new moodle_exception('error:coursemisconfigured', 'facetoface');
     }
     if (!$cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id)) {
-        print_error('error:incorrectcoursemoduleid', 'facetoface');
+        throw new moodle_exception('error:incorrectcoursemoduleid', 'facetoface');
     }
 } else {
-    print_error('error:mustspecifycoursemodulefacetoface', 'facetoface');
+    throw new moodle_exception('error:mustspecifycoursemodulefacetoface', 'facetoface');
 }
 
 $context = context_module::instance($cm->id);

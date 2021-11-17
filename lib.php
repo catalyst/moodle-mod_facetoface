@@ -119,7 +119,7 @@ function facetoface_get_status($statuscode) {
 
     // Check code exists.
     if (!isset($statuses[$statuscode])) {
-        print_error('F2F status code does not exist: ' . $statuscode);
+        throw new moodle_exception('F2F status code does not exist: ' . $statuscode);
     }
 
     // Get code.
@@ -127,7 +127,7 @@ function facetoface_get_status($statuscode) {
 
     // Check to make sure the status array looks to be up-to-date.
     if (constant('MDL_F2F_STATUS_' . strtoupper($string)) != $statuscode) {
-        print_error('F2F status code array does not appear to be up-to-date: ' . $statuscode);
+        throw new moodle_exception('F2F status code array does not appear to be up-to-date: ' . $statuscode);
     }
 
     return $string;
@@ -1728,7 +1728,7 @@ function facetoface_user_signup($session, $facetoface, $course, $discountcode,
     }
 
     if (!$success) {
-        print_error('error:couldnotupdatef2frecord', 'facetoface');
+        throw new moodle_exception('error:couldnotupdatef2frecord', 'facetoface');
         return false;
     }
 
@@ -1757,7 +1757,7 @@ function facetoface_user_signup($session, $facetoface, $course, $discountcode,
 
     // Update status.
     if (!facetoface_update_signup_status($usersignup->id, $newstatus, $userid)) {
-        print_error('error:f2ffailedupdatestatus', 'facetoface');
+        throw new moodle_exception('error:f2ffailedupdatestatus', 'facetoface');
         return false;
     }
 
@@ -1806,12 +1806,12 @@ function facetoface_user_signup($session, $facetoface, $course, $discountcode,
         }
 
         if (!empty($error)) {
-            print_error($error, 'facetoface');
+            throw new moodle_exception($error, 'facetoface');
             return false;
         }
 
         if (!$DB->update_record('facetoface_signups', $usersignup)) {
-            print_error('error:couldnotupdatef2frecord', 'facetoface');
+            throw new moodle_exception('error:couldnotupdatef2frecord', 'facetoface');
             return false;
         }
     }
@@ -2395,7 +2395,7 @@ function facetoface_approve_requests($data) {
                 );
 
                 if (!$cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id)) {
-                    print_error('error:incorrectcoursemodule', 'facetoface');
+                    throw new moodle_exception('error:incorrectcoursemodule', 'facetoface');
                 }
 
                 $contextmodule = context_module::instance($cm->id);
@@ -3628,7 +3628,7 @@ function facetoface_update_trainers($sessionid, $form) {
                 $newtrainer->sessionid = $sessionid;
 
                 if (!$DB->insert_record('facetoface_session_roles', $newtrainer)) {
-                    print_error('error:couldnotaddtrainer', 'facetoface');
+                    throw new moodle_exception('error:couldnotaddtrainer', 'facetoface');
                     $transaction->force_transaction_rollback();
 
                     return false;
@@ -3651,7 +3651,7 @@ function facetoface_update_trainers($sessionid, $form) {
             // Delete any remaining trainers.
             foreach ($trainers as $trainer) {
                 if (!$DB->delete_records('facetoface_session_roles', array('sessionid' => $sessionid, 'roleid' => $roleid, 'userid' => $trainer->id))) {
-                    print_error('error:couldnotdeletetrainer', 'facetoface');
+                    throw new moodle_exception('error:couldnotdeletetrainer', 'facetoface');
                     $transaction->force_transaction_rollback();
                     return false;
                 }

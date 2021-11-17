@@ -40,16 +40,16 @@ $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT); // Face-
 
 // Load data.
 if (!$session = facetoface_get_session($s)) {
-    print_error('error:incorrectcoursemodulesession', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemodulesession', 'facetoface');
 }
 if (!$facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface))) {
-    print_error('error:incorrectfacetofaceid', 'facetoface');
+    throw new moodle_exception('error:incorrectfacetofaceid', 'facetoface');
 }
 if (!$course = $DB->get_record('course', array('id' => $facetoface->course))) {
-    print_error('error:coursemisconfigured', 'facetoface');
+    throw new moodle_exception('error:coursemisconfigured', 'facetoface');
 }
 if (!$cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id)) {
-    print_error('error:incorrectcoursemodule', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemodule', 'facetoface');
 }
 
 // Load attendees.
@@ -99,12 +99,12 @@ if ($requests && !$takeattendance) {
 
 // Check the user is allowed to view this page.
 if (!$canviewattendees && !$cantakeattendance && !$canapproverequests && !$canviewcancellations) {
-    print_error('nopermissions', '', "{$CFG->wwwroot}/mod/facetoface/view.php?id={$cm->id}", get_string('view'));
+    throw new moodle_exception('nopermissions', '', "{$CFG->wwwroot}/mod/facetoface/view.php?id={$cm->id}", get_string('view'));
 }
 
 // Check user has permissions to take attendance.
 if ($takeattendance && !$cantakeattendance) {
-    print_error('nopermissions', '', '', get_capability_string('mod/facetoface:takeattendance'));
+    throw new moodle_exception('nopermissions', '', '', get_capability_string('mod/facetoface:takeattendance'));
 }
 
 
@@ -113,7 +113,7 @@ if ($takeattendance && !$cantakeattendance) {
  */
 if ($form = data_submitted()) {
     if (!confirm_sesskey()) {
-        print_error('confirmsesskeybad', 'error');
+        throw new moodle_exception('confirmsesskeybad', 'error');
     }
 
     $return = "{$CFG->wwwroot}/mod/facetoface/attendees.php?s={$s}&backtoallsessions={$backtoallsessions}";
@@ -197,7 +197,7 @@ echo $OUTPUT->header();
 // If taking attendance, make sure the session has already started.
 if ($takeattendance && $session->datetimeknown && !facetoface_has_session_started($session, time())) {
     $link = "{$CFG->wwwroot}/mod/facetoface/attendees.php?s={$session->id}";
-    print_error('error:canttakeattendanceforunstartedsession', 'facetoface', $link);
+    throw new moodle_exception('error:canttakeattendanceforunstartedsession', 'facetoface', $link);
 }
 
 echo $OUTPUT->box_start();

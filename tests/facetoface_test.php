@@ -40,7 +40,7 @@ require_once($CFG->dirroot  . '/course/modlib.php');
 class facetoface_test extends advanced_testcase {
     /**
      * @test
-     * 
+     *
      * Test to check facetoface is added properly.
      */
     public function add_facetofaceactivity() {

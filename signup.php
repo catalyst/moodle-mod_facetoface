@@ -35,16 +35,16 @@ $s = required_param('s', PARAM_INT); // Facetoface session ID.
 $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT);
 
 if (!$session = facetoface_get_session($s)) {
-    print_error('error:incorrectcoursemodulesession', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemodulesession', 'facetoface');
 }
 if (!$facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface))) {
-    print_error('error:incorrectfacetofaceid', 'facetoface');
+    throw new moodle_exception('error:incorrectfacetofaceid', 'facetoface');
 }
 if (!$course = $DB->get_record('course', array('id' => $facetoface->course))) {
-    print_error('error:coursemisconfigured', 'facetoface');
+    throw new moodle_exception('error:coursemisconfigured', 'facetoface');
 }
 if (!$cm = get_coursemodule_from_instance("facetoface", $facetoface->id, $course->id)) {
-    print_error('error:incorrectcoursemoduleid', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemoduleid', 'facetoface');
 }
 
 require_course_login($course, true, $cm);
@@ -96,7 +96,7 @@ if ($mform->is_cancelled()) {
 if ($fromform = $mform->get_data()) { // Form submitted.
 
     if (empty($fromform->submitbutton)) {
-        print_error('error:unknownbuttonclicked', 'facetoface', $returnurl);
+        throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
     }
 
     // User can not update Manager's email (depreciated functionality).
@@ -125,11 +125,11 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     }
 
     if (!facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
-        print_error('sessionisfull', 'facetoface', $returnurl);
+        throw new moodle_exception('sessionisfull', 'facetoface', $returnurl);
     } else if (facetoface_get_user_submissions($facetoface->id, $USER->id)) {
-        print_error('alreadysignedup', 'facetoface', $returnurl);
+        throw new moodle_exception('alreadysignedup', 'facetoface', $returnurl);
     } else if (facetoface_manager_needed($facetoface) && !facetoface_get_manageremail($USER->id)) {
-        print_error('error:manageremailaddressmissing', 'facetoface', $returnurl);
+        throw new moodle_exception('error:manageremailaddressmissing', 'facetoface', $returnurl);
     } else if ($submissionid = facetoface_user_signup($session, $facetoface, $course, $fromform->discountcode, $fromform->notificationtype, $statuscode)) {
 
         // Logging and events trigger.
@@ -163,7 +163,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         $event->add_record_snapshot('facetoface', $facetoface);
         $event->trigger();
 
-        print_error('error:problemsigningup', 'facetoface', $returnurl);
+        throw new moodle_exception('error:problemsigningup', 'facetoface', $returnurl);
     }
 
     redirect($returnurl);
@@ -183,7 +183,7 @@ $viewattendees = has_capability('mod/facetoface:viewattendees', $context);
 $signedup = facetoface_check_signup($facetoface->id);
 
 if ($signedup and $signedup != $session->id) {
-    print_error('error:signedupinothersession', 'facetoface', $returnurl);
+    throw new moodle_exception('error:signedupinothersession', 'facetoface', $returnurl);
 }
 
 echo $OUTPUT->box_start();
@@ -204,7 +204,7 @@ if ($session->datetimeknown && facetoface_has_session_started($session, $timenow
 }
 
 if (!$signedup && !facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
-    print_error('sessionisfull', 'facetoface', $returnurl);
+    throw new moodle_exception('sessionisfull', 'facetoface', $returnurl);
     echo $OUTPUT->box_end();
     echo $OUTPUT->footer($course);
     exit;
