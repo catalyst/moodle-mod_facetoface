@@ -36,19 +36,19 @@ $confirm = optional_param('confirm', false, PARAM_BOOL);
 $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT);
 
 if (!$session = facetoface_get_session($s)) {
-    print_error('error:incorrectcoursemodulesession', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemodulesession', 'facetoface');
 }
 if (!$session->allowcancellations) {
-    print_error('error:cancellationsnotallowed', 'facetoface');
+    throw new moodle_exception('error:cancellationsnotallowed', 'facetoface');
 }
 if (!$facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface))) {
-    print_error('error:incorrectfacetofaceid', 'facetoface');
+    throw new moodle_exception('error:incorrectfacetofaceid', 'facetoface');
 }
 if (!$course = $DB->get_record('course', array('id' => $facetoface->course))) {
-    print_error('error:coursemisconfigured', 'facetoface');
+    throw new moodle_exception('error:coursemisconfigured', 'facetoface');
 }
 if (!$cm = get_coursemodule_from_instance("facetoface", $facetoface->id, $course->id)) {
-    print_error('error:incorrectcoursemoduleid', 'facetoface');
+    throw new moodle_exception('error:incorrectcoursemoduleid', 'facetoface');
 }
 
 require_course_login($course);
@@ -69,7 +69,7 @@ if ($mform->is_cancelled()) {
 if ($fromform = $mform->get_data()) { // Form submitted.
 
     if (empty($fromform->submitbutton)) {
-        print_error('error:unknownbuttonclicked', 'facetoface', $returnurl);
+        throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
     }
 
     $timemessage = 4;
@@ -98,7 +98,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
                     $message .= html_writer::empty_tag('br') . html_writer::empty_tag('br') . get_string('cancellationsent', 'facetoface');
                 }
             } else {
-                print_error($error, 'facetoface');
+                throw new moodle_exception($error, 'facetoface');
             }
         }
 
@@ -143,7 +143,7 @@ if ($signedup) {
     facetoface_print_session($session, $viewattendees);
     $mform->display();
 } else {
-    print_error('notsignedup', 'facetoface', $returnurl);
+    throw new moodle_exception('notsignedup', 'facetoface', $returnurl);
 }
 
 echo $OUTPUT->box_end();

@@ -60,7 +60,7 @@ $PAGE->set_title($title);
 // Handle deletions.
 if (!empty($d)) {
     if (!confirm_sesskey()) {
-        print_error('confirmsesskeybad', 'error');
+        throw new moodle_exception('confirmsesskeybad', 'error');
     }
 
     if (!$confirm) {
@@ -95,7 +95,7 @@ if ($mform->is_cancelled()) {
 if ($fromform = $mform->get_data()) { // Form submitted.
 
     if (empty($fromform->submitbutton)) {
-        print_error('error:unknownbuttonclicked', 'facetoface', $returnurl);
+        throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
     }
 
 

@@ -38,7 +38,7 @@ $confirm = optional_param('confirm', false, PARAM_BOOL); // delete confirmationx
 $field = null;
 if ($id > 0) {
     if (!$field = $DB->get_record('facetoface_session_field', array('id' => $id))) {
-        print_error('error:fieldidincorrect', 'facetoface', '', $id);
+        throw new moodle_exception('error:fieldidincorrect', 'facetoface', '', $id);
     }
 }
 
@@ -64,7 +64,7 @@ $PAGE->set_title($title);
 // Handle deletions.
 if (!empty($d)) {
     if (!confirm_sesskey()) {
-        print_error('confirmsesskeybad', 'error');
+        throw new moodle_exception('confirmsesskeybad', 'error');
     }
 
     if (!$confirm) {
@@ -105,7 +105,7 @@ if ($mform->is_cancelled()) {
 if ($fromform = $mform->get_data()) { // Form submitted.
 
     if (empty($fromform->submitbutton)) {
-        print_error('error:unknownbuttonclicked', 'facetoface', $returnurl);
+        throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
     }
 
     // Post-process the input.
@@ -144,11 +144,11 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     if ($field != null) {
         $todb->id = $field->id;
         if (!$DB->update_record('facetoface_session_field', $todb)) {
-            print_error('error:couldnotupdatefield', 'facetoface', $returnurl);
+            throw new moodle_exception('error:couldnotupdatefield', 'facetoface', $returnurl);
         }
     } else {
         if (!$DB->insert_record('facetoface_session_field', $todb)) {
-            print_error('error:couldnotaddfield', 'facetoface', $returnurl);
+            throw new moodle_exception('error:couldnotaddfield', 'facetoface', $returnurl);
         }
     }
 
