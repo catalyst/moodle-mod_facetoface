@@ -1280,6 +1280,154 @@ function facetoface_download_attendance($facetofacename, $facetofaceid, $locatio
 }
 
 /**
+ * Download the list of users attending at least one of the sessions
+ * for a given facetoface activity
+ */
+function facetoface_download_attendees($facetofacename, $session, $attendees, $format) {
+    global $CFG, $DB;
+
+    $timenow = time();
+    $timeformat = str_replace(' ', '_', get_string('strftimedate', 'langconfig'));
+    $downloadfilename = clean_filename($facetofacename.'_'.userdate($timenow, $timeformat));
+
+    $dateformat = 0;
+    if ('ods' === $format) {
+
+        // OpenDocument format (ISO/IEC 26300).
+        require_once($CFG->dirroot.'/lib/odslib.class.php');
+        $downloadfilename .= '.ods';
+        $workbook = new MoodleODSWorkbook('-');
+    } else {
+
+        // Excel format.
+        require_once($CFG->dirroot.'/lib/excellib.class.php');
+        $downloadfilename .= '.xlsx';
+        $workbook = new MoodleExcelWorkbook('-');
+        $dateformat = $workbook->add_format();
+        $dateformat->set_num_format('d mmm yy'); // TODO: use format specified in language pack.
+    }
+
+    $workbook->send($downloadfilename);
+    $worksheet = $workbook->add_worksheet('attendees');
+
+    $row = 0; // Starting worksheet row.
+    $column = 0; // Starting worksheet column.
+    $worksheet->write_string($row++, $column, $facetofacename, ['size' => 14, 'bold' => 1]); // Session name.
+    if (empty($session->datetimeknown)) {
+        $worksheet->write_string($row++, $column, get_string('status_waitlisted', 'facetoface'), ['size' => 12, 'bold' => 1]);
+    } else {
+        foreach ($session->sessiondates as $forsession) {
+            $worksheet->write_string($row++, $column,
+                    userdate($forsession->timestart, get_string('strftimedatetime')) . ' - ' .
+                    userdate($forsession->timefinish, get_string('strftimedatetime')),
+                    ['size' => 12, 'bold' => 1]
+                );
+        }
+    }
+    $row++;
+
+    $fieldnames = 'firstname,lastname,' . get_config(null, 'facetoface_attendeesexportfields');
+    $fieldnames = explode(',', rtrim($fieldnames, ','));
+
+    // Export row of column headings.
+
+    $profilefields = profile_get_custom_fields();
+    foreach ($profilefields as $key => $field) {
+        $field->name = format_string($field->name);
+        $profilefield['profile_field_' . $field->shortname] = $field;
+        unset($profilefields[$key]);
+    }
+    foreach ($fieldnames as $shortname) {
+        if (substr( $shortname, 0, 14 ) === 'profile_field_') {
+            $fieldname = $profilefield[$shortname]->name;
+        } else {
+            $fieldname = $shortname == 'lang' ? get_string('language') : get_string($shortname);
+        }
+        $worksheet->write_string($row, $column++, $fieldname, ['bold' => 1, 'border' => 1]);
+    }
+    // Current status.
+    $worksheet->write_string($row, $column++, get_string('currentstatus', 'facetoface'), ['bold' => 1, 'border' => 1]);
+
+    // Export row of data for each attendee.
+
+    foreach ($attendees as $attendee) {
+        $row++;
+        $column = 0;
+
+        // Load user profile fields.
+        $user = $DB->get_record("user", ['id' => $attendee->id]);
+
+        // Load custom user profile fields.
+        $user->profile = (array)profile_user_record($user->id, false);
+
+        // Prefix all custom profile field shortnames with 'profile_field_'.
+        $user->profile = array_combine(
+            array_map(function($key) {
+                return 'profile_field_' . $key;
+            }, array_keys($user->profile)), $user->profile
+        );
+
+        foreach ($fieldnames as $shortname) {
+            $format = ['border' => 1, 'v_align' => 'top'];
+            if (property_exists($attendee, $shortname)) {
+                // Get the data from the attendees profile field.
+                $data = $attendee->$shortname;
+                if ($shortname == 'email') {
+                    $format['underline'] = 1;
+                    $format['color'] = 'blue';
+                    $worksheet->write_url($row, $column++, 'mailto:' . $data, $format);
+                    continue;
+                }
+            } else if (property_exists($user, $shortname)) {
+                // Get the data from the user profile field.
+                $data = $user->$shortname;
+            } else if (array_key_exists($shortname, $user->profile)) {
+                // Get the data from the custom user profile field.
+                $data = $user->profile[$shortname];
+                switch ($profilefield[$shortname]->datatype) { // Format data for some field types.
+                    case 'textarea':
+                        $data = html_to_text($data, 132);
+                        $format['text_wrap'] = 1;
+                        break;
+                    case 'menu':
+                        $data = empty(format_string($data));
+                        break;
+                    case 'checkbox':
+                        // 1 = Yes, 0 = No
+                        $data = empty($data) ?  "\u{2610}" : "\u{2611}";
+                        $format['align'] = 'center';
+                        break;
+                    case 'datetime':
+                        $worksheet->write_date($row, $column++, $data, $format);
+                        continue 2;
+                    case 'social' && $profilefield[$shortname]->param1 == 'url':
+                        if (strstr($data, '://') === false) {
+                            $data = 'https://' . $data;
+                        }
+                        $format['underline'] = 1;
+                        $format['color'] = 'blue';
+                        $worksheet->write_url($row, $column++, $data, $format);
+                        continue 2;
+                }
+            } else {
+                // This could happen if a custom profile field was deleted and the list of selected export fields was not updated.
+                $data = '';
+            }
+
+            if (substr($data, 0, 1) != '0' && is_numeric($data)) {
+                $worksheet->write_number($row, $column++, $data, $format);
+            } else {
+                $worksheet->write_string($row, $column++, $data, $format);
+            }
+        }
+        $worksheet->write_string($row, $column++, get_string('status_'.facetoface_get_status($attendee->statuscode), 'facetoface'),
+                ['border' => 1, 'v_align' => 'top']);
+    }
+    $workbook->close();
+    exit;
+}
+
+/**
  * Add the appropriate column headers to the given worksheet
  *
  * @param object $worksheet  The worksheet to modify (passed by reference)

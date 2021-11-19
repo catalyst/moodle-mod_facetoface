@@ -37,6 +37,7 @@ $s = required_param('s', PARAM_INT);
 $takeattendance = optional_param('takeattendance', false, PARAM_BOOL); // Take attendance.
 $cancelform = optional_param('cancelform', false, PARAM_BOOL); // Cancel request.
 $backtoallsessions = optional_param('backtoallsessions', 0, PARAM_INT); // Face-to-face activity to return to.
+$download = optional_param('download', '', PARAM_ALPHA); // Download attendees.
 
 // Load data.
 if (!$session = facetoface_get_session($s)) {
@@ -107,6 +108,11 @@ if ($takeattendance && !$cantakeattendance) {
     throw new moodle_exception('nopermissions', '', '', get_capability_string('mod/facetoface:takeattendance'));
 }
 
+if (!empty($download) && $canviewattendees) {
+    // Download list of attendees
+    facetoface_download_attendees(format_string($facetoface->name), $session, $attendees, $download);
+    exit();
+}
 
 /*
  * Handle submitted data
@@ -325,6 +331,10 @@ if ($canviewattendees || $cantakeattendance) {
             echo html_writer::link($editattendeeslink, get_string('addremoveattendees', 'facetoface')) . ' - ';
         }
     }
+    echo html_writer::link("attendees.php?s=$session->id&backtoallsessions=$session->facetoface&download=ods",
+            get_string('downloadods')) . ' - ';
+    echo html_writer::link("attendees.php?s=$session->id&backtoallsessions=$session->facetoface&download=xls",
+            get_string('downloadexcel')) . ' - ';
 }
 
 // Go back.
