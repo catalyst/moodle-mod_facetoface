@@ -151,12 +151,17 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 $options .= $this->output->action_icon(new moodle_url('sessions.php', array('s' => $session->id, 'd' => 1)),
                         new pix_icon('t/delete', get_string('delete', 'facetoface')), null,
                         array('title' => get_string('deletesession', 'facetoface'))) . ' ';
-                $options .= html_writer::empty_tag('br');
             }
             if ($viewattendees) {
                 $options .= html_writer::link('attendees.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,
                         get_string('attendees', 'facetoface'),
-                        array('title' => get_string('seeattendees', 'facetoface'))) . html_writer::empty_tag('br');
+                        array('title' => get_string('seeattendees', 'facetoface'))) . ' &nbsp; ';
+                $options .= $this->output->action_icon(new moodle_url('attendees.php', array('s' => $session->id, 'download' => 'xlsx')),
+                        new pix_icon('f/spreadsheet', get_string('downloadexcel')), null,
+                        array('title' => get_string('downloadexcel'))) . ' ';
+                $options .= $this->output->action_icon(new moodle_url('attendees.php', array('s' => $session->id, 'download' => 'ods')),
+                        new pix_icon('f/calc', get_string('downloadods')), null,
+                        array('title' => get_string('downloadods'))) . ' ' . html_writer::empty_tag('br');
             }
             if ($isbookedsession) {
                 $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,

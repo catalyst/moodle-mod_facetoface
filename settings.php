@@ -31,6 +31,7 @@
 defined('MOODLE_INTERNAL') || die();
 
 require_once($CFG->dirroot . '/mod/facetoface/lib.php');
+require_once($CFG->dirroot . '/user/profile/lib.php');
 
 $settings->add(new admin_setting_configtext(
     'facetoface_fromaddress',
@@ -117,6 +118,43 @@ $settings->add(new admin_setting_configcheckbox(
     get_string('setting:disableicalcancel_caption', 'facetoface'),
     get_string('setting:disableicalcancel', 'facetoface'),
     0
+));
+
+// List of user profile fields to optionally be included in attendees export.
+
+$settings->add(new admin_setting_heading('facetoface_attendeesexporttofile_header', get_string('attendeesexporttofileheading', 'facetoface'), ''));
+
+// Load profile fields.
+// Basic fields.
+$choices = array(
+    'middlename'  => new lang_string('middlename'),
+    'alternatename' => new lang_string('alternatename'),
+    'username'    => new lang_string('username'),
+    'idnumber'    => new lang_string('idnumber'),
+    'email'       => new lang_string('email'),
+    'phone1'      => new lang_string('phone1'),
+    'phone2'      => new lang_string('phone2'),
+    'department'  => new lang_string('department'),
+    'institution' => new lang_string('institution'),
+    'city'        => new lang_string('city'),
+    'country'     => new lang_string('country'),
+    'lang'        => new lang_string('language'),
+    'firstnamephonetic' => new lang_string('firstnamephonetic'),
+    'lastnamephonetic'  => new lang_string('lastnamephonetic'),
+);
+
+// Custom profile fields.
+$profilefields = profile_get_custom_fields();
+foreach ($profilefields as $field) {
+    $choices['profile_field_' . $field->shortname] = format_string($field->name) . ' (' . get_string('customfield', 'customfield'). ')';
+}
+
+$settings->add(new admin_setting_configmultiselect(
+    'facetoface_attendeesexportfields',
+    new lang_string('setting:attendeesexportfields_caption', 'facetoface'),
+    new lang_string('setting:attendeesexportfields', 'facetoface'),
+    array(),
+    $choices
 ));
 
 // List of existing custom fields.
