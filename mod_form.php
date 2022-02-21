@@ -125,8 +125,10 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $editoroptions = ['trusttext' => true];
         $mform->addElement('editor', 'confirmationmessage', get_string('email:message', 'facetoface'), null, $editoroptions);
         $mform->setType('confirmationmessage', PARAM_RAW);
-        $mform->setDefault('confirmationmessage', get_string('setting:defaultconfirmationmessagedefault2', 'facetoface'));
-
+        $confirmationmessagedata = [
+            'text' => get_string('setting:defaultconfirmationmessagedefault2', 'facetoface'),
+            'format' => 1
+        ];
         $mform->addElement('checkbox', 'emailmanagerconfirmation', get_string('emailmanager', 'facetoface'));
         $mform->addHelpButton('emailmanagerconfirmation', 'emailmanagerconfirmation', 'facetoface');
 
@@ -191,7 +193,10 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->addHelpButton('cancellationinstrmngr', 'cancellationinstrmngr', 'facetoface');
         $mform->disabledIf('cancellationinstrmngr', 'emailmanagercancellation');
         $mform->setDefault('cancellationinstrmngr', get_string('setting:defaultcancellationinstrmngrdefault', 'facetoface'));
-
+        $data = (object) [
+            'confirmationmessage' => $confirmationmessagedata
+        ];
+        $this->set_data($data);
         $features = new stdClass;
         $features->groups = false;
         $features->groupings = false;
