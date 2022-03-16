@@ -45,18 +45,14 @@ function facetoface_send_admin_upgrade_msg($data) {
     }
 
     $table = new html_table();
-    $table->head = array('Custom field ID',
-        'Custom field original shortname',
-        'Custom field new shortname');
+    $table->head = array(get_string('customfieldid', 'mod_facetoface'),
+                         get_string('customfieldoriginalshortname', 'mod_facetoface'),
+                         get_string('customfieldnewshortname', 'mod_facetoface'));
     $table->data = $data;
     $table->align = array ('center', 'center', 'center');
 
-    $title    = "$SITE->fullname: Face to Face upgrade info";
-    $note = 'During the last site upgrade the face-to-face module has been modified. It now
-requires session custom fields to have unique shortnames. Since some of your
-custom fields had duplicate shortnames, they have been renamed to remove
-duplicates (see table below). This could impact on your email messages if you
-reference those custom fields in the message templates.';
+    $title    = get_string('upgradeinfofacetoface', 'mod_facetoface', $SITE->fullname);
+    $note = get_string('noteinfo', 'mod_facetoface');
 
     $message  = html_writer::start_tag('html');
     $message .= html_writer::start_tag('head') . html_writer::tag('title', $title) . html_writer::end_tag('head');
