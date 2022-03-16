@@ -1983,10 +1983,11 @@ function facetoface_user_cancel($session, $userid=false, $forcecancel=false, &$e
  * @param class $facetoface record from the facetoface table
  * @param class $session record from the facetoface_sessions table
  * @param integer $userid ID of the recipient of the email
+ * @param string $htmlmessage Html message
  * @returns string Error message (or empty string if successful)
  */
 function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
-                                $notificationtype, $facetoface, $session, $userid,$htmlmessage) {
+                                $notificationtype, $facetoface, $session, $userid, $htmlmessage) {
     global $CFG, $DB;
 
     $user = $DB->get_record('user', array('id' => $userid));
@@ -2037,7 +2038,7 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
                                                           $user, $session, $session->id);
                 $body = facetoface_email_substitutions($posttext, format_string($facetoface->name), $facetoface->reminderperiod,
                                                        $user, $session, $session->id);
-                 $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
+                $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
                 $htmlbody = $htmlmessage;
                 $icalattachments[] = array('filename' => $filename, 'subject' => $subject,
                                            'body' => $body, 'htmlbody' => $htmlbody);
@@ -2051,8 +2052,8 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
                                                       $user, $session, $session->id);
             $body = facetoface_email_substitutions($posttext, format_string($facetoface->name), $facetoface->reminderperiod,
                                                    $user, $session, $session->id);
-             $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
-            $htmlbody = $htmlmessage; 
+            $htmlmessage = facetoface_email_substitutions($posttext, $facetoface->name, $facetoface->reminderperiod, $user, $session, $session->id);
+            $htmlbody = $htmlmessage;
             $icalattachments[] = array('filename' => $filename, 'subject' => $subject,
                                        'body' => $body, 'htmlbody' => $htmlbody);
         }
@@ -2158,7 +2159,7 @@ function facetoface_send_confirmation_notice($facetoface, $session, $userid, $no
     // Set invite bit.
     $notificationtype |= MDL_F2F_INVITE;
 
-    //Set HTML Body
+    // Set HTML Body.
     $htmlmessage = $facetoface->confirmationmessage;
 
     return facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
