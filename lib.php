@@ -4177,7 +4177,7 @@ class facetoface_candidate_selector extends user_selector_base {
      * @param <type> $search
      * @return array
      */
-    public function find_users($search) {
+    public function find_users_base($search) {
         global $DB;
 
         // All non-signed up system user.
@@ -4187,7 +4187,7 @@ class facetoface_candidate_selector extends user_selector_base {
         $countfields = 'SELECT COUNT(u.id)';
         $sql = "
                   FROM {user} u
-                 WHERE $wherecondition
+                  WHERE $wherecondition
                    AND u.id NOT IN
                        (
                        SELECT u2.id
@@ -4222,6 +4222,56 @@ class facetoface_candidate_selector extends user_selector_base {
         $groupname = get_string('potentialusers', 'role', count($availableusers));
 
         return array($groupname => $availableusers);
+    }
+
+    public function find_users($search) {
+        $delimiter = '|';
+        $search = trim($search, $delimiter);
+        if (strpos($search, $delimiter) === false) {
+            return $this->find_users_base($search);
+        }
+
+        $terms = array_values(
+            array_filter(explode($delimiter, $search), function ($term) {
+                return ! empty(trim($term));
+            })
+        );
+        if (empty($terms)) {
+            return $this->find_users_base($search);
+        }
+
+        $toomanyresults = array();
+        $nomatchingusers = array();
+        $availableusers = array();
+
+        foreach ($terms as $term) {
+            $result = $this->find_users_base($term);
+
+            if (empty($result)) {
+                $nomatchingusers = array_merge(
+                    $nomatchingusers,
+                    array(get_string('nomatchingusers', '', $term) => array())
+                );
+
+                continue;
+            }
+
+            if (! empty(array_keys($result)) && empty(array_values($result)[0])) {
+                $toomanyresults = array_merge($toomanyresults, array(array_keys($result)[0] => array()));
+                 continue;
+            }
+
+            $availableusers = array_merge($availableusers, array_values($result)[0]);
+        }
+
+        $groupname = get_string('potentialusers', 'role', count($availableusers));
+        $availableusers = array($groupname => $availableusers);
+
+        return array_merge(
+            $toomanyresults,
+            $nomatchingusers,
+            $availableusers
+        );
     }
 
     protected function get_options() {
