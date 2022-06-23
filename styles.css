@@ -41,7 +41,7 @@ body.path-mod-facetoface table.f2fsession td.c0 {
 body.path-mod-facetoface table.f2fsession {
     width: 100%;
 }
-tr.highlight td.cell {
+table.f2fsessionlist tr.highlight td.cell {
     background-color: #afa;
 }
 a.f2fsessionlinks,
