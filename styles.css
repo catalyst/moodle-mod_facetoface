@@ -41,17 +41,6 @@ body.path-mod-facetoface table.f2fsession td.c0 {
 body.path-mod-facetoface table.f2fsession {
     width: 100%;
 }
-table.table90 {
-    width: 90%;
-}
-table.table50 {
-    width: 50%;
-    text-align: left;
-}
-table.inlinetable {
-    display: inline-table;
-    border: 0;
-}
 tr.highlight td.cell {
     background-color: #afa;
 }
