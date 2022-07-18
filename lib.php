@@ -1396,7 +1396,7 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
                         break;
                     case 'checkbox':
                         // 1 = Yes, 0 = No
-                        $data = empty($data) ?  "\u{2610}" : "\u{2611}";
+                        $data = empty($data) ? "\u{2610}" : "\u{2611}";
                         $format['align'] = 'center';
                         break;
                     case 'datetime':
