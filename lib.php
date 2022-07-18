@@ -1396,7 +1396,7 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
                         break;
                     case 'checkbox':
                         // 1 = Yes, 0 = No
-                        $data = empty($data) ?  "\u{2610}" : "\u{2611}";
+                        $data = empty($data) ? "\u{2610}" : "\u{2611}";
                         $format['align'] = 'center';
                         break;
                     case 'datetime':
@@ -2134,11 +2134,10 @@ function facetoface_user_cancel($session, $userid=false, $forcecancel=false, &$e
  * @param class $facetoface record from the facetoface table
  * @param class $session record from the facetoface_sessions table
  * @param integer $userid ID of the recipient of the email
- * @param string $htmlmessage Html message
  * @returns string Error message (or empty string if successful)
  */
 function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
-                                $notificationtype, $facetoface, $session, $userid, $htmlmessage) {
+                                $notificationtype, $facetoface, $session, $userid) {
     global $CFG, $DB;
 
     $user = $DB->get_record('user', array('id' => $userid));
@@ -2310,11 +2309,8 @@ function facetoface_send_confirmation_notice($facetoface, $session, $userid, $no
     // Set invite bit.
     $notificationtype |= MDL_F2F_INVITE;
 
-    // Set HTML Body.
-    $htmlmessage = $facetoface->confirmationmessage;
-
     return facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
-                                  $notificationtype, $facetoface, $session, $userid, $htmlmessage);
+                                  $notificationtype, $facetoface, $session, $userid);
 }
 
 /**
