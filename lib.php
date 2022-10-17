@@ -4203,9 +4203,11 @@ function facetoface_get_all_user_name_fields($returnsql = false, $tableprefix = 
  */
 class facetoface_candidate_selector extends user_selector_base {
     protected $sessionid;
+    protected $courseid;
 
     public function __construct($name, $options) {
         $this->sessionid = $options['sessionid'];
+        $this->courseid = $options['courseid'];
         parent::__construct($name, $options);
     }
 
@@ -4222,9 +4224,18 @@ class facetoface_candidate_selector extends user_selector_base {
 
         $fields      = 'SELECT ' . $this->required_fields_sql('u');
         $countfields = 'SELECT COUNT(u.id)';
+
+        $limitsql = '';
+        if (get_config(null, 'facetoface_limit_candidates')) {
+            $params['courseid'] = $this->courseid;
+            $limitsql = "JOIN {user_enrolments} ue ON u.id = ue.userid
+                  JOIN {enrol} e ON e.id = ue.enrolid AND e.courseid = :courseid";
+        }
+
         $sql = "
                   FROM {user} u
-                 WHERE $wherecondition
+                    $limitsql
+                WHERE $wherecondition
                    AND u.id NOT IN
                        (
                        SELECT u2.id
