@@ -73,6 +73,8 @@ define('F2F_CAL_SITE',   2);
 // Signup setting constants.
 define('MOD_FACETOFACE_SIGNUP_SINGLE', 0);
 define('MOD_FACETOFACE_SIGNUP_MULTIPLE', 1);
+define('MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION', 0);
+define('MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_ACTIVITY', 1);
 
 // Signup status codes (remember to update facetoface_statuses()).
 define('MDL_F2F_STATUS_USER_CANCELLED', 10);
@@ -306,6 +308,12 @@ function facetoface_fix_settings($facetoface) {
     }
     if (empty($facetoface->approvalreqd)) {
         $facetoface->approvalreqd = 0;
+    }
+
+    // When users can only sign up for one session per activity, force the
+    // signup type to per-session.
+    if (isset($facetoface->signuptype) && $facetoface->signuptype == MOD_FACETOFACE_SIGNUP_SINGLE) {
+        $facetoface->multiplesignupmethod = MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION;
     }
 }
 
@@ -2636,9 +2644,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                     continue;
                 } else {
                     $signupurl   = new moodle_url('/mod/facetoface/signup.php', array('s' => $session->id));
-                    $signuptext   = 'signup';
-                    $moreinfolink = html_writer::link($signupurl, get_string($signuptext, 'facetoface'), array('class' => 'f2fsessionlinks f2fsessioninfolink'));
-
+                    $signupstr = $facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION ? 'signup' : 'signupforstream';
+                    $moreinfolink = html_writer::link($signupurl, get_string($signupstr, 'facetoface'), array('class' => 'f2fsessionlinks f2fsessioninfolink'));
                     $span = html_writer::tag('span', get_string('options', 'facetoface').':', array('class' => 'f2fsessionnotice'));
                 }
 
@@ -2696,13 +2703,27 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
 
             if (!empty($futuresessions)) {
                 $output .= html_writer::start_tag('div', array('class' => 'f2fsessiongroup'));
-                $output .= html_writer::tag('span', get_string('signupforsession', 'facetoface'), array('class' => 'f2fsessionnotice'));
+
+                if ($facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION) {
+                    $output .= html_writer::tag('span', get_string('signupforsession', 'facetoface'), array('class' => 'f2fsessionnotice'));
+                } else {
+                    $output .= html_writer::tag('span', get_string('upcomingsessions', 'facetoface'), array('class' => 'f2fsessionnotice'));
+
+                    if (!empty($futuresessions)) {
+                        $firstsession = $futuresessions[array_keys($futuresessions)[0]];
+                        $output .= html_writer::tag('div', $firstsession->moreinfolink, array('class' => 'f2foptions'));
+                    }
+                }
 
                 foreach ($futuresessions as $session) {
                     $output .= html_writer::start_tag('div', array('class' => 'f2fsession f2ffuture'))
-                        . html_writer::tag('div', $session->date.$session->multidate, array('class' => 'f2fsessiontime'))
-                        . html_writer::tag('div', $session->options . $session->moreinfolink, array('class' => 'f2foptions'))
-                        . html_writer::end_tag('div');
+                            . html_writer::tag('div', $session->date.$session->multidate, array('class' => 'f2fsessiontime'));
+
+                    if ($facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION) {
+                        $output .= html_writer::tag('div', $session->options . $session->moreinfolink, array('class' => 'f2foptions'));
+                    }
+
+                    $output .= html_writer::end_tag('div');
                 }
                 $output .= html_writer::end_tag('div');
             }
