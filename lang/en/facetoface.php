@@ -794,3 +794,5 @@ $string['eventupdatemanageremailfailed'] = 'Update manager email (FAILED)';
 $string['eventupdatesession'] = 'Session updated';
 $string['eventupdatesessionfailed'] = 'Session update (FAILED)';
 $string['waitliststatus'] = 'You have a place on the waitlist of the following session';
+$string['addtoallsessions'] = 'Add the selected users to all (upcoming) sessions';
+$string['addtoallsessions_help'] = 'When selected, users will be added to all upcoming (i.e., not finished) sessions within the face to face activity';
