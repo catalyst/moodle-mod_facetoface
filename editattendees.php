@@ -194,7 +194,7 @@ if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
     $content = html_writer::checkbox(
         'addtoallsessions',
         1,
-        $addtoallsessions,
+        0,
         get_string('addtoallsessions', 'facetoface'),
         array('id' => 'addtoallsessions')
     );
@@ -204,7 +204,7 @@ if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
     $table->data[] = new html_table_row(array($cell));
 }
 
-$content = html_writer::checkbox('suppressemail', 1, $suppressemail, get_string('suppressemail', 'facetoface'),
+$content = html_writer::checkbox('suppressemail', 1, 0, get_string('suppressemail', 'facetoface'),
     array('id' => 'suppressemail'));
 $content .= $OUTPUT->help_icon('suppressemail', 'facetoface');
 $cell = new html_table_cell($content);
