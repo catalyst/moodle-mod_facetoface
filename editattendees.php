@@ -108,11 +108,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
             } else {
                 $now = time();
                 $addtofuturesessions = $addtoallsessions && $facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE;
-                $futuresessions = array_filter(
-                    facetoface_get_sessions($facetoface->id),
-                    fn(stdClass $s): bool => !empty(array_filter($s->sessiondates, fn(stdClass $d): bool => $d->timestart > $now))
-                );
-                $sessions = $addtofuturesessions ? $futuresessions : [$session];
+                $sessions = $addtofuturesessions ? facetoface_get_future_sessions($facetoface->id) : [$session];
 
                 foreach ($sessions as $session) {
                     if (!facetoface_session_has_capacity($session, $context)) {
