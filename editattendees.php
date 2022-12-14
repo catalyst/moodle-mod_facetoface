@@ -189,6 +189,29 @@ $out .= html_writer::empty_tag('input', array('type' => 'hidden', 'name' => "ses
 $table = new html_table();
 $table->attributes['class'] = "generaltable generalbox boxaligncenter";
 $cells = array();
+
+if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
+    $content = html_writer::checkbox(
+        'addtoallsessions',
+        1,
+        $addtoallsessions,
+        get_string('addtoallsessions', 'facetoface'),
+        array('id' => 'addtoallsessions')
+    );
+    $content .= $OUTPUT->help_icon('addtoallsessions', 'facetoface');
+    $cell = new html_table_cell($content);
+    $cell->attributes['colspan'] = '3';
+    $table->data[] = new html_table_row(array($cell));
+}
+
+$content = html_writer::checkbox('suppressemail', 1, $suppressemail, get_string('suppressemail', 'facetoface'),
+    array('id' => 'suppressemail'));
+$content .= $OUTPUT->help_icon('suppressemail', 'facetoface');
+$cell = new html_table_cell($content);
+$cell->attributes['id'] = 'backcell';
+$cell->attributes['colspan'] = '3';
+$table->data[] = new html_table_row(array($cell));
+
 $content = html_writer::start_tag('p') . html_writer::tag('label', get_string('attendees', 'facetoface'),
         array('for' => 'removeselect')) . html_writer::end_tag('p');
 $content .= $existinguserselector->display(true);
@@ -211,27 +234,6 @@ $cell = new html_table_cell($content);
 $cell->attributes['id'] = 'potentialcell';
 $cells[] = $cell;
 $table->data[] = new html_table_row($cells);
-$content = html_writer::checkbox('suppressemail', 1, $suppressemail, get_string('suppressemail', 'facetoface'),
-    array('id' => 'suppressemail'));
-$content .= $OUTPUT->help_icon('suppressemail', 'facetoface');
-$cell = new html_table_cell($content);
-$cell->attributes['id'] = 'backcell';
-$cell->attributes['colspan'] = '3';
-$table->data[] = new html_table_row(array($cell));
-
-if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
-    $content = html_writer::checkbox(
-        'addtoallsessions',
-        1,
-        $addtoallsessions,
-        get_string('addtoallsessions', 'facetoface'),
-        array('id' => 'addtoallsessions')
-    );
-    $content .= $OUTPUT->help_icon('addtoallsessions', 'facetoface');
-    $cell = new html_table_cell($content);
-    $cell->attributes['colspan'] = '3';
-    $table->data[] = new html_table_row(array($cell));
-}
 
 $out .= html_writer::table($table);
 
