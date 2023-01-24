@@ -64,10 +64,17 @@ $settings->add(new admin_setting_configcheckbox(
     0
 ));
 
+$settings->add(new admin_setting_configcheckbox(
+    'facetoface_enableapprovals',
+    get_string('setting:enableapprovals_caption', 'facetoface'),
+    get_string('setting:enableapprovals', 'facetoface'),
+    1
+));
+
 $settings->add(new admin_setting_heading(
     'facetoface_manageremail_header',
     get_string('manageremailheading', 'facetoface'),
-    ''
+    get_string('manageremaildisabled', 'facetoface')
 ));
 
 $settings->add(new admin_setting_configcheckbox(
@@ -76,6 +83,7 @@ $settings->add(new admin_setting_configcheckbox(
     get_string('setting:addchangemanageremail', 'facetoface'),
     0
 ));
+$settings->hide_if('facetoface_addchangemanageremail', 'facetoface_enableapprovals');
 
 $settings->add(new admin_setting_configtext(
     'facetoface_manageraddressformat',
@@ -84,6 +92,7 @@ $settings->add(new admin_setting_configtext(
     get_string('setting:manageraddressformatdefault', 'facetoface'),
     PARAM_TEXT
 ));
+$settings->hide_if('facetoface_manageraddressformat', 'facetoface_enableapprovals');
 
 $settings->add(new admin_setting_configtext(
     'facetoface_manageraddressformatreadable',
@@ -92,6 +101,7 @@ $settings->add(new admin_setting_configtext(
     get_string('setting:manageraddressformatreadabledefault', 'facetoface'),
     PARAM_NOTAGS
 ));
+$settings->hide_if('facetoface_manageraddressformatreadable', 'facetoface_enableapprovals');
 
 $settings->add(new admin_setting_heading('facetoface_cost_header', get_string('costheading', 'facetoface'), ''));
 

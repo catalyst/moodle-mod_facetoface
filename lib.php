@@ -1762,7 +1762,7 @@ function facetoface_user_signup($session, $facetoface, $course, $discountcode,
     // Work out which status to use.
 
     // If approval not required.
-    if (!$facetoface->approvalreqd) {
+    if (!\mod_facetoface\helper::is_approval_required((object) $facetoface)) {
         $newstatus = $statuscode;
     } else {
 
@@ -3464,7 +3464,7 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
     // Display requires approval notification.
     $facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface));
 
-    if ($facetoface->approvalreqd) {
+    if (\mod_facetoface\helper::is_approval_required((object) $facetoface)) {
         $table->data[] = array('', get_string('sessionrequiresmanagerapproval', 'facetoface'));
     }
 
@@ -3818,10 +3818,13 @@ function facetoface_get_trainers($sessionid, $roleid = null) {
  * @return boolean whether a person needs a manager to sign up for that activity
  */
 function facetoface_manager_needed($facetoface) {
-    return $facetoface->approvalreqd
-        || $facetoface->confirmationinstrmngr
-        || $facetoface->reminderinstrmngr
-        || $facetoface->cancellationinstrmngr;
+    return get_config('facetoface', 'enableapprovals')
+        && (
+            $facetoface->approvalreqd
+            || $facetoface->confirmationinstrmngr
+            || $facetoface->reminderinstrmngr
+            || $facetoface->cancellationinstrmngr
+        );
 }
 
 /**
