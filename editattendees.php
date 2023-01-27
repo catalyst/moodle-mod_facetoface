@@ -102,7 +102,7 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
             }
 
             $usernamefields = facetoface_get_all_user_name_fields(true);
-            if (facetoface_get_user_submissions($facetoface->id, $adduser)) {
+            if (facetoface_get_user_submissions($facetoface->id, $adduser) && $facetoface->signuptype != MOD_FACETOFACE_SIGNUP_MULTIPLE) {
                 $erruser = $DB->get_record('user', array('id' => $adduser), "id, {$usernamefields}");
                 $errors[] = get_string('error:addalreadysignedupattendee', 'facetoface', fullname($erruser));
             } else {
