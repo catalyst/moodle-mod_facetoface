@@ -126,7 +126,7 @@ class mod_facetoface_session_form extends moodleform {
         $mform->setType('duration', PARAM_TEXT);
         $mform->addHelpButton('duration', 'duration', 'facetoface');
 
-        if (!get_config(null, 'facetoface_hidecost')) {
+        if (!get_config('facetoface', 'hidecost')) {
             $formarray  = array();
             $formarray[] = $mform->createElement('text', 'normalcost', get_string('normalcost', 'facetoface'), 'size="5"');
             $formarray[] = $mform->createElement('static', 'normalcosthint', '', html_writer::tag('span',
@@ -135,7 +135,7 @@ class mod_facetoface_session_form extends moodleform {
             $mform->setType('normalcost', PARAM_TEXT);
             $mform->addHelpButton('normalcost_group', 'normalcost', 'facetoface');
 
-            if (!get_config(null, 'facetoface_hidediscount')) {
+            if (!get_config('facetoface', 'hidediscount')) {
                 $formarray  = array();
                 $formarray[] = $mform->createElement('text', 'discountcost', get_string('discountcost', 'facetoface'), 'size="5"');
                 $formarray[] = $mform->createElement('static', 'discountcosthint', '', html_writer::tag('span',

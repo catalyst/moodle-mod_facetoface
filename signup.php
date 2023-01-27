@@ -82,7 +82,7 @@ if (isguestuser()) {
 }
 
 $manageremail = false;
-if (get_config(null, 'facetoface_addchangemanageremail')) {
+if (get_config('facetoface', 'addchangemanageremail')) {
     $manageremail = facetoface_get_manageremail($USER->id);
 }
 
