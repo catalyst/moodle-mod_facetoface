@@ -33,7 +33,7 @@ defined('MOODLE_INTERNAL') || die();
 require_once($CFG->dirroot . '/mod/facetoface/lib.php');
 
 $settings->add(new admin_setting_configtext(
-    'facetoface_fromaddress',
+    'facetoface/fromaddress',
     get_string('setting:fromaddress_caption', 'facetoface'),
     get_string('setting:fromaddress', 'facetoface'),
     get_string('setting:fromaddressdefault', 'facetoface'),
@@ -50,7 +50,7 @@ if ($roles = role_fix_names(get_all_roles(), context_system::instance())) {
 }
 
 $settings->add(new admin_setting_configmultiselect(
-    'facetoface_session_roles',
+    'facetoface/session_roles',
     get_string('setting:sessionroles_caption', 'facetoface'),
     get_string('setting:sessionroles', 'facetoface'),
     array(),
@@ -58,78 +58,78 @@ $settings->add(new admin_setting_configmultiselect(
 ));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_limit_candidates',
+    'facetoface/limit_candidates',
     get_string('setting:limit_candidates_caption', 'facetoface'),
     get_string('setting:limit_candidates', 'facetoface'),
     0
 ));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_enableapprovals',
+    'facetoface/enableapprovals',
     get_string('setting:enableapprovals_caption', 'facetoface'),
     get_string('setting:enableapprovals', 'facetoface'),
     1
 ));
 
 $settings->add(new admin_setting_heading(
-    'facetoface_manageremail_header',
+    'facetoface/manageremail_header',
     get_string('manageremailheading', 'facetoface'),
     get_string('manageremaildisabled', 'facetoface')
 ));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_addchangemanageremail',
+    'facetoface/addchangemanageremail',
     get_string('setting:addchangemanageremail_caption', 'facetoface'),
     get_string('setting:addchangemanageremail', 'facetoface'),
     0
 ));
-$settings->hide_if('facetoface_addchangemanageremail', 'facetoface_enableapprovals');
+$settings->hide_if('facetoface/addchangemanageremail', 'facetoface/enableapprovals');
 
 $settings->add(new admin_setting_configtext(
-    'facetoface_manageraddressformat',
+    'facetoface/manageraddressformat',
     get_string('setting:manageraddressformat_caption', 'facetoface'),
     get_string('setting:manageraddressformat', 'facetoface'),
     get_string('setting:manageraddressformatdefault', 'facetoface'),
     PARAM_TEXT
 ));
-$settings->hide_if('facetoface_manageraddressformat', 'facetoface_enableapprovals');
+$settings->hide_if('facetoface/manageraddressformat', 'facetoface/enableapprovals');
 
 $settings->add(new admin_setting_configtext(
-    'facetoface_manageraddressformatreadable',
+    'facetoface/manageraddressformatreadable',
     get_string('setting:manageraddressformatreadable_caption', 'facetoface'),
     get_string('setting:manageraddressformatreadable', 'facetoface'),
     get_string('setting:manageraddressformatreadabledefault', 'facetoface'),
     PARAM_NOTAGS
 ));
-$settings->hide_if('facetoface_manageraddressformatreadable', 'facetoface_enableapprovals');
+$settings->hide_if('facetoface/manageraddressformatreadable', 'facetoface/enableapprovals');
 
-$settings->add(new admin_setting_heading('facetoface_cost_header', get_string('costheading', 'facetoface'), ''));
+$settings->add(new admin_setting_heading('facetoface/cost_header', get_string('costheading', 'facetoface'), ''));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_hidecost',
+    'facetoface/hidecost',
     get_string('setting:hidecost_caption', 'facetoface'),
     get_string('setting:hidecost', 'facetoface'),
     0
 ));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_hidediscount',
+    'facetoface/hidediscount',
     get_string('setting:hidediscount_caption', 'facetoface'),
     get_string('setting:hidediscount', 'facetoface'),
     0
 ));
 
-$settings->add(new admin_setting_heading('facetoface_icalendar_header', get_string('icalendarheading', 'facetoface'), ''));
+$settings->add(new admin_setting_heading('facetoface/icalendar_header', get_string('icalendarheading', 'facetoface'), ''));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_oneemailperday',
+    'facetoface/oneemailperday',
     get_string('setting:oneemailperday_caption', 'facetoface'),
     get_string('setting:oneemailperday', 'facetoface'),
     0
 ));
 
 $settings->add(new admin_setting_configcheckbox(
-    'facetoface_disableicalcancel',
+    'facetoface/disableicalcancel',
     get_string('setting:disableicalcancel_caption', 'facetoface'),
     get_string('setting:disableicalcancel', 'facetoface'),
     0
@@ -142,7 +142,7 @@ $url   = new moodle_url('/mod/facetoface/customfield.php', array('id' => 0));
 $html .= html_writer::link($url, get_string('addnewfieldlink', 'facetoface'));
 $html .= html_writer::end_tag('p');
 
-$settings->add(new admin_setting_heading('facetoface_customfields_header', get_string('customfieldsheading', 'facetoface'), $html));
+$settings->add(new admin_setting_heading('facetoface/customfields_header', get_string('customfieldsheading', 'facetoface'), $html));
 
 // List of existing site notices.
 $html  = facetoface_list_of_sitenotices();
@@ -151,4 +151,4 @@ $url  = new moodle_url('/mod/facetoface/sitenotice.php', array('id' => 0));
 $html .= html_writer::link($url, get_string('addnewnoticelink', 'facetoface'));
 $html .= html_writer::end_tag('p');
 
-$settings->add(new admin_setting_heading('facetoface_sitenotices_header', get_string('sitenoticesheading', 'facetoface'), $html));
+$settings->add(new admin_setting_heading('facetoface/sitenotices_header', get_string('sitenoticesheading', 'facetoface'), $html));
