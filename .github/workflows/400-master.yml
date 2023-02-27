@@ -42,10 +42,10 @@ jobs:
       matrix:
         database: ['pgsql']
         moodle-branch: ['MOODLE_400_STABLE', 'master']
-        php: ['7.4', '8.0']
+        php: ['8.0']
         include:
           - moodle-branch: master
-            php: 7.4
+            php: 8.0
             database: mariadb
 
     steps:

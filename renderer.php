@@ -96,12 +96,11 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                     if (!empty($allsessiondates)) {
                         $allsessiondates .= html_writer::empty_tag('br');
                     }
-                    $allsessiondates .= userdate($date->timestart, get_string('strftimedate'));
+                    $allsessiondates .= \mod_facetoface\session::get_readable_session_date($date);
                     if (!empty($allsessiontimes)) {
                         $allsessiontimes .= html_writer::empty_tag('br');
                     }
-                    $allsessiontimes .= userdate($date->timestart, get_string('strftimetime')).
-                        ' - '.userdate($date->timefinish, get_string('strftimetime'));
+                    $allsessiontimes .= \mod_facetoface\session::get_readable_session_time($date);
                 }
             } else {
                 $allsessiondates = get_string('wait-listed', 'facetoface');
