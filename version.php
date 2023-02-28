@@ -35,3 +35,4 @@ $plugin->requires  = 2017111300;  // Requires 3.4.
 $plugin->release   = '3.9.1';
 $plugin->component = 'mod_facetoface';
 $plugin->maturity  = MATURITY_STABLE;
+$plugin->supported = [34, 310];
