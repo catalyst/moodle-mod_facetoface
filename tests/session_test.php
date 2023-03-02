@@ -103,7 +103,7 @@ class session_test extends \advanced_testcase {
      * Test getting full session dates and times with user's timezone.
      */
     public function test_get_readable_session_time_with_users_timezone() {
-        set_config( 'facetoface_displaysessiontimezones', 1);
+        set_config( 'displaysessiontimezones', 1, 'facetoface');
         $date = (object) [
             'timestart' => $this->starttime,
             'timefinish' => $this->starttime + 80 * HOURSECS,
