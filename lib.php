@@ -920,7 +920,7 @@ function facetoface_cron() {
                                                              $user, $signupdata, $signupdata->sessionid);
 
         $posthtml = ''; // FIXME.
-        if ($fromaddress = get_config(null, 'facetoface_fromaddress')) {
+        if ($fromaddress = get_config('facetoface', 'fromaddress')) {
             $from = new stdClass();
             $from->maildisplay = true;
             $from->email = $fromaddress;
@@ -1910,7 +1910,7 @@ function facetoface_user_signup($session, $facetoface, $course, $discountcode,
     // Work out which status to use.
 
     // If approval not required.
-    if (!$facetoface->approvalreqd) {
+    if (!\mod_facetoface\helper::is_approval_required((object) $facetoface)) {
         $newstatus = $statuscode;
     } else {
 
@@ -2014,7 +2014,7 @@ function facetoface_send_request_notice($facetoface, $session, $userid) {
         return 'error:invaliduserid';
     }
 
-    if ($fromaddress = get_config(null, 'facetoface_fromaddress')) {
+    if ($fromaddress = get_config('facetoface', 'fromaddress')) {
         $from = new stdClass();
         $from->maildisplay = true;
         $from->email = $fromaddress;
@@ -2183,7 +2183,7 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
 
     // If we are cancelling, check if ical cancellations are disabled.
     if (($notificationtype & MDL_F2F_CANCEL) &&
-        get_config(null, 'facetoface_disableicalcancel')) {
+        get_config('facetoface', 'disableicalcancel')) {
         $notificationtype |= MDL_F2F_TEXT; // Add a text notification.
         $notificationtype &= ~MDL_F2F_ICAL; // Remove the iCalendar notification.
     }
@@ -2200,7 +2200,7 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
     // Do iCal attachement stuff.
     $icalattachments = array();
     if ($notificationtype & MDL_F2F_ICAL) {
-        if (get_config(null, 'facetoface_oneemailperday')) {
+        if (get_config('facetoface', 'oneemailperday')) {
 
             // Keep track of all sessiondates.
             $sessiondates = $session->sessiondates;
@@ -2244,7 +2244,7 @@ function facetoface_send_notice($postsubject, $posttext, $posttextmgrheading,
                                                          $user, $session, $session->id);
 
     $posthtml = ''; // FIXME.
-    if ($fromaddress = get_config(null, 'facetoface_fromaddress')) {
+    if ($fromaddress = get_config('facetoface', 'fromaddress')) {
         $from = new stdClass();
         $from->maildisplay = true;
         $from->email = $fromaddress;
@@ -2402,9 +2402,9 @@ function facetoface_get_manageremail($userid) {
  * Human-readable version of the format of the manager's email address
  */
 function facetoface_get_manageremailformat() {
-    $addressformat = get_config(null, 'facetoface_manageraddressformat');
+    $addressformat = get_config('facetoface', 'manageraddressformat');
     if (!empty($addressformat)) {
-        $readableformat = get_config(null, 'facetoface_manageraddressformatreadable');
+        $readableformat = get_config('facetoface', 'manageraddressformatreadable');
         return get_string('manageremailformat', 'facetoface', $readableformat);
     }
 
@@ -2418,7 +2418,7 @@ function facetoface_get_manageremailformat() {
  * @param string $manageremail email address as entered by the user
  */
 function facetoface_check_manageremail($manageremail) {
-    $addressformat = get_config(null, 'facetoface_manageraddressformat');
+    $addressformat = get_config('facetoface', 'manageraddressformat');
     if (empty($addressformat) || strpos($manageremail, $addressformat)) {
         return true;
     } else {
@@ -2651,7 +2651,7 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
  */
 function facetoface_format_session_times($start, $end, $tz) {
 
-    $displaytimezones = get_config(null, 'facetoface_displaysessiontimezones');
+    $displaytimezones = get_config('facetoface', 'displaysessiontimezones');
 
     $formattedsession = new stdClass();
     if (empty($tz) or empty($displaytimezones)) {
@@ -2976,7 +2976,7 @@ function facetoface_get_ical_attachment($method, $facetoface, $session, $user) {
          */
         $location = str_replace('\n', '\, ', facetoface_ical_escape($locationstring));
 
-        $organiseremail = get_config(null, 'facetoface_fromaddress');
+        $organiseremail = get_config('facetoface', 'fromaddress');
 
         $role = 'REQ-PARTICIPANT';
         $cancelstatus = '';
@@ -3612,7 +3612,7 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
     // Display requires approval notification.
     $facetoface = $DB->get_record('facetoface', array('id' => $session->facetoface));
 
-    if ($facetoface->approvalreqd) {
+    if (\mod_facetoface\helper::is_approval_required((object) $facetoface)) {
         $table->data[] = array('', get_string('sessionrequiresmanagerapproval', 'facetoface'));
     }
 
@@ -3966,10 +3966,13 @@ function facetoface_get_trainers($sessionid, $roleid = null) {
  * @return boolean whether a person needs a manager to sign up for that activity
  */
 function facetoface_manager_needed($facetoface) {
-    return $facetoface->approvalreqd
-        || $facetoface->confirmationinstrmngr
-        || $facetoface->reminderinstrmngr
-        || $facetoface->cancellationinstrmngr;
+    return get_config('facetoface', 'enableapprovals')
+        && (
+            $facetoface->approvalreqd
+            || $facetoface->confirmationinstrmngr
+            || $facetoface->reminderinstrmngr
+            || $facetoface->cancellationinstrmngr
+        );
 }
 
 /**
@@ -4225,7 +4228,7 @@ class facetoface_candidate_selector extends user_selector_base {
         $countfields = 'SELECT COUNT(u.id)';
 
         $limitsql = '';
-        if (get_config(null, 'facetoface_limit_candidates')) {
+        if (get_config('facetoface', 'limit_candidates')) {
             $params['courseid'] = $this->courseid;
             $limitsql = "JOIN {user_enrolments} ue ON u.id = ue.userid
                   JOIN {enrol} e ON e.id = ue.enrolid AND e.courseid = :courseid";
