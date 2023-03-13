@@ -254,10 +254,10 @@ if ($canviewattendees || $cantakeattendance) {
             $table->head[] = get_string('attendedsession', 'facetoface');
             $table->align[] = 'center';
         } else {
-            if (!get_config(null, 'facetoface_hidecost')) {
+            if (!get_config('facetoface', 'hidecost')) {
                 $table->head[] = get_string('cost', 'facetoface');
                 $table->align[] = 'center';
-                if (!get_config(null, 'facetoface_hidediscount')) {
+                if (!get_config('facetoface', 'hidediscount')) {
                     $table->head[] = get_string('discountcode', 'facetoface');
                     $table->align[] = 'center';
                 }
@@ -282,9 +282,9 @@ if ($canviewattendees || $cantakeattendance) {
                 $select = html_writer::select($statusoptions, $optionid, $status);
                 $data[] = $select;
             } else {
-                if (!get_config(null, 'facetoface_hidecost')) {
+                if (!get_config('facetoface', 'hidecost')) {
                     $data[] = facetoface_cost($attendee->id, $session->id, $session);
-                    if (!get_config(null, 'facetoface_hidediscount')) {
+                    if (!get_config('facetoface', 'hidediscount')) {
                         $data[] = $attendee->discountcode;
                     }
                 }

@@ -1,0 +1,10 @@
+name: ci
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    uses: catalyst/catalyst-moodle-workflows/.github/workflows/ci.yml@main
+    with:
+      min_php: 7.4
+      disable_phpdoc: true
