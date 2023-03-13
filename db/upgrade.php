@@ -784,5 +784,36 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2021113003, 'facetoface');
     }
 
+    if ($oldversion < 2021113006) {
+        // Get all old admin settings and copy them into the new admin settings (in correct namespace).
+        $settings = [
+            'fromaddress',
+            'session_roles',
+            'limit_candidates',
+            'manageremail_header',
+            'addchangemanageremail',
+            'manageraddressformat',
+            'manageraddressformatreadable',
+            'cost_header',
+            'hidecost',
+            'hidediscount',
+            'icalendar_header',
+            'oneemailperday',
+            'disableicalcancel',
+            'customfields_header',
+            'sitenotices_header',
+        ];
+
+        foreach ($settings as $setting) {
+            $oldvalue = get_config(null, 'facetoface_' . $setting);
+            if ($oldvalue !== false) {
+                set_config($setting, $oldvalue, 'facetoface');
+            }
+        }
+
+        // Facetoface savepoint reached.
+        upgrade_mod_savepoint(true, 2021113006, 'facetoface');
+    }
+
     return $result;
 }
