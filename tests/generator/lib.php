@@ -72,4 +72,56 @@ class mod_facetoface_generator extends testing_module_generator {
 
         return parent::create_instance($record, (array) $options);
     }
+
+    public function create_session($record): stdClass {
+        global $DB, $CFG;
+        require_once("$CFG->dirroot/mod/facetoface/lib.php");
+        $record = (object)(array)$record;
+
+        if (empty($record->facetoface)) {
+            throw new coding_exception('Session generator requires $record->facetoface');
+        }
+
+        if (!isset($record->sessiondates)) {
+            $time = time();
+            $sessiondate = new stdClass();
+            $sessiondate->timestart = $time;
+            $sessiondate->timefinish = $time + (DAYSECS * 2);
+            $sessiondates = array($sessiondate);
+        } else {
+            $sessiondates = array_map(function ($date): stdClass {
+                if (is_number($date)) {
+                    $sessiondate = new stdClass();
+                    $sessiondate->timestart = (int)$date;
+                    $sessiondate->timefinish = (int)$date + (DAYSECS * 2);
+                    return $sessiondate;
+                } else {
+                    return (object)(array)$date;
+                }
+            }, $record->sessiondates);
+            unset($record->sessiondates);
+        }
+
+        if (!isset($record->capacity)) {
+            $record->capacity = 10;
+        }
+        if (!isset($record->allowoverbook)) {
+            $record->allowoverbook = 0;
+        }
+        if (!isset($record->duration)) {
+            $record->duration = 0;
+        }
+        if (!isset($record->normalcost)) {
+            $record->normalcost = 0;
+        }
+        if (!isset($record->discountcost)) {
+            $record->discountcost = 0;
+        }
+        $record->datetimeknown = !empty($sessiondates);
+
+        $sessionid = facetoface_add_session($record, $sessiondates);
+        $session = facetoface_get_session($sessionid);
+
+        return $session;
+    }
 }
