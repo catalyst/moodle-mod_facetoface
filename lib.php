@@ -326,7 +326,6 @@ function facetoface_add_instance($facetoface) {
     global $DB;
 
     $facetoface->timemodified = time();
-    $facetoface->confirmationmessage = $facetoface->confirmationmessage['text'];
     facetoface_fix_settings($facetoface);
     if ($facetoface->id = $DB->insert_record('facetoface', $facetoface)) {
         facetoface_grade_item_update($facetoface);
@@ -353,7 +352,6 @@ function facetoface_update_instance($facetoface, $instanceflag = true) {
     if ($instanceflag) {
         $facetoface->id = $facetoface->instance;
     }
-    $facetoface->confirmationmessage = $facetoface->confirmationmessage['text'];
 
     facetoface_fix_settings($facetoface);
     if ($return = $DB->update_record('facetoface', $facetoface)) {
