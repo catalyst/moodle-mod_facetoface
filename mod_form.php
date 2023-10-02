@@ -149,8 +149,7 @@ class mod_facetoface_mod_form extends moodleform_mod {
         $mform->setType('confirmationsubject', PARAM_TEXT);
         $mform->setDefault('confirmationsubject', get_string('setting:defaultconfirmationsubjectdefault', 'facetoface'));
 
-        $editoroptions = ['trusttext' => true];
-        $mform->addElement('editor', 'confirmationmessage', get_string('email:message', 'facetoface'), null, $editoroptions);
+        $mform->addElement('editor', 'confirmationmessage', get_string('email:message', 'facetoface'));
         $mform->setType('confirmationmessage', PARAM_RAW);
         $confirmationmessagedata = [
             'text' => get_string('setting:defaultconfirmationmessagedefault2', 'facetoface'),
@@ -259,28 +258,28 @@ class mod_facetoface_mod_form extends moodleform_mod {
         }
 
         if ($this->current->instance) {
-            $draftitemid = file_get_submitted_draft_itemid('confirmationmessage');
-            $defaultvalues['confirmationmessage'] = [
-                'format' => FORMAT_HTML,
-                'text' => file_prepare_draft_area(
-                    $draftitemid,
-                    $this->context->id,
-                    'mod_facetoface',
-                    'confirmationmessage',
-                    0,
-                    [
-                        'subdirs' => 1,
-                        'maxbytes' => $CFG->maxbytes,
-                        'maxfiles' => 0,
-                        'changeformat' => false,
-                        'context' => $this->context,
-                        'noclean' => true,
-                        'trusttext' => false,
-                    ],
-                    $defaultvalues['confirmationmessage']
-                ),
-                'itemid' => $draftitemid,
-            ];
+            if (isset($defaultvalues['confirmationmessage']) && !is_array($defaultvalues['confirmationmessage'])) {
+                $defaultvalues['confirmationmessage'] = [
+                    'format' => $defaultvalues['confirmationmessageformat'] ?? FORMAT_HTML,
+                    'text' => $defaultvalues['confirmationmessage'],
+                ];
+            }
+        }
+    }
+
+    /**
+     * Modify date returned from form.
+     *
+     * @param stdClass $data
+     * @return void
+     */
+    public function data_postprocessing($data) {
+        parent::data_postprocessing($data);
+        if (isset($data->confirmationmessage['format'])) {
+            $data->confirmationmessageformat = $data->confirmationmessage['format'];
+        }
+        if (isset($data->confirmationmessage['text'])) {
+            $data->confirmationmessage = $data->confirmationmessage['text'];
         }
     }
 }
