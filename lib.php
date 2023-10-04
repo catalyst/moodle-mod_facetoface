@@ -1847,9 +1847,9 @@ function facetoface_get_unmailed_reminders() {
  * Add a record to the facetoface submissions table and sends out an
  * email confirmation
  *
- * @param class $session record from the facetoface_sessions table
- * @param class $facetoface record from the facetoface table
- * @param class $course record from the course table
+ * @param stdClass $session record from the facetoface_sessions table
+ * @param stdClass $facetoface record from the facetoface table
+ * @param stdClass $course record from the course table
  * @param string $discountcode code entered by the user
  * @param integer $notificationtype type of notifications to send to user
  * @see {{MDL_F2F_INVITE}}
@@ -2428,7 +2428,7 @@ function facetoface_check_manageremail($manageremail) {
  * Mark the fact that the user attended the facetoface session by
  * giving that user a grade of 100
  *
- * @param array $data array containing the sessionid under the 's' key
+ * @param stdClass $data array containing the sessionid under the 's' key
  *                    and every submission ID to mark as attended
  *                    under the 'submissionid_XXXX' keys where XXXX is
  *                     the ID of the signup
@@ -2637,7 +2637,19 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
     $grade->timemodified = $timenow;
     $grade->usermodified = $USER->id;
 
-    return facetoface_grade_item_update($record, $grade);
+    $result = facetoface_grade_item_update($record, $grade);
+
+    // Reset completion if set up.
+    if ($record->completionattendance) {
+        $course = $DB->get_record('course', ['id' => $record->course], '*', MUST_EXIST);
+        $completion = new completion_info($course);
+        $cm = get_coursemodule_from_instance('facetoface', $record->id, $course->id);
+        if ($completion->is_enabled($cm)) {
+            $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
+        }
+    }
+
+    return $result;
 }
 /**
  * Used in many places to obtain properly-formatted session date and time info
@@ -4158,6 +4170,34 @@ function facetoface_get_extra_capabilities() {
     return array('moodle/site:viewfullnames');
 }
 
+/**
+ * Add a get_coursemodule_info function in case any facetoface type wants to add 'extra' information
+ * for the course (see resource).
+ *
+ * Given a course_module object, this function returns any "extra" information that may be needed
+ * when printing this activity in a course listing.  See get_array_of_activities() in course/lib.php.
+ *
+ * @param stdClass $coursemodule The coursemodule object (record).
+ * @return cached_cm_info An object on information that the courses
+ *                        will know about (most noticeably, an icon).
+ */
+function facetoface_get_coursemodule_info($coursemodule) {
+    global $DB;
+
+    if (!$facetoface = $DB->get_record('facetoface', ['id' => $coursemodule->instance])) {
+        return false;
+    }
+
+    $result = new cached_cm_info();
+    $result->name = $facetoface->name;
+
+    // Populate the custom completion rules as key => value pairs, but only if the completion mode is 'automatic'.
+    if ($coursemodule->completion == COMPLETION_TRACKING_AUTOMATIC) {
+        $result->customdata['customcompletionrules']['completionattendance'] = $facetoface->completionattendance;
+    }
+
+    return $result;
+}
 
 /**
  * @param string $feature FEATURE_xx constant for requested feature
@@ -4173,6 +4213,8 @@ function facetoface_supports($feature) {
             return true;
         case FEATURE_MOD_PURPOSE:
             return MOD_PURPOSE_COMMUNICATION;
+        case FEATURE_COMPLETION_HAS_RULES:
+            return true;
         default:
             return null;
     }

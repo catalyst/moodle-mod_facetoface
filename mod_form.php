@@ -282,4 +282,33 @@ class mod_facetoface_mod_form extends moodleform_mod {
             $data->confirmationmessage = $data->confirmationmessage['text'];
         }
     }
+
+    /**
+     * Add custom completion rules to activity form.
+     *
+     * @return array array of custom activity rule names
+     */
+    public function add_completion_rules(): array {
+        $mform = $this->_form;
+
+        $options = [
+            0 => get_string('completiondetail:attendance_disabled', 'facetoface'),
+            MDL_F2F_STATUS_PARTIALLY_ATTENDED => get_string('completiondetail:attendance_partial', 'facetoface'),
+            MDL_F2F_STATUS_FULLY_ATTENDED => get_string('completiondetail:attendance_full', 'facetoface'),
+        ];
+        $mform->addElement('select', 'completionattendance', get_string('completiondetail:attendance', 'facetoface'), $options);
+        $mform->setDefault('completionattendance', MDL_F2F_STATUS_FULLY_ATTENDED);
+
+        return ['completionattendance'];
+    }
+
+    /**
+     * Was custom rule enabled in activity form?
+     *
+     * @param array $data Input data (not yet validated)
+     * @return bool true if custom completion enabled
+     */
+    public function completion_rule_enabled($data): bool {
+        return !empty($data['completionattendance']);
+    }
 }
