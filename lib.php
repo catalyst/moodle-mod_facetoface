@@ -3396,7 +3396,7 @@ function facetoface_add_session_to_calendar($session, $facetoface, $calendartype
 
     $shortname = $facetoface->shortname;
     if (empty($shortname)) {
-        $shortname = substr($facetoface->name, 0, CALENDAR_MAX_NAME_LENGTH);
+        $shortname = core_text::substr($facetoface->name, 0, CALENDAR_MAX_NAME_LENGTH);
     }
 
     $result = true;
