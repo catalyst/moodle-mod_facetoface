@@ -101,11 +101,15 @@ class mod_facetoface_mod_form extends moodleform_mod {
 
         $mform->addElement('header', 'calendaroptions', get_string('calendaroptions', 'facetoface'));
 
-        $calendaroptions = array(
+        $calendaroptions = [
             F2F_CAL_NONE   => get_string('none'),
-            F2F_CAL_COURSE => get_string('course'),
-            F2F_CAL_SITE   => get_string('site')
-        );
+            F2F_CAL_COURSE => get_string('course')
+        ];
+
+        if (has_capability('mod/facetoface:createsitewideevent', $this->context)) {
+            $calendaroptions[F2F_CAL_SITE] = get_string('site');
+        }
+
         $mform->addElement('select', 'showoncalendar', get_string('showoncalendar', 'facetoface'), $calendaroptions);
         $mform->setDefault('showoncalendar', F2F_CAL_COURSE);
         $mform->addHelpButton('showoncalendar', 'showoncalendar', 'facetoface');

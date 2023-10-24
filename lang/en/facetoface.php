@@ -206,6 +206,7 @@ $string['facetoface'] = 'Face-to-Face';
 $string['facetoface:addinstance'] = 'Add instance';
 $string['facetoface:addattendees'] = 'Add attendees to a Face-to-Face session';
 $string['facetoface:configurecancellation'] = 'Allow the configuration of sign-up cancellations, upon adding/editing a face-to-face activity.';
+$string['facetoface:createsitewideevent'] = 'Allow creation of site wide calendar events';
 $string['facetoface:editsessions'] = 'Add, edit, copy and delete Face-to-Face sessions';
 $string['facetoface:overbook'] = 'Sign-up to full sessions.';
 $string['facetoface:removeattendees'] = 'Remove attendees from a Face-to-Face session';

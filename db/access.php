@@ -176,4 +176,14 @@ $capabilities = array(
             'manager' => CAP_ALLOW
         ),
     ),
+
+    // Ability to create site-wide events.
+    'mod/facetoface:createsitewideevent' => [
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+        'archetypes' => [
+            'editingteacher' => CAP_ALLOW,
+            'manager' => CAP_ALLOW
+        ]
+    ]
 );
