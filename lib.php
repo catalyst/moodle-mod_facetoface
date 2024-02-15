@@ -3871,15 +3871,16 @@ function facetoface_update_trainers($sessionid, $form) {
  * @return array
  */
 function facetoface_get_trainer_roles() {
-    global $CFG, $DB;
+    global $DB;
 
     // Check that roles have been selected.
-    if (empty($CFG->facetoface_session_roles)) {
+    $config = get_config('facetoface');
+    if (empty($config->session_roles)) {
         return false;
     }
 
     // Parse roles.
-    $cleanroles = clean_param($CFG->facetoface_session_roles, PARAM_SEQUENCE);
+    $cleanroles = clean_param($config->session_roles, PARAM_SEQUENCE);
     $roles = explode(',', $cleanroles);
     list($rolesql, $params) = $DB->get_in_or_equal($roles);
 
