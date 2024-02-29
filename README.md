@@ -19,9 +19,8 @@ Branches
 
 | Moodle version     | Branch            |
 | -----------------  | ----------------- |
-| Moodle 3.4 to 3.10 | MOODLE_34_STABLE  |
-| Moodle 3.11        | MOODLE_311_STABLE |
-| Moodle 4.0 and higher | MOODLE_400_STABLE |
+| Moodle 4.0 - 4.2   | MOODLE_400_STABLE |
+| Moodle 4.3 and higher | MOODLE_403_STABLE |
 
 Installation
 -------------
