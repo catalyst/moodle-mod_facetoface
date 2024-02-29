@@ -295,15 +295,19 @@ class mod_facetoface_mod_form extends moodleform_mod {
     public function add_completion_rules(): array {
         $mform = $this->_form;
 
+        // Using a suffix is mandatory for Moodle 4.3+.
+        $suffix = $this->get_suffix();
+
         $options = [
             0 => get_string('completiondetail:attendance_disabled', 'facetoface'),
             MDL_F2F_STATUS_PARTIALLY_ATTENDED => get_string('completiondetail:attendance_partial', 'facetoface'),
             MDL_F2F_STATUS_FULLY_ATTENDED => get_string('completiondetail:attendance_full', 'facetoface'),
         ];
-        $mform->addElement('select', 'completionattendance', get_string('completiondetail:attendance', 'facetoface'), $options);
-        $mform->setDefault('completionattendance', MDL_F2F_STATUS_FULLY_ATTENDED);
+        $mform->addElement('select', 'completionattendance' . $suffix,
+            get_string('completiondetail:attendance', 'facetoface'), $options);
+        $mform->setDefault('completionattendance' . $suffix, MDL_F2F_STATUS_FULLY_ATTENDED);
 
-        return ['completionattendance'];
+        return ['completionattendance' . $suffix];
     }
 
     /**
