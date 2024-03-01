@@ -80,16 +80,6 @@ class update_session_failed extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, $this->objecttable, 'update session (FAILED)', 'sessions.php?s=' . $this->objectid,
-            $this->objectid, $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception
