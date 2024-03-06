@@ -80,16 +80,6 @@ class take_attendance extends \core\event\base {
     }
 
     /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, $this->objecttable, 'take attendance', 'attendees.php?s=' . $this->objectid . '&takeattendance=1',
-            $this->objectid, $this->contextinstanceid);
-    }
-
-    /**
      * Custom validation.
      *
      * @throws \coding_exception

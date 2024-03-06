@@ -21,11 +21,10 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I click on "Add an activity or resource" "button" in the "General" "section"
     And I click on "Add a new Face-to-Face" "link"
     And I expand all fieldsets
+    And I click on "Add requirements" "radio"
 
     And I set the following fields to these values:
       | Name                | Test seminar                                      |
-      | Completion tracking | Show activity as complete when conditions are met |
-      | Require view        | 0                                                 |
       | Require attendance  | Full attendance is required                       |
     And I press "Save and display"
     And I should see "Full attendance is required" in the ".automatic-completion-conditions" "css_element"
@@ -51,7 +50,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I log out
 
     When I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "To do: Full attendance is required"
+    And I click on "To do" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "Full attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -61,8 +61,10 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "No show"
     And I press "Save attendance"
     And I log out
+
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "To do: Full attendance is required"
+    And I click on "To do" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "Full attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -73,7 +75,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I press "Save attendance"
     And I log out
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "To do: Full attendance is required"
+    And I click on "To do" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "Full attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -84,7 +87,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I press "Save attendance"
     And I log out
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "Done: Full attendance is required"
+    And I click on "Done" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "Full attendance is required"
     And I log out
 
   @javascript
@@ -94,11 +98,10 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I click on "Add an activity or resource" "button" in the "General" "section"
     And I click on "Add a new Face-to-Face" "link"
     And I expand all fieldsets
+    And I click on "Add requirements" "radio"
 
     And I set the following fields to these values:
       | Name                | Test seminar                                      |
-      | Completion tracking | Show activity as complete when conditions are met |
-      | Require view        | 0                                                 |
       | Require attendance  | At least partial attendance is required                       |
     And I press "Save and display"
     And I should see "At least partial attendance is required" in the ".automatic-completion-conditions" "css_element"
@@ -124,7 +127,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I log out
 
     When I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "To do: At least partial attendance is required"
+    And I click on "To do" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "At least partial attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -135,7 +139,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I press "Save attendance"
     And I log out
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "To do: At least partial attendance is required"
+    And I click on "To do" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "At least partial attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -146,7 +151,8 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I press "Save attendance"
     And I log out
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "Done: At least partial attendance is required"
+    And I click on "Done" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "At least partial attendance is required"
     And I log out
 
     When I am on the "C1" "Course" page logged in as "teacher1"
@@ -157,5 +163,6 @@ Feature: Teacher may set up facetoface completion based on attendance
     And I press "Save attendance"
     And I log out
     And I am on the "C1" "Course" page logged in as "student1"
-    Then I should see "Done: At least partial attendance is required"
+    And I click on "Done" "button" in the "[aria-label='Completion requirements for Test seminar']" "css_element"
+    Then I should see "At least partial attendance is required"
     And I log out

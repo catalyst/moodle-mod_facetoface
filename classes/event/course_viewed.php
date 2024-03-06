@@ -78,12 +78,4 @@ class course_viewed extends \core\event\course_viewed {
         return new \moodle_url('/mod/facetoface/index.php', array('id' => $this->courseid));
     }
 
-    /**
-     * Return the legacy event log data.
-     *
-     * @return array|null
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'facetoface', 'view all', 'index.php?id=' . $this->courseid);
-    }
 }
