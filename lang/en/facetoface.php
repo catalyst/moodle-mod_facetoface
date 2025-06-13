@@ -400,6 +400,8 @@ $string['setting:attendeesexportfields_caption'] = 'Attendees export fields';
 $string['setting:attendeesexportfields'] = 'Select the fields to be included in a session\'s exported list of attendees. This will be in addition to the attendee\'s first and last name.';
 $string['setting:sessioncompletiondate'] = 'When enabled, the session finish date will be used as the completion time when marking attendance.';
 $string['setting:sessioncompletiondate_caption'] = 'Use session finish date and time for completion:';
+$string['setting:cancelrestriction'] = 'Set the minimum number of hours before a session that students can cancel their booking. Within this time period, students cannot cancel themselves.';
+$string['setting:cancelrestriction_caption'] = 'Cancellation Restriction';
 $string['setting:enableapprovals'] = 'When disabled, the option to add approvals via the activity setting is no longer available.';
 $string['setting:enableapprovals_caption'] = 'Enable manager approvals:';
 $string['setting:defaultcancellationinstrmngr'] = 'Default cancellation message sent to managers.';
@@ -413,6 +415,7 @@ This is to advise that [firstname] [lastname] is no longer signed-up for the fol
 $string['setting:defaultcancellationmessage'] = 'Default cancellation message sent to the user.';
 $string['setting:defaultcancellationmessage_caption'] = 'Cancellation message';
 $string['setting:defaultcancellationmessagedefault'] = 'This is to advise that your booking on the following course has been cancelled:
+
 
 ***BOOKING CANCELLED***
 
