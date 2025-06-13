@@ -159,6 +159,7 @@ $string['error:multipleusersmatched'] = 'Multiple users matched to identifier {$
 $string['error:addalreadysignedupattendee'] = '{$a} is already signed-up for this Face-to-Face activity.';
 $string['error:addattendee'] = 'Could not add {$a} to the session.';
 $string['error:cancellationsnotallowed'] = 'You are not allowed to cancel this sign-up.';
+$string['error:cancellationtooclose'] = 'You are not allowed to cancel this sign-up. Bookings can only be cancelled {$a} before session.';
 $string['error:cancelbooking'] = 'There was a problem cancelling your booking';
 $string['error:cannotemailmanager'] = 'Sent reminder mail for submission id {$a->submissionid} to user {$a->userid}, but could not send the message for the user\'s manager email address ({$a->manageremail}).';
 $string['error:cannotemailuser'] = 'Could not send out mail for submission id {$a->submissionid} to user {$a->userid} ({$a->useremail}).';

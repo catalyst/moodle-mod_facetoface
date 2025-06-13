@@ -140,12 +140,21 @@ $signedup = facetoface_check_signup($facetoface->id);
 echo $OUTPUT->box_start();
 echo $OUTPUT->heading($heading);
 
-if ($signedup) {
-    facetoface_print_session($session, $viewattendees);
-    $mform->display();
-} else {
+if (!$signedup) {
     throw new moodle_exception('notsignedup', 'facetoface', $returnurl);
 }
+
+if ($session->datetimeknown && $cancelrestriction = get_config('facetoface', 'cancelrestriction')) {
+    // Sessions can have multiple dates. Use first date found for the session.
+    $sessionstart = $session->sessiondates[0]->timestart;
+    $timenow = time();
+    if ($timenow > ($sessionstart - $cancelrestriction)) {
+        throw new moodle_exception('error:cancellationtooclose', 'facetoface', '', format_time($cancelrestriction));
+    }
+}
+
+facetoface_print_session($session, $viewattendees);
+$mform->display();
 
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer($course);
