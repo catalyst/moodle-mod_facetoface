@@ -194,6 +194,7 @@ $string['error:emptyvenue'] = 'Venue was empty.';
 $string['error:enrolmentfailed'] = 'Could not enrol {$a} into the course.';
 $string['error:eventoccurred'] = 'You cannot cancel an event that has already occurred.';
 $string['error:fieldidincorrect'] = 'Field ID is incorrect: {$a}';
+$string['error:fieldselected'] = 'This field is selected to be shown on the course page. Please select a different field.';
 $string['error:f2ffailedupdatestatus'] = 'Face-to-Face failed to update the user\'s status';
 $string['error:incorrectcoursemodule'] = 'Course module is incorrect';
 $string['error:incorrectcoursemoduleid'] = 'Course Module ID was incorrect';

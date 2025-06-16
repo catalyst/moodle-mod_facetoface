@@ -42,6 +42,14 @@ if ($id > 0) {
     }
 }
 
+
+// If custom field is selected to be shown on custom page, alert user field cannot be deleted until
+// this is changed.
+$visiblefieldcolumn = get_config('facetoface', 'column');
+if ($visiblefieldcolumn == $id) {
+    throw new moodle_exception('error:fieldselected', 'facetoface', '');
+}
+
 $PAGE->set_url('/mod/facetoface/customfield.php', ['id' => $id, 'd' => $d, 'confirm' => $confirm]);
 
 admin_externalpage_setup('managemodules'); // This is hacky, there should be a special hidden page for it.
