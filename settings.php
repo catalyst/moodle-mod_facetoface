@@ -72,6 +72,19 @@ $settings->add(new admin_setting_configcheckbox(
     1
 ));
 
+$fields = $DB->get_records('facetoface_session_field', [], 'name', 'id, name');
+$options = array(0 => 'None');
+foreach ($fields as $field) {
+    $options[$field->id] = $field->name;
+}
+$settings->add(new admin_setting_configselect(
+    'facetoface/column',
+    'Visible field on course page',
+    'Show the field as an additional column on the session list view.',
+    0,
+    $options
+));
+
 $settings->add(new admin_setting_heading(
     'facetoface/manageremail_header',
     get_string('manageremailheading', 'facetoface'),

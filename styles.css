@@ -3,13 +3,14 @@
 }
 .f2fsession {
     width: 100%;
+    display: flex;
     border-bottom: 1px solid #ccc;
+    justify-content: space-between;
 }
 .f2fsession:last-child {
     border-bottom: none;
 }
 .f2fsessiontime {
-    width: 80%;
     display: inline-block;
     vertical-align: top;
     padding-top: 5px;
@@ -18,8 +19,7 @@
     width: 100%;
 }
 .f2foptions {
-    width: 20%;
-    display: inline-block;
+    display: flex;
     min-width: 60px;
 }
 .f2fsessionlinks,
