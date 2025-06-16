@@ -2927,9 +2927,19 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                 $output .= html_writer::tag('span', get_string('sessioninprogress', 'facetoface'), ['class' => 'f2fsessionnotice']);
 
                 foreach ($sessionsinprogress as $session) {
-                    $output .= html_writer::start_tag('div', ['class' => 'f2fsession f2finprogress'])
-                        . html_writer::tag('span', $session->date.$session->multidate, ['class' => 'f2fsessiontime'])
-                        . html_writer::end_tag('div');
+                    $output .= html_writer::start_tag('div', ['class' => 'f2fsession f2finprogress']);
+                    $output .= html_writer::tag('span', $session->date.$session->multidate, ['class' => 'f2fsessiontime']);
+
+                    $output .= html_writer::start_tag('div', ['class' => 'f2foptions']);
+
+                    // Check if we are showing custom field
+                    if ($visiblefieldcolumn) {
+                        $fieldnamehtml = html_writer::tag('span', $session->field->name.':', ['class' => 'f2fsessionnotice']);
+                        $fieldvaluehtml = html_writer::tag('span', $session->field->value, ['class' => 'f2fsessionlinks f2fsessioninfolink']);
+                        $output .= html_writer::tag('div', $fieldnamehtml . $fieldvaluehtml);
+                    }
+                    $output .= html_writer::end_tag('div');
+                    $output .= html_writer::end_tag('div');
                 }
                 $output .= html_writer::end_tag('div');
             }
