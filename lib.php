@@ -4388,6 +4388,23 @@ function facetoface_cancellation_allowed(stdClass $session): bool {
     return $timenow <= ($sessionstart - $cancelrestriction);
 }
 
+/**
+ * The current user can view custom fields.
+ *
+ * @param int $visibility whether field can be seen by all, teachers, or none
+ * @param bool $editsessions id of the question to test edit permission
+ * @return bool true if the current user can view custom fields, false otherwise
+ */
+function facetoface_can_view_field(int $visibility, bool $editsessions): bool {
+    if ($visibility == MDL_F2F_FIELD_VISIBLETOALL) {
+        return true;
+    } else if ($visibility == MDL_F2F_FIELD_VISIBLETOTEACHERS) {
+        return $editsessions;
+    } else {
+        return false;
+    }
+}
+
 /*
  * facetoface assignment candidates
  */
