@@ -135,6 +135,7 @@
         <FIELD NAME="defaultvalue" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="isfilter" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether or not this field is a filter on the Training Calendar"/>
         <FIELD NAME="showinsummary" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether or not to show this field in attendance exports and lists of sessions"/>
+        <FIELD NAME="visibleto" TYPE="int" LENGTH="1" NOTNULL="true" DEFAULT="1" SEQUENCE="false" COMMENT="Whether or not to show this field in lists of sessions"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

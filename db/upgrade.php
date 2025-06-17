@@ -874,5 +874,37 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2025052303, 'facetoface');
     }
 
+    if ($oldversion < 2025052304) { // Replace with your version number
+
+        // Define field visibleto to be added to facetoface_session_field
+        $table = new xmldb_table('facetoface_session_field');
+        $field = new xmldb_field(
+            'visibleto',
+            XMLDB_TYPE_INTEGER,
+            '1',
+            null,
+            XMLDB_NOTNULL,
+            null,
+            MDL_F2F_FIELD_VISIBLETOALL,
+            'showinsummary'
+        );
+
+        // Conditionally launch add field visibleto.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+
+            // Get all existing records and set visibleto based on showinsummary value.
+            $recordset = $DB->get_recordset('facetoface_session_field');
+            foreach ($recordset as $record) {
+                $record->visibleto = empty($record->showinsummary) ? MDL_F2F_FIELD_NOTVISIBLE : MDL_F2F_FIELD_VISIBLETOALL;
+                $DB->update_record('facetoface_session_field', $record);
+            }
+            $recordset->close;
+        }
+
+        // Face-to-face savepoint reached
+        upgrade_mod_savepoint(true, 2025052304, 'facetoface');
+    }
+
     return $result;
 }
