@@ -77,6 +77,15 @@ class mod_facetoface_session_form extends moodleform {
             $mform->addHelpButton('custom_room', 'room', 'facetoface');
         }
 
+        // Session visibility.
+        $choices = array();
+        $choices['0'] = get_string('hide');
+        $choices['1'] = get_string('show');
+        // Update language string here.
+        $mform->addElement('select', 'visible', get_string('sessionvisibility', 'facetoface'), $choices);
+        $mform->addHelpButton('visible', 'sessionvisibility', 'facetoface');
+        $mform->setDefault('visible', '1');
+
         $formarray  = [];
         $formarray[] = $mform->createElement('selectyesno', 'datetimeknown', get_string('sessiondatetimeknown', 'facetoface'));
         $formarray[] = $mform->createElement('static', 'datetimeknownhint', '',
