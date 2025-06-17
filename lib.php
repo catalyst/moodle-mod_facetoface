@@ -3704,7 +3704,11 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
 
     $customfields = facetoface_get_session_customfields();
     $customdata = $DB->get_records('facetoface_session_data', ['sessionid' => $session->id], '', 'fieldid, data');
+    $editsessions = has_capability('mod/facetoface:editsessions', context_system::instance());
     foreach ($customfields as $field) {
+        if (!facetoface_can_view_field($field->visibleto, $editsessions)) {
+            continue;
+        }
         $data = '';
         if (!empty($customdata[$field->id])) {
             if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
