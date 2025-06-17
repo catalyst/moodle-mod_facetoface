@@ -74,6 +74,18 @@ class mod_facetoface_customfield_form extends moodleform {
         $mform->addElement('checkbox', 'showinsummary', get_string('setting:showinsummary', 'facetoface'));
         $mform->setDefault('showinsummary', true);
 
+        // Field data visibility.
+        $visibilityoptions = [
+                MDL_F2F_FIELD_VISIBLETOALL => get_string('customfield_visibletoall', 'facetoface'),
+                MDL_F2F_FIELD_VISIBLETOTEACHERS => get_string('customfield_visibletoteachers', 'facetoface'),
+                MDL_F2F_FIELD_NOTVISIBLE => get_string('customfield_notvisible', 'facetoface')
+        ];
+        $mform->addElement('select', 'visibleto',
+                get_string('customfield_visibility', 'facetoface'),
+                $visibilityoptions);
+        $mform->addHelpButton(
+                'visibleto', 'customfield_visibility', 'facetoface');
+
         $this->add_action_buttons();
     }
 

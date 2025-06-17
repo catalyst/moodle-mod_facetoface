@@ -89,6 +89,10 @@ define('MDL_F2F_STATUS_NO_SHOW',            80);
 define('MDL_F2F_STATUS_PARTIALLY_ATTENDED', 90);
 define('MDL_F2F_STATUS_FULLY_ATTENDED',     100);
 
+define('MDL_F2F_FIELD_VISIBLETOALL',      2);
+define('MDL_F2F_FIELD_VISIBLETOTEACHERS', 1);
+define('MDL_F2F_FIELD_NOTVISIBLE',        0);
+
 /**
  * Returns the list of possible facetoface status.
  * @return array $string Human readable code
