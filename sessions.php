@@ -188,6 +188,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
 
     $todb = new stdClass();
     $todb->facetoface = $facetoface->id;
+    $todb->visible = $fromform->visible;
     $todb->datetimeknown = $fromform->datetimeknown;
     $todb->capacity = $fromform->capacity;
     $todb->allowoverbook = $fromform->allowoverbook;
@@ -317,6 +318,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         $session->id
     );
 
+    $toform->visible = $session->visible;
     $toform->datetimeknown = (1 == $session->datetimeknown);
     $toform->capacity = $session->capacity;
     $toform->allowoverbook = $session->allowoverbook;
