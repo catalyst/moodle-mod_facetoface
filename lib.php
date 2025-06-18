@@ -2738,6 +2738,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
     }
     // Can view attendees.
     $viewattendees = has_capability('mod/facetoface:viewattendees', $contextmodule);
+    // Can edit sessions.
+    $editsessions = has_capability('mod/facetoface:editsessions', $contextmodule);
     // Can see "view all sessions" link even if activity is hidden/currently unavailable.
     $iseditor = has_any_capability([
         'mod/facetoface:viewattendees', 'mod/facetoface:editsessions',
@@ -2838,6 +2840,10 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
             $futuresessions = [];
 
             foreach ($sessions as $session) {
+                if ($session->visible == '0' && !$editsessions) {
+                    continue;
+                }
+
                 if (!facetoface_session_has_capacity($session, $contextmodule, MDL_F2F_STATUS_WAITLISTED)
                     && !$session->allowoverbook) {
                     continue;
