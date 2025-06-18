@@ -2678,7 +2678,7 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
             // Update/create completion data
             $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
 
-            if ($record->datetimeknown) {
+            if ($record->datetimeknown && get_config('facetoface', 'sessioncompletiondate')) {
                 // Get existing completion data, modify state, save, and update completion.
                 $data = $completion->get_data($cm, false, $record->userid);
                 $data->timemodified = $record->timestart;
