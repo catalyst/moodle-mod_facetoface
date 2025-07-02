@@ -328,4 +328,92 @@ It has plain text stuff in it<br />";
             $this->assertStringContainsString($expectedmessage, $messagehtml);
         }
     }
+
+    /**
+     * Test custom field visibility on course page.
+     */
+    public function test_custom_field_visibility(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Create course.
+        $course = $this->getDataGenerator()->create_course();
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        
+        // Create F2F instance.
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
+        $f2f = $generator->create_instance([
+            'course' => $course->id,
+            'display' => 10,
+        ]);
+
+        // Create custom field.
+        $field = new \stdClass();
+        $field->name = 'Room';
+        $field->shortname = 'room';
+        $field->type = 0; // Text
+        $field->required = 0;
+        $field->isfilter = 0;
+        $field->showinsummary = 1;
+        $field->id = $DB->insert_record('facetoface_session_field', $field);
+
+        // Enable the field to be shown on course page.
+        set_config('column', $field->id, 'facetoface');
+
+        // Create an in-progress session.
+        $inprogresssession = $generator->create_session([
+            'facetoface' => $f2f->id,
+            'capacity' => 10,
+            'sessiondates' => [
+                [
+                    'timestart' => time() - HOURSECS,
+                    'timefinish' => time() + HOURSECS,
+                ],
+            ],
+        ]);
+
+        // Create a future session.
+        $futuresession = $generator->create_session([
+            'facetoface' => $f2f->id,
+            'capacity' => 10,
+            'sessiondates' => [
+                [
+                    'timestart' => time() + DAYSECS,
+                    'timefinish' => time() + DAYSECS + HOURSECS,
+                ],
+            ],
+        ]);
+
+        // Add custom field data to both sessions.
+        $sessions = [$inprogresssession, $futuresession];
+        foreach ($sessions as $session) {
+            $sessiondata = new \stdClass();
+            $sessiondata->sessionid = $session->id;
+            $sessiondata->fieldid = $field->id;
+            $sessiondata->data = "Room {$session->id}";
+            $DB->insert_record('facetoface_session_data', $sessiondata);
+        }
+
+        // Get the course module.
+        $cm = get_coursemodule_from_instance('facetoface', $f2f->id, $course->id);
+        $cminfo = \cm_info::create($cm);
+
+        // Test as student.
+        $this->setUser($student);
+        
+        // Call the function that generates course page content.
+        facetoface_cm_info_view($cminfo);
+
+        // Check the content contains our custom field data for both sessions.
+        $content = $cminfo->content;
+        
+        // In-progress session should show field.
+        $this->assertStringContainsString('Session in progress', $content);
+        $this->assertStringContainsString("Room {$inprogresssession->id}", $content);
+        
+        // Future session should show field.
+        $this->assertStringContainsString('Room', $content);
+        $this->assertStringContainsString("Room {$futuresession->id}", $content);
+    }
 }
