@@ -377,4 +377,94 @@ It has plain text stuff in it<br />";
         $completiondata = $completion->get_data($cm, false, $student->id);
         $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
     }
+
+    /**
+     * Data provider for test_cancellation_allowed
+     *
+     * @return array
+     */
+    public static function cancellation_allowed_provider(): array {
+        return [
+            'setting disabled' => [
+                'configenabled' => false,
+                'restriction' => DAYSECS,
+                'sessiondates' => [
+                    ['timestart' => DAYSECS, 'timefinish' => DAYSECS * 2],
+                ],
+                'expected' => true,
+            ],
+            'no restriction value set' => [
+                'configenabled' => true,
+                'restriction' => 0,
+                'sessiondates' => [
+                    ['timestart' => DAYSECS, 'timefinish' => DAYSECS * 2],
+                ],
+                'expected' => true,
+            ],
+            'within allowed time' => [
+                'configenabled' => true,
+                'restriction' => DAYSECS,
+                'sessiondates' => [
+                    ['timestart' => DAYSECS * 3, 'timefinish' => DAYSECS * 4],
+                ],
+                'expected' => true,
+            ],
+            'too close to session' => [
+                'configenabled' => true,
+                'restriction' => DAYSECS * 2,
+                'sessiondates' => [
+                    ['timestart' => DAYSECS, 'timefinish' => DAYSECS * 2],
+                ],
+                'expected' => false,
+            ],
+        ];
+    }
+
+    /**
+     * Test the cancellation allowed check.
+     *
+     * @dataProvider cancellation_allowed_provider
+     */
+    public function test_cancellation_allowed(
+        bool $configenabled,
+        int $restriction,
+        array $sessiondates,
+        bool $expected
+    ): void {
+        global $CFG;
+        require_once($CFG->dirroot . '/mod/facetoface/lib.php');
+
+        // Configure settings.
+        // Because of the admin setting we are using, there is an addition "_enabled" config we need to set.
+        set_config('cancelrestriction_enabled', $configenabled, 'facetoface');
+        set_config('cancelrestriction', $restriction, 'facetoface');
+
+        // Setup course.
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
+        $course = $this->getDataGenerator()->create_course();
+        $facetoface = $generator->create_instance(['course' => $course->id]);
+
+        // Create session.
+        $now = time();
+        $sessiondata = [
+            'facetoface' => $facetoface->id,
+            'capacity' => 3,
+            'allowoverbook' => 0,
+            'duration' => 1.5,
+            'normalcost' => 111,
+            'discountcost' => 11,
+            // We need to set session date unique to each provider as a unix timestamp.
+            'sessiondates' => array_map(function($date) use ($now) {
+                return [
+                    'timestart' => $now + $date['timestart'],
+                    'timefinish' => $now + $date['timefinish'],
+                ];
+            }, $sessiondates)
+        ];
+        $session = $generator->create_session($sessiondata);
+
+        // Check if provided user can cancel.
+        $result = facetoface_cancellation_allowed($session);
+        $this->assertEquals($expected, $result);
+    }
 }
