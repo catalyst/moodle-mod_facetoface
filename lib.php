@@ -4372,8 +4372,9 @@ function facetoface_cancellation_allowed(stdClass $session): bool {
         return true;
     }
 
+    $configenabled = get_config('facetoface', 'cancelrestriction_enabled');
     $cancelrestriction = get_config('facetoface', 'cancelrestriction');
-    if (!$cancelrestriction) {
+    if (!$configenabled || !$cancelrestriction) {
         return true;
     }
 
