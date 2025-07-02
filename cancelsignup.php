@@ -144,13 +144,9 @@ if (!$signedup) {
     throw new moodle_exception('notsignedup', 'facetoface', $returnurl);
 }
 
-if ($session->datetimeknown && $cancelrestriction = get_config('facetoface', 'cancelrestriction')) {
-    // Sessions can have multiple dates. Use first date found for the session.
-    $sessionstart = $session->sessiondates[0]->timestart;
-    $timenow = time();
-    if ($timenow > ($sessionstart - $cancelrestriction)) {
-        throw new moodle_exception('error:cancellationtooclose', 'facetoface', '', format_time($cancelrestriction));
-    }
+if (!facetoface_cancellation_allowed($session)) {
+    $restriction = get_config('facetoface', 'cancelrestriction');
+    throw new moodle_exception('error:cancellationtooclose', 'facetoface', '', format_time($restriction));
 }
 
 facetoface_print_session($session, $viewattendees);
