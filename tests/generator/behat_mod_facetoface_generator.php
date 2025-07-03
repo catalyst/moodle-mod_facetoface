@@ -37,6 +37,11 @@ class behat_mod_facetoface_generator extends behat_generator_base {
                 'required' => ['facetoface'],
                 'switchids' => ['facetoface' => 'facetofaceid'],
             ],
+            'customfields' => [
+                'singular' => 'customfield',
+                'datagenerator' => 'customfield',
+                'required' => ['name'],
+            ],
         ];
     }
 

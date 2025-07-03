@@ -2860,7 +2860,6 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                     $signupstr = ($facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION)
                         ? 'signup'
                         : 'signupforstream';
-          // signup link
                     $moreinfolink = html_writer::link(
                         $signupurl,
                         get_string($signupstr, 'facetoface'),
@@ -2949,7 +2948,6 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                 if ($facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_SESSION) {
                     $output .= html_writer::tag(
                         'span',
-            // signupforsession string, header
                         get_string('signupforsession', 'facetoface'),
                         ['class' => 'f2fsessionnotice']
                     );
@@ -2972,9 +2970,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
 
                     $output .= html_writer::start_tag('div', ['class' => 'f2foptions']);
 
-                    // Check if we are showing custom field
+                    // Check if we are showing custom field.
                     if ($visiblefieldcolumn) {
-                        
                         $fieldnamehtml = html_writer::tag('span', $session->field->name.':', ['class' => 'f2fsessionnotice']);
                         $fieldvaluehtml = html_writer::tag('span', $session->field->value, ['class' => 'f2fsessionlinks']);
                         $output .= html_writer::tag('div', $fieldnamehtml . $fieldvaluehtml);
