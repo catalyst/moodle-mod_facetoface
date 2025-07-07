@@ -808,7 +808,6 @@ $string['usercalentry_help'] = 'When active this setting adds a User Event entry
 
 $string['venue_help'] = '**Venue** is the building the session will be held in.
 
-
 The **Venue** displays on the \'Sign-up\' page, the \'View all sessions\' page and in all email notifications.';
 
 $string['sessionvisibility'] = 'Session visibility';
