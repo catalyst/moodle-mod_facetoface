@@ -1397,7 +1397,7 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
     $worksheet->write_string($row, $column++, get_string('currentstatus', 'facetoface'), ['bold' => 1, 'border' => 1]);
 
     // Date booked.
-    $worksheet->write_string($row, $column++, 'Date booked', ['bold' => 1, 'border' => 1]);
+    $worksheet->write_string($row, $column++, get_string('datebooked', 'facetoface'), ['bold' => 1, 'border' => 1]);
 
     // Export row of data for each attendee.
 
