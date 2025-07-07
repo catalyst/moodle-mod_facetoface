@@ -186,11 +186,20 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                         get_string('moreinfo', 'facetoface'),
                         ['title' => get_string('moreinfo', 'facetoface')]) . html_writer::empty_tag('br');
                 if ($session->allowcancellations) {
-                    $options .= html_writer::link(
-                        'cancelsignup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
-                        get_string('cancelbooking', 'facetoface'),
-                        ['title' => get_string('cancelbooking', 'facetoface')]
-                    );
+                    if (facetoface_cancellation_allowed($session)) {
+                        $options .= html_writer::link(
+                            'cancelsignup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
+                            get_string('cancelbooking', 'facetoface'),
+                            ['title' => get_string('cancelbooking', 'facetoface')]
+                        );
+                    } else {
+                        $cancelrestriction = get_config('facetoface', 'cancelrestriction');
+                        $options .= html_writer::link(
+                            '',
+                            get_string('cancelbooking', 'facetoface'),
+                            ['title' => get_string('error:cancellationtooclose', 'facetoface', format_time($cancelrestriction)), 'class' => 'disabled']
+                        );
+                    }
                 }
             } else if (!$sessionstarted && !$bookedsession && $signuplinks) {
                 $options .= html_writer::link('signup.php?s='.$session->id.'&backtoallsessions='.$session->facetoface,

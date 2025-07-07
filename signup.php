@@ -265,11 +265,20 @@ if (!$isbulksignup && $signedup) {
     if (!($session->datetimeknown && facetoface_has_session_started($session, $timenow)) && $session->allowcancellations) {
         // Cancellation link.
         $cancellationurl = new moodle_url('cancelsignup.php', ['s' => $session->id, 'backtoallsessions' => $backtoallsessions]);
-        echo html_writer::link(
-            $cancellationurl,
-            get_string('cancelbooking', 'facetoface'),
-            ['title' => get_string('cancelbooking', 'facetoface')]
-        );
+        if (facetoface_cancellation_allowed($session)) {
+            echo html_writer::link(
+                $cancellationurl,
+                get_string('cancelbooking', 'facetoface'),
+                ['title' => get_string('cancelbooking', 'facetoface')]
+            );
+        } else {
+            $cancelrestriction = get_config('facetoface', 'cancelrestriction');
+            echo html_writer::link(
+                '',
+                get_string('cancelbooking', 'facetoface'),
+                ['title' => get_string('error:cancellationtooclose', 'facetoface', format_time($cancelrestriction)), 'class' => 'disabled']
+            );
+        }
         echo ' &ndash; ';
     }
 
