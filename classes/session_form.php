@@ -78,9 +78,7 @@ class mod_facetoface_session_form extends moodleform {
         }
 
         // Session visibility.
-        $choices = array();
-        $choices['0'] = get_string('hide');
-        $choices['1'] = get_string('show');
+        $choices = [0 => get_string('hide'), 1 => get_string('show')];
         // Update language string here.
         $mform->addElement('select', 'visible', get_string('sessionvisibility', 'facetoface'), $choices);
         $mform->addHelpButton('visible', 'sessionvisibility', 'facetoface');
