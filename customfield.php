@@ -42,12 +42,10 @@ if ($id > 0) {
     }
 }
 
-
 // If custom field is selected to be shown on custom page, alert user field cannot be deleted until
 // this is changed.
-$visiblefieldcolumn = get_config('facetoface', 'column');
 // $id = 0 occurs when creating a new customfield.
-if ($visiblefieldcolumn == $id && $id != 0) {
+if ($id != 0 && $id == get_config('facetoface', 'column')) {
     throw new moodle_exception('error:fieldselected', 'facetoface', '');
 }
 
