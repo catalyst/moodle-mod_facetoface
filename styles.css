@@ -18,9 +18,16 @@
 .f2finprogress .f2fsessiontime {
     width: 100%;
 }
+
+.f2fcustomfieldcolumn {
+    max-width: 80%;
+}
+
 .f2foptions {
     display: flex;
     min-width: 60px;
+    max-width: 50%;
+    justify-content: flex-end;
 }
 .f2fsessionlinks,
 .f2fsessionnotice {
@@ -29,6 +36,9 @@
     line-height: 14px;
     display: block;
     padding: 3px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .f2factivityname {
     line-height: 1.5;
