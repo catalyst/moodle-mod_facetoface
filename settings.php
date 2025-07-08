@@ -78,7 +78,7 @@ foreach ($fields as $field) {
     $options[$field->id] = $field->name;
 }
 $settings->add(new admin_setting_configselect(
-    'facetoface/column',
+    'facetoface/displaycustomfield',
     get_string('setting:visiblefield_caption', 'facetoface'),
     get_string('setting:visiblefield', 'facetoface'),
     0,

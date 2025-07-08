@@ -2898,7 +2898,7 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                 }
 
                 // Check if custom fields exist, and add to sessionobject if setting is enabled.
-                $visiblefieldcolumn = get_config('facetoface', 'column');
+                $visiblefieldcolumn = get_config('facetoface', 'displaycustomfield');
                 if ($visiblefieldcolumn) {
                     // Get field title.
                     $fieldname = $DB->get_field('facetoface_session_field', 'name', [
