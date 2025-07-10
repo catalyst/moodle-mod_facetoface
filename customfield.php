@@ -146,6 +146,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $todb->required = $fromform->required;
     $todb->isfilter = $fromform->isfilter;
     $todb->showinsummary = $fromform->showinsummary;
+    $todb->visibleto = $fromform->visibleto;
 
     if ($field != null) {
         $todb->id = $field->id;
@@ -172,6 +173,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
     $toform->required = ($field->required == 1);
     $toform->isfilter = ($field->isfilter == 1);
     $toform->showinsummary = ($field->showinsummary == 1);
+    $toform->visibleto = $field->visibleto;
 
     $mform->set_data($toform);
 }

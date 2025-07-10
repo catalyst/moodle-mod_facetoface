@@ -45,7 +45,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
         $tableheader = [];
         foreach ($customfields as $field) {
-            if (!empty($field->showinsummary)) {
+            if (facetoface_can_view_field($field->visibleto, $editsessions)) {
                 $tableheader[] = format_string($field->name);
             }
         }
@@ -82,7 +82,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             // Custom fields.
             $customdata = $session->customfielddata;
             foreach ($customfields as $field) {
-                if (empty($field->showinsummary)) {
+                if (!facetoface_can_view_field($field->visibleto, $editsessions)) {
                     continue;
                 }
 

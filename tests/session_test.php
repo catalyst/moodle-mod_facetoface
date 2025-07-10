@@ -330,6 +330,7 @@ It has plain text stuff in it<br />";
     }
 
     /**
+<<<<<<< HEAD
      * Tests that when marking attendance with the sessioncompletiondate setting enabled,
      * the completion time is set to the session finish time instead of the current time.
      *
@@ -466,5 +467,161 @@ It has plain text stuff in it<br />";
         // Check if provided user can cancel.
         $result = facetoface_cancellation_allowed($session);
         $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Data provider for test_field_visibility
+     *
+     * @return array
+     */
+    public static function field_visibility_provider(): array {
+        return [
+            'visible to all, not teacher' => [
+                'visibility' => MDL_F2F_FIELD_VISIBLETOALL,
+                'isteacher' => false,
+                'expected' => true,
+            ],
+            'visible to all, is teacher' => [
+                'visibility' => MDL_F2F_FIELD_VISIBLETOALL,
+                'isteacher' => true,
+                'expected' => true,
+            ],
+            'visible to teachers only, not teacher' => [
+                'visibility' => MDL_F2F_FIELD_VISIBLETOTEACHERS,
+                'isteacher' => false,
+                'expected' => false,
+            ],
+            'visible to teachers only, is teacher' => [
+                'visibility' => MDL_F2F_FIELD_VISIBLETOTEACHERS,
+                'isteacher' => true,
+                'expected' => true,
+            ],
+            'not visible, not teacher' => [
+                'visibility' => MDL_F2F_FIELD_NOTVISIBLE,
+                'isteacher' => false,
+                'expected' => false,
+            ],
+            'not visible, is teacher' => [
+                'visibility' => MDL_F2F_FIELD_NOTVISIBLE,
+                'isteacher' => true,
+                'expected' => false,
+            ],
+        ];
+    }
+
+    /**
+     * Test field visibility for different user roles and visibility settings.
+     *
+     * @dataProvider field_visibility_provider
+     */
+    public function test_field_visibility_helper(
+        int $visibility,
+        bool $isteacher,
+        bool $expected
+    ): void {
+        global $DB, $CFG;
+        require_once($CFG->dirroot . '/mod/facetoface/lib.php');
+
+        // Setup course and participants.
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
+        $course = $this->getDataGenerator()->create_course();
+        $teacher = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $facetoface = $generator->create_instance(['course' => $course->id]);
+
+        // Create custom field.
+        $customfield = (object)[
+            'name' => 'Test Field',
+            'shortname' => 'testfield',
+            'type' => 0,
+            'possiblevalues' => '',
+            'required' => 0,
+            'defaultvalue' => '',
+            'isfilter' => 0,
+            'showinsummary' => 1,
+            'visibleto' => $visibility,
+        ];
+        $DB->insert_record('facetoface_session_field', $customfield);
+
+        // Test visibility.
+        $this->setUser($isteacher ? $teacher : $student);
+        $canedit = has_capability('mod/facetoface:editsessions', \context_course::instance($course->id));
+        $result = facetoface_can_view_field($visibility, $canedit);
+        $this->assertEquals($expected, $result);
+    }
+
+    /**
+     * Test field visibility for different user roles and visibility settings.
+     *
+     * @dataProvider field_visibility_provider
+     */
+    public function test_field_visibility(int $visibility, bool $isteacher, bool $expected): void {
+        global $DB, $PAGE;
+        $this->resetAfterTest();
+
+        // Setup course and participants.
+        $course = $this->getDataGenerator()->create_course();
+        if ($isteacher) {
+            $user = $this->getDataGenerator()->create_and_enrol($course, 'editingteacher');
+        } else {
+            $user = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        }
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
+        $facetoface = $generator->create_instance(['course' => $course->id]);
+
+        // Create custom field.
+        $field = new \stdClass();
+        $field->name = 'Test Field';
+        $field->shortname = 'testfield';
+        $field->type = 0;
+        $field->required = 0;
+        $field->isfilter = 1;
+        $field->showinsummary = 1;
+        $field->visibleto = $visibility;
+        $field->id = $DB->insert_record('facetoface_session_field', $field);
+
+        // Create a session.
+        $session = $generator->create_session([
+            'facetoface' => $facetoface->id,
+            'capacity' => 10,
+            'sessiondates' => [
+                [
+                    'timestart' => time() + DAYSECS,
+                    'timefinish' => time() + DAYSECS + HOURSECS,
+                ],
+            ],
+        ]);
+
+        // Add data for the custom field.
+        $data = new \stdClass();
+        $data->sessionid = $session->id;
+        $data->fieldid = $field->id;
+        $data->data = "Test value";
+        $DB->insert_record('facetoface_session_data', $data);
+
+        // Set up session data as expected by renderer.
+        $customfields = $DB->get_records('facetoface_session_field');
+        $session->customfielddata = $DB->get_records(
+            'facetoface_session_data',
+            ['sessionid' => $session->id],
+            '',
+            'fieldid,data'
+        );
+        // Add bookedsession property required by renderer but not added by generator.
+        $session->bookedsession = null;
+        $sessions = [$session];
+        $renderer = $PAGE->get_renderer('mod_facetoface');
+
+        // Test visibility.
+        $this->setUser($user);
+        $canedit = has_capability('mod/facetoface:editsessions', \context_course::instance($course->id));
+        $output = $renderer->print_session_list_table($customfields, $sessions, false, $canedit);
+        if ($expected) {
+            $this->assertStringContainsString('Test Field', $output);
+            $this->assertStringContainsString('Test value', $output);
+        } else {
+            $this->assertStringNotContainsString('Test Field', $output);
+            $this->assertStringNotContainsString('Test value', $output);
+        }
     }
 }

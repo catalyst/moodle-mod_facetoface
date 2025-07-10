@@ -89,6 +89,10 @@ define('MDL_F2F_STATUS_NO_SHOW',            80);
 define('MDL_F2F_STATUS_PARTIALLY_ATTENDED', 90);
 define('MDL_F2F_STATUS_FULLY_ATTENDED',     100);
 
+define('MDL_F2F_FIELD_VISIBLETOALL',      2);
+define('MDL_F2F_FIELD_VISIBLETOTEACHERS', 1);
+define('MDL_F2F_FIELD_NOTVISIBLE',        0);
+
 /**
  * Returns the list of possible facetoface status.
  * @return array $string Human readable code
@@ -3700,7 +3704,11 @@ function facetoface_print_session($session, $showcapacity, $calendaroutput=false
 
     $customfields = facetoface_get_session_customfields();
     $customdata = $DB->get_records('facetoface_session_data', ['sessionid' => $session->id], '', 'fieldid, data');
+    $editsessions = has_capability('mod/facetoface:editsessions', context_system::instance());
     foreach ($customfields as $field) {
+        if (!facetoface_can_view_field($field->visibleto, $editsessions)) {
+            continue;
+        }
         $data = '';
         if (!empty($customdata[$field->id])) {
             if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
@@ -4382,6 +4390,23 @@ function facetoface_cancellation_allowed(stdClass $session): bool {
     $sessionstart = $session->sessiondates[0]->timestart;
     $timenow = time();
     return $timenow <= ($sessionstart - $cancelrestriction);
+}
+
+/**
+ * The current user can view custom fields.
+ *
+ * @param int $visibility whether field can be seen by all, teachers, or none
+ * @param bool $editsessions id of the question to test edit permission
+ * @return bool true if the current user can view custom fields, false otherwise
+ */
+function facetoface_can_view_field(int $visibility, bool $editsessions): bool {
+    if ($visibility == MDL_F2F_FIELD_VISIBLETOALL) {
+        return true;
+    } else if ($visibility == MDL_F2F_FIELD_VISIBLETOTEACHERS) {
+        return $editsessions;
+    } else {
+        return false;
+    }
 }
 
 /*
