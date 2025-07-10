@@ -4361,6 +4361,29 @@ function facetoface_get_all_user_name_fields($returnsql = false, $tableprefix = 
     return $ret;
 }
 
+/**
+ * Check if cancellation is allowed based on time restriction.
+ *
+ * @param stdClass $session The session object
+ * @return bool true if cancellation is allowed, false otherwise
+ */
+function facetoface_cancellation_allowed(stdClass $session): bool {
+    if (!$session->datetimeknown) {
+        return true;
+    }
+
+    $configenabled = get_config('facetoface', 'cancelrestriction_enabled');
+    $cancelrestriction = get_config('facetoface', 'cancelrestriction');
+    if (!$configenabled || !$cancelrestriction) {
+        return true;
+    }
+
+    // Sessions can have multiple dates. Use first date found for the session.
+    $sessionstart = $session->sessiondates[0]->timestart;
+    $timenow = time();
+    return $timenow <= ($sessionstart - $cancelrestriction);
+}
+
 /*
  * facetoface assignment candidates
  */

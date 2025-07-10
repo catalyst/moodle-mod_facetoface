@@ -140,12 +140,17 @@ $signedup = facetoface_check_signup($facetoface->id);
 echo $OUTPUT->box_start();
 echo $OUTPUT->heading($heading);
 
-if ($signedup) {
-    facetoface_print_session($session, $viewattendees);
-    $mform->display();
-} else {
+if (!$signedup) {
     throw new moodle_exception('notsignedup', 'facetoface', $returnurl);
 }
+
+if (!facetoface_cancellation_allowed($session)) {
+    $restriction = get_config('facetoface', 'cancelrestriction');
+    throw new moodle_exception('error:cancellationtooclose', 'facetoface', '', format_time($restriction));
+}
+
+facetoface_print_session($session, $viewattendees);
+$mform->display();
 
 echo $OUTPUT->box_end();
 echo $OUTPUT->footer($course);

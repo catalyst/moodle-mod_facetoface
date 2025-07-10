@@ -92,6 +92,15 @@ $settings->add(new admin_setting_configcheckbox(
     0
 ));
 
+$setting = new admin_setting_configduration(
+    'facetoface/cancelrestriction',
+    get_string('setting:cancelrestriction_caption', 'facetoface'),
+    get_string('setting:cancelrestriction', 'facetoface'),
+    172800
+);
+$setting->set_enabled_flag_options(admin_setting_flag::ENABLED, false);
+$settings->add($setting);
+
 $settings->add(new admin_setting_heading(
     'facetoface/manageremail_header',
     get_string('manageremailheading', 'facetoface'),
