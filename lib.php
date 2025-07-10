@@ -1207,8 +1207,8 @@ function facetoface_get_attendees($sessionid) {
         AND ss.superceded != 1
         AND ss.statuscode >= ?
         ORDER BY
-            sign.timecreated ASC,
-            ss.timecreated ASC
+            u.firstname ASC,
+            u.lastname ASC
     ", [$sessionid, MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED, $sessionid, MDL_F2F_STATUS_APPROVED]);
 }
 
