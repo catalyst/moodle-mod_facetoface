@@ -171,6 +171,9 @@ function print_session_list($courseid, $facetoface, $location) {
 
     if ($sessions = facetoface_get_sessions($facetoface->id, $location) ) {
         foreach ($sessions as $session) {
+            if ($session->visible == '0' && !$editsessions) {
+                continue;
+            }
             $sessionstarted = false;
             $sessionfull = false;
             $sessionwaitlisted = false;

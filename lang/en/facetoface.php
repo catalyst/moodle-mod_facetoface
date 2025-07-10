@@ -115,6 +115,7 @@ $string['customfieldoriginalshortname'] = 'Custom field original shortname';
 $string['customfieldnewshortname'] = 'Custom field new shortname';
 $string['date'] = 'Date';
 $string['dateadd'] = 'Add a new date';
+$string['datebooked'] = 'Date booked';
 $string['dateremove'] = 'Remove this date';
 $string['datetext'] = 'You are signed in for date';
 $string['datetimeknownhinttext'] = '';
@@ -397,6 +398,8 @@ $string['setting:addchangemanageremaildefault'] = 'Ask users for their manager\'
 $string['setting:addchangemanageremail_caption'] = 'Manager\'s email:';
 $string['setting:attendeesexportfields_caption'] = 'Attendees export fields';
 $string['setting:attendeesexportfields'] = 'Select the fields to be included in a session\'s exported list of attendees. This will be in addition to the attendee\'s first and last name.';
+$string['setting:sessioncompletiondate'] = 'When enabled, the session finish date will be used as the completion time when marking attendance.';
+$string['setting:sessioncompletiondate_caption'] = 'Use session finish date and time for completion:';
 $string['setting:enableapprovals'] = 'When disabled, the option to add approvals via the activity setting is no longer available.';
 $string['setting:enableapprovals_caption'] = 'Enable manager approvals:';
 $string['setting:defaultcancellationinstrmngr'] = 'Default cancellation message sent to managers.';
@@ -813,6 +816,9 @@ $string['venue_help'] = '**Venue** is the building the session will be held in.
 
 The **Venue** displays on the \'Sign-up\' page, the \'View all sessions\' page and in all email notifications.';
 
+$string['sessionvisibility'] = 'Session visibility';
+$string['sessionvisibility_help'] = '* Show: The session appears in the list and students can access it.
+* Hide: Access is restricted to teachers and other users with the capability to edit sessions.';
 $string['waitlistedmessage_help'] = 'This message is sent out whenever users sign-up for a wait-listed session.';
 
 /* Face-to-face events and logging */

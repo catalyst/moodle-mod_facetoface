@@ -110,6 +110,7 @@ class create_session extends external_api {
         $session->facetoface = $facetofaceid;
         $session->timecreated = time();
         $session->timemodified = $session->timecreated;
+        $session->visible = 1;
 
         $fields = ['capacity', 'allowoverbook', 'details', 'datetimeknown', 'duration', 'normalcost',
                    'discountcost', 'allowcancellations'];

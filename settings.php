@@ -85,6 +85,13 @@ $settings->add(new admin_setting_configselect(
     $options
 ));
 
+$settings->add(new admin_setting_configcheckbox(
+    'facetoface/sessioncompletiondate',
+    get_string('setting:sessioncompletiondate_caption', 'facetoface'),
+    get_string('setting:sessioncompletiondate', 'facetoface'),
+    0
+));
+
 $settings->add(new admin_setting_heading(
     'facetoface/manageremail_header',
     get_string('manageremailheading', 'facetoface'),

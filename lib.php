@@ -1207,8 +1207,8 @@ function facetoface_get_attendees($sessionid) {
         AND ss.superceded != 1
         AND ss.statuscode >= ?
         ORDER BY
-            sign.timecreated ASC,
-            ss.timecreated ASC
+            u.firstname ASC,
+            u.lastname ASC
     ", [$sessionid, MDL_F2F_STATUS_BOOKED, MDL_F2F_STATUS_WAITLISTED, $sessionid, MDL_F2F_STATUS_APPROVED]);
 }
 
@@ -1396,6 +1396,9 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
     // Current status.
     $worksheet->write_string($row, $column++, get_string('currentstatus', 'facetoface'), ['bold' => 1, 'border' => 1]);
 
+    // Date booked.
+    $worksheet->write_string($row, $column++, get_string('datebooked', 'facetoface'), ['bold' => 1, 'border' => 1]);
+
     // Export row of data for each attendee.
 
     foreach ($attendees as $attendee) {
@@ -1470,6 +1473,7 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
         }
         $worksheet->write_string($row, $column++, get_string('status_'.facetoface_get_status($attendee->statuscode), 'facetoface'),
                 ['border' => 1, 'v_align' => 'top']);
+        $worksheet->write_date($row, $column++, $attendee->timecreated, $format);
     }
     $workbook->close();
     exit;
@@ -2648,9 +2652,10 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
     global $USER, $CFG, $DB;
 
     $timenow = time();
-    $record = $DB->get_record_sql("SELECT f.*, s.userid
+    $record = $DB->get_record_sql("SELECT f.*, s.userid, fsd.timefinish, fs.datetimeknown
                                 FROM {facetoface_signups} s
                                 JOIN {facetoface_sessions} fs ON s.sessionid = fs.id
+                                JOIN {facetoface_sessions_dates} fsd ON s.sessionid = fsd.sessionid
                                 JOIN {facetoface} f ON f.id = fs.facetoface
                                 JOIN {course_modules} cm ON cm.instance = f.id
                                 JOIN {modules} m ON m.id = cm.module
@@ -2674,7 +2679,16 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
         $completion = new completion_info($course);
         $cm = get_coursemodule_from_instance('facetoface', $record->id, $course->id);
         if ($completion->is_enabled($cm)) {
+            // Update/create completion data
             $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
+
+            if ($record->datetimeknown && get_config('facetoface', 'sessioncompletiondate')) {
+                // Get existing completion data, modify state, save, and update completion.
+                $data = $completion->get_data($cm, false, $record->userid);
+                $data->timemodified = $record->timefinish;
+                $completion->internal_set_data($cm, $data);
+                $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
+            }
         }
     }
 
@@ -2738,6 +2752,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
     }
     // Can view attendees.
     $viewattendees = has_capability('mod/facetoface:viewattendees', $contextmodule);
+    // Can edit sessions.
+    $editsessions = has_capability('mod/facetoface:editsessions', $contextmodule);
     // Can see "view all sessions" link even if activity is hidden/currently unavailable.
     $iseditor = has_any_capability([
         'mod/facetoface:viewattendees', 'mod/facetoface:editsessions',
@@ -2838,6 +2854,10 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
             $futuresessions = [];
 
             foreach ($sessions as $session) {
+                if ($session->visible == '0' && !$editsessions) {
+                    continue;
+                }
+
                 if (!facetoface_session_has_capacity($session, $contextmodule, MDL_F2F_STATUS_WAITLISTED)
                     && !$session->allowoverbook) {
                     continue;
