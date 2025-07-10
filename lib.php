@@ -2648,7 +2648,7 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
     global $USER, $CFG, $DB;
 
     $timenow = time();
-    $record = $DB->get_record_sql("SELECT f.*, s.userid, fsd.timestart, fs.datetimeknown
+    $record = $DB->get_record_sql("SELECT f.*, s.userid, fsd.timefinish, fs.datetimeknown
                                 FROM {facetoface_signups} s
                                 JOIN {facetoface_sessions} fs ON s.sessionid = fs.id
                                 JOIN {facetoface_sessions_dates} fsd ON s.sessionid = fsd.sessionid
@@ -2681,7 +2681,7 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
             if ($record->datetimeknown && get_config('facetoface', 'sessioncompletiondate')) {
                 // Get existing completion data, modify state, save, and update completion.
                 $data = $completion->get_data($cm, false, $record->userid);
-                $data->timemodified = $record->timestart;
+                $data->timemodified = $record->timefinish;
                 $completion->internal_set_data($cm, $data);
                 $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
             }

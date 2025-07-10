@@ -331,7 +331,7 @@ It has plain text stuff in it<br />";
 
     /**
      * Tests that when marking attendance with the sessioncompletiondate setting enabled,
-     * the completion time is set to the session start time instead of the current time.
+     * the completion time is set to the session finish time instead of the current time.
      *
      */
     public function test_session_completion_date(): void {
@@ -375,6 +375,6 @@ It has plain text stuff in it<br />";
         $cm = get_coursemodule_from_instance('facetoface', $facetoface->id);
         $completion = new \completion_info($course);
         $completiondata = $completion->get_data($cm, false, $student->id);
-        $this->assertEquals($sessiondate, $completiondata->timemodified);
+        $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
     }
 }
