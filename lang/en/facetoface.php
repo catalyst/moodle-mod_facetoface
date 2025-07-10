@@ -115,6 +115,7 @@ $string['customfieldoriginalshortname'] = 'Custom field original shortname';
 $string['customfieldnewshortname'] = 'Custom field new shortname';
 $string['date'] = 'Date';
 $string['dateadd'] = 'Add a new date';
+$string['datebooked'] = 'Date booked';
 $string['dateremove'] = 'Remove this date';
 $string['datetext'] = 'You are signed in for date';
 $string['datetimeknownhinttext'] = '';
