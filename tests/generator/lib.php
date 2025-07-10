@@ -131,6 +131,55 @@ class mod_facetoface_generator extends testing_module_generator {
         $sessionid = facetoface_add_session($record, $sessiondates);
         $session = facetoface_get_session($sessionid);
 
+        // Retrieve customfield and add to session data.
+        foreach ((array)$record as $key => $value) {
+            if (strpos($key, 'customfield_') === 0) {
+                $fieldshortname = substr($key, 12);
+                $fieldid = $DB->get_field('facetoface_session_field', 'id', ['shortname' => $fieldshortname]);
+                if ($fieldid) {
+                    $data = new stdClass();
+                    $data->sessionid = $session->id;
+                    $data->fieldid = $fieldid;
+                    $data->data = $value;
+                    $DB->insert_record('facetoface_session_data', $data);
+                }
+            }
+        }
+
         return $session;
+    }
+
+    /**
+     * Creates a new custom field for face-to-face sessions.
+     *
+     * @param array|stdClass|null $record
+     * @return stdClass
+     */
+    public function create_customfield($record): stdClass {
+        global $DB;
+
+        $record = (object)(array)$record;
+
+        if (empty($record->name)) {
+            throw new coding_exception('Custom field generator requires $record->name');
+        }
+
+        $defaults = [
+            'shortname' => strtolower(str_replace(' ', '_', $record->name)),
+            'type' => 0,
+            'required' => 0,
+            'isfilter' => 0,
+            'showinsummary' => 1,
+            'possiblevalues' => '',  // Added this
+        ];
+
+        foreach ($defaults as $key => $value) {
+            if (!isset($record->$key)) {
+                $record->$key = $value;
+            }
+        }
+
+        $record->id = $DB->insert_record('facetoface_session_field', $record);
+        return $record;
     }
 }

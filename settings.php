@@ -72,6 +72,19 @@ $settings->add(new admin_setting_configcheckbox(
     1
 ));
 
+$fields = $DB->get_records('facetoface_session_field', [], 'name', 'id, name');
+$options = array(0 => get_string('none', 'facetoface'));
+foreach ($fields as $field) {
+    $options[$field->id] = $field->name;
+}
+$settings->add(new admin_setting_configselect(
+    'facetoface/displaycustomfield',
+    get_string('setting:visiblefield_caption', 'facetoface'),
+    get_string('setting:visiblefield', 'facetoface'),
+    0,
+    $options
+));
+
 $settings->add(new admin_setting_configcheckbox(
     'facetoface/sessioncompletiondate',
     get_string('setting:sessioncompletiondate_caption', 'facetoface'),
