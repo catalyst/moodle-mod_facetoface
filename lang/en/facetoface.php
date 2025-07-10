@@ -813,6 +813,9 @@ $string['venue_help'] = '**Venue** is the building the session will be held in.
 
 The **Venue** displays on the \'Sign-up\' page, the \'View all sessions\' page and in all email notifications.';
 
+$string['sessionvisibility'] = 'Session visibility';
+$string['sessionvisibility_help'] = '* Show: The session appears in the list and students can access it.
+* Hide: Access is restricted to teachers and other users with the capability to edit sessions.';
 $string['waitlistedmessage_help'] = 'This message is sent out whenever users sign-up for a wait-listed session.';
 
 /* Face-to-face events and logging */
