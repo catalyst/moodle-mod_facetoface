@@ -859,7 +859,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         upgrade_mod_savepoint(true, 2023100200, 'facetoface');
     }
 
-    if ($oldversion < 2025061800) {
+    if ($oldversion < 2025052303) {
 
         // Define field visible to be added to facetoface_sessions
         $table = new xmldb_table('facetoface_sessions');
@@ -871,7 +871,7 @@ function xmldb_facetoface_upgrade($oldversion=0) {
         }
 
         // Face-to-face savepoint reached
-        upgrade_mod_savepoint(true, 2025061800, 'facetoface');
+        upgrade_mod_savepoint(true, 2025052303, 'facetoface');
     }
 
     return $result;
