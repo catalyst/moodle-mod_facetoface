@@ -1473,7 +1473,7 @@ function facetoface_download_attendees($facetofacename, $session, $attendees, $f
         }
         $worksheet->write_string($row, $column++, get_string('status_'.facetoface_get_status($attendee->statuscode), 'facetoface'),
                 ['border' => 1, 'v_align' => 'top']);
-        $worksheet->write_date($row, $column++, $attendee->timecreated, $format);
+        $worksheet->write_string($row, $column++, userdate($attendee->timecreated, get_string('strftimedatetimeshort')), $format);
     }
     $workbook->close();
     exit;
