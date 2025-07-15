@@ -213,7 +213,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             $row = new html_table_row($sessionrow);
 
             // Set the CSS class for the row.
-            if ($sessionstarted) {
+            if ($sessionstarted || !$session->visible) {
                 $row->attributes = ['class' => 'dimmed_text'];
             } else if ($isbookedsession) {
                 $row->attributes = ['class' => 'highlight'];
