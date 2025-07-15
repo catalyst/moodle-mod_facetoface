@@ -1637,7 +1637,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
 
     // Fast version of "facetoface_get_sessions($facetofaceid, $location)".
     $sql = "SELECT d.id as dateid, s.id, s.datetimeknown, s.capacity,
-                   s.duration, d.timestart, d.timefinish
+                   s.duration, d.timestart, d.timefinish, s.visible
               FROM {facetoface_sessions} s
               JOIN {facetoface_sessions_dates} d ON s.id = d.sessionid
               WHERE
@@ -1654,7 +1654,9 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
 
         $sessiontrainers = facetoface_get_trainers($session->id);
 
-        if ($session->datetimeknown) {
+        if (!$session->visible) {
+            $status = get_string('hidden', 'facetoface');
+        } else if ($session->datetimeknown) {
             if ($session->timestart < $timenow) {
                 $status = get_string('sessionover', 'facetoface');
             } else {
