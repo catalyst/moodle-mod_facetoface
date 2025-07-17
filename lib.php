@@ -2960,7 +2960,7 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                         $output .= html_writer::start_tag('div', ['class' => 'f2foptions']);
                         $output .= html_writer::start_tag('div', ['class' => 'f2fcustomfieldcolumn']);
                         $fieldnamehtml = html_writer::tag('span', $session->customfield->name.':', ['class' => 'f2fsessionnotice']);
-                        $fieldvaluehtml = html_writer::tag('span', $session->customfield->value, ['class' => 'f2fsessionlinks']);
+                        $fieldvaluehtml = html_writer::tag('span', $session->customfield->value);
                         $output .= html_writer::tag('div', $fieldnamehtml . $fieldvaluehtml);
                         $output .= html_writer::end_tag('div');
                         $output .= html_writer::end_tag('div');
@@ -3002,7 +3002,7 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                     if ($visiblefieldcolumn) {
                         $output .= html_writer::start_tag('div', ['class' => 'f2fcustomfieldcolumn']);
                         $fieldnamehtml = html_writer::tag('span', $session->customfield->name.':', ['class' => 'f2fsessionnotice']);
-                        $fieldvaluehtml = html_writer::tag('span', $session->customfield->value, ['class' => 'f2fsessionlinks']);
+                        $fieldvaluehtml = html_writer::tag('span', $session->customfield->value);
                         $output .= html_writer::tag('div', $fieldnamehtml . $fieldvaluehtml);
                         $output .= html_writer::end_tag('div');
                     }
