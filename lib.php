@@ -2924,21 +2924,8 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                 }
 
                 // Check if custom fields exist, and add to sessionobject if setting is enabled.
-                $visiblefieldcolumn = get_config('facetoface', 'displaycustomfield');
-                if ($visiblefieldcolumn) {
-                    // Get field title.
-                    $fieldname = $DB->get_field('facetoface_session_field', 'name', [
-                        'id' => $visiblefieldcolumn,
-                    ]);
-                    // Get field value for the session.
-                    $fieldvalue = $DB->get_field('facetoface_session_data', 'data', [
-                        'fieldid' => $visiblefieldcolumn,
-                        'sessionid' => $session->id
-                    ]);
-                    $sessionobject->customfield = (object)[
-                        'name' => $fieldname,
-                        'value' => $fieldvalue,
-                    ];
+                if ($visiblefieldcolumn = facetoface_get_visiblefield_data($session)) {
+                    $sessionobject->customfield = $visiblefieldcolumn;
                 }
 
                 $j++;
@@ -3040,6 +3027,30 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
     }
 
     $coursemodule->set_content($output);
+}
+
+function facetoface_get_visiblefield_data($session) {
+    global $DB;
+    $visiblefieldcolumn = get_config('facetoface', 'displaycustomfield');
+
+    if (!$visiblefieldcolumn) {
+        return null;
+    }
+
+    // Get field title.
+    $fieldname = $DB->get_field('facetoface_session_field', 'name', [
+        'id' => $visiblefieldcolumn,
+    ]);
+    // Get field value for the session.
+    $fieldvalue = $DB->get_field('facetoface_session_data', 'data', [
+        'fieldid' => $visiblefieldcolumn,
+        'sessionid' => $session->id
+    ]);
+
+    return (object)[
+        'name' => $fieldname,
+        'value' => $fieldvalue,
+    ];
 }
 
 /**
