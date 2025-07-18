@@ -34,9 +34,15 @@
     display: flex;
     min-width: 60px;
     max-width: 50%;
-    justify-content: space-between;
+    justify-content: end;
     width: 100%;
 }
+
+.f2foptions:has(> :last-child:nth-child(2)) {
+    justify-content: space-between;
+}
+
+
 .f2fsessionlinks,
 .f2fsessionnotice {
     font-size: 11px;

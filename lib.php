@@ -2834,13 +2834,22 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
                     ]);
                 }
 
-                $output .= html_writer::start_tag('div', ['class' => 'f2fsessiongroup'])
-                    . html_writer::tag('span', $status, ['class' => 'f2fsessionnotice'])
-                    . html_writer::start_tag('div', ['class' => 'f2fsession f2fsignedup'])
-                    . html_writer::tag('div', $sessiondates, ['class' => 'f2fsessiontime'])
-                    . html_writer::tag('div', $span . $moreinfolink . $attendeeslink . $cancellink, ['class' => 'f2foptions'])
-                    . html_writer::end_tag('div')
-                    . html_writer::end_tag('div');
+                $output .= html_writer::start_tag('div', ['class' => 'f2fsessiongroup']);
+                $output .= html_writer::tag('span', $status, ['class' => 'f2fsessionnotice']);
+                $output .= html_writer::start_tag('div', ['class' => 'f2fsession f2fsignedup']);
+                $output .= html_writer::tag('div', $sessiondates, ['class' => 'f2fsessiontime']);
+                $output .= html_writer::start_tag('div', ['class' => 'f2foptions']);
+                if ($visiblefieldcolumn = facetoface_get_visiblefield_data($session)) {
+                    $output .= html_writer::start_tag('div', ['class' => 'f2fcustomfieldcolumn']);
+                    $fieldnamehtml = html_writer::tag('span', $visiblefieldcolumn->name.':', ['class' => 'f2fsessionnotice']);
+                    $fieldvaluehtml = html_writer::tag('span', $visiblefieldcolumn->value);
+                    $output .= html_writer::tag('div', $fieldnamehtml . $fieldvaluehtml);
+                    $output .= html_writer::end_tag('div');
+                }
+                $output .= html_writer::tag('div', $span . $moreinfolink . $attendeeslink . $cancellink);
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
+                $output .= html_writer::end_tag('div');
             }
         }
         // Add "view all sessions" row to table.
