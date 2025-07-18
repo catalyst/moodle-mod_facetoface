@@ -20,14 +20,14 @@
 }
 
 .f2fcustomfieldcolumn {
-    max-width: 80%;
     width: 100%;
     display: flex;
     justify-content: center;
 }
 
 .f2fcustomfieldcolumn > div {
-    max-width: 100%;
+    width: 100%;
+    padding-left: 2rem;
 }
 
 .f2foptions {
