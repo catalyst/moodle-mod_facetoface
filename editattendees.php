@@ -57,7 +57,7 @@ if (!$cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course
 }
 
 // Check essential permissions.
-require_course_login($course);
+require_course_login($course, true, $cm);
 $context = context_course::instance($course->id);
 require_capability('mod/facetoface:viewattendees', $context);
 

@@ -75,7 +75,7 @@ $cancellations = facetoface_get_cancellations($session->id);
  */
 $context = context_course::instance($course->id);
 $contextmodule = context_module::instance($cm->id);
-require_course_login($course);
+require_course_login($course, true, $cm);
 
 // Actions the user can perform.
 $canviewattendees = has_capability('mod/facetoface:viewattendees', $context);
@@ -183,9 +183,6 @@ $event->trigger();
 $pagetitle = format_string($facetoface->name);
 
 $PAGE->set_url('/mod/facetoface/attendees.php', ['s' => $s]);
-$PAGE->set_context($context);
-$PAGE->set_cm($cm);
-
 $PAGE->set_title($pagetitle);
 $PAGE->set_heading($course->fullname);
 
