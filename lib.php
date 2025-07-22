@@ -3038,6 +3038,13 @@ function facetoface_cm_info_view(cm_info $coursemodule) {
     $coursemodule->set_content($output);
 }
 
+
+/**
+ * Gets the visible custom field title and value for a face-to-face session
+ *
+ * @param object $session A session object containing session details
+ * @return object|null Object containing the field 'name' and 'value', or null setting disabled
+ */
 function facetoface_get_visiblefield_data($session) {
     global $DB;
     $visiblefieldcolumn = get_config('facetoface', 'displaycustomfield');
