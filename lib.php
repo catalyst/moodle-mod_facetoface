@@ -3063,6 +3063,10 @@ function facetoface_get_visiblefield_data($session) {
         'sessionid' => $session->id
     ]);
 
+    if ($fieldname == null || $fieldvalue == null) {
+        return null;
+    }
+
     return (object)[
         'name' => $fieldname,
         'value' => $fieldvalue,
