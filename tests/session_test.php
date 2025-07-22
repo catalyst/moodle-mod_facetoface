@@ -624,4 +624,69 @@ It has plain text stuff in it<br />";
             $this->assertStringNotContainsString('Test value', $output);
         }
     }
+
+    /**
+     * Test retrieving visible custom session field data for cm view on course page.
+     */
+    public function test_get_visiblefield_data(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        /** @var \mod_facetoface_generator $generator */
+        $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
+
+        // Setup course and participants.
+        $course = $this->getDataGenerator()->create_course();
+        $facetoface = $generator->create_instance(['course' => $course->id]);
+
+        // Create a custom field.
+        $fieldid = $DB->insert_record('facetoface_session_field', [
+            'name' => 'Location',
+            'shortname' => 'location',
+            'type' => 0,
+            'required' => 0,
+            'isfilter' => 0,
+            'showinsummary' => 1,
+            'visibleto' => MDL_F2F_FIELD_VISIBLETOALL, // Everyone
+        ]);
+
+        // Create a session.
+        $session = $generator->create_session([
+            'facetoface' => $facetoface->id,
+            'capacity' => 10,
+        ]);
+
+        // Add custom field data to the session.
+        $DB->insert_record('facetoface_session_data', [
+            'sessionid' => $session->id,
+            'fieldid' => $fieldid,
+            'data' => 'Test Location',
+        ]);
+
+        // Ensure returns null when no visible field is configured.
+        set_config('displaycustomfield', 0, 'facetoface');
+        $result = facetoface_get_visiblefield_data($session);
+        $this->assertNull($result);
+
+        // Ensure returns valid values when visible field is configured.
+        set_config('displaycustomfield', $fieldid, 'facetoface');
+        $result = facetoface_get_visiblefield_data($session);
+        $this->assertIsObject($result);
+        $this->assertEquals('Location', $result->name);
+        $this->assertEquals('Test Location', $result->value);
+
+        // Ensure returns null when field doesn't exist for session.
+        $newsession = $generator->create_session([
+            'facetoface' => $facetoface->id,
+            'capacity' => 10,
+        ]);
+        $result = facetoface_get_visiblefield_data($newsession);
+        $this->assertNull($result);
+
+        // Ensure returns null if custom field ID doesn't exist.
+        set_config('displaycustomfield', 999, 'facetoface');
+        $result = facetoface_get_visiblefield_data($session);
+        $this->assertNull($result);
+    }
 }

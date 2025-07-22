@@ -20,15 +20,29 @@
 }
 
 .f2fcustomfieldcolumn {
-    max-width: 80%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.f2fcustomfieldcolumn > div {
+    width: 100%;
+    padding-left: 2rem;
 }
 
 .f2foptions {
     display: flex;
     min-width: 60px;
     max-width: 50%;
-    justify-content: flex-end;
+    justify-content: end;
+    width: 100%;
 }
+
+.f2foptions:has(> :last-child:nth-child(2)) {
+    justify-content: space-between;
+}
+
+
 .f2fsessionlinks,
 .f2fsessionnotice {
     font-size: 11px;
