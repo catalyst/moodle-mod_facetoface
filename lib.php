@@ -1717,8 +1717,7 @@ function facetoface_write_activity_attendance(&$worksheet, $startingrow, $faceto
                     }
                 }
                 $worksheet->write_string($i, $j++, $attendee->grade);
-
-                $worksheet->write_date($i, $j++, (int) $attendee->timecreated, $dateformat);
+                $worksheet->write_string($i, $j++, userdate($attendee->timecreated, get_string('strftimedatetimeshort', 'langconfig')));
 
                 if (!empty($coursename)) {
                     $worksheet->write_string($i, $j++, $coursename);
