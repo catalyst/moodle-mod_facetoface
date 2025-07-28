@@ -138,7 +138,9 @@ class mod_facetoface_renderer extends plugin_renderer_base {
 
             // Status.
             $status  = get_string('bookingopen', 'facetoface');
-            if ($session->datetimeknown
+            if (!$session->visible) {
+                $status = get_string('hidden', 'facetoface');
+            } else if ($session->datetimeknown
                 && facetoface_has_session_started($session, $timenow)
                 && facetoface_is_session_in_progress($session, $timenow)) {
                 $status = get_string('sessioninprogress', 'facetoface');
