@@ -142,6 +142,17 @@ if ($fromform = $mform->get_data()) { // Form submitted.
                 throw new moodle_exception('error:manageremailaddressmissing', 'facetoface', $returnurl);
             }
 
+            // Enrol user into course.
+            if (!is_enrolled($context, $USER->id)) {
+                $defaultroleid = null;
+                // Get default role ID for manual enrollment.
+                $conditions = ['courseid' => $course->id, 'enrol' => 'manual'];
+                $defaultroleid = $DB->get_field('enrol', 'roleid', $conditions, IGNORE_MISSING);
+                if (!enrol_try_internal_enrol($course->id, $USER->id, $defaultroleid)) {
+                    throw new moodle_exception('You cannot be enrolled to this course.');
+                }
+            }
+
             if ($submissionid = facetoface_user_signup(
                 $session,
                 $facetoface,
@@ -175,7 +186,20 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         throw new moodle_exception('alreadysignedup', 'facetoface', $returnurl);
     } else if (facetoface_manager_needed($facetoface) && !facetoface_get_manageremail($USER->id)) {
         throw new moodle_exception('error:manageremailaddressmissing', 'facetoface', $returnurl);
-    } else if ($submissionid = facetoface_user_signup(
+    }
+
+    // Enrol user into course.
+    if (!is_enrolled($context, $USER->id)) {
+        $defaultroleid = null;
+        // Get default role ID for manual enrollment.
+        $conditions = ['courseid' => $course->id, 'enrol' => 'manual'];
+        $defaultroleid = $DB->get_field('enrol', 'roleid', $conditions, IGNORE_MISSING);
+        if (!enrol_try_internal_enrol($course->id, $USER->id, $defaultroleid)) {
+            throw new moodle_exception('You cannot be enrolled to this course.');
+        }
+    }
+
+    if ($submissionid = facetoface_user_signup(
         $session,
         $facetoface,
         $course,
