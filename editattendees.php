@@ -93,16 +93,10 @@ if (optional_param('add', false, PARAM_BOOL) && confirm_sesskey()) {
 
             $user = $DB->get_record('user', ['id' => $adduser]);
             // Make sure that the user is enroled in the course.
-            if (!is_enrolled($context, $user)) {
-                $defaultroleid = null;
-                // Get default role ID for manual enrollment.
-                $conditions = ['courseid' => $course->id, 'enrol' => 'manual'];
-                $defaultroleid = $DB->get_field('enrol', 'roleid', $conditions, IGNORE_MISSING);
-                if (!enrol_try_internal_enrol($course->id, $user->id, $defaultroleid)) {
-                    $errors[] = get_string('error:enrolmentfailed', 'facetoface', fullname($user));
-                    $errors[] = get_string('error:addattendee', 'facetoface', fullname($user));
-                    continue; // Don't sign the user up.
-                }
+            if (!facetoface_enrol_user($context, $course->id, $user->id)) {
+                $errors[] = get_string('error:enrolmentfailed', 'facetoface', fullname($user));
+                $errors[] = get_string('error:addattendee', 'facetoface', fullname($user));
+                continue; // Don't sign the user up.
             }
 
             $usernamefields = facetoface_get_all_user_name_fields(true);

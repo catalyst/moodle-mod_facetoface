@@ -4441,6 +4441,22 @@ function facetoface_can_view_field(int $visibility, bool $editsessions): bool {
     }
 }
 
+function facetoface_enrol_user($context, $courseid, $userid) {
+    global $DB;
+
+    if (!is_enrolled($context, $userid)) {
+        $defaultroleid = null;
+        // Get default role ID for manual enrollment.
+        $conditions = ['courseid' => $courseid, 'enrol' => 'manual'];
+        $defaultroleid = $DB->get_field('enrol', 'roleid', $conditions, IGNORE_MISSING);
+        if (!enrol_try_internal_enrol($courseid, $userid, $defaultroleid)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 /*
  * facetoface assignment candidates
  */
