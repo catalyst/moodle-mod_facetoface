@@ -81,4 +81,46 @@ class attendee_test extends \advanced_testcase {
         $this->assertEquals('Bob', next($attendees)->firstname);
         $this->assertEquals('Charlie', next($attendees)->firstname);
     }
+
+    /**
+     * Test facetoface_enrol_user function
+     */
+    public function test_facetoface_enrol_user(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+
+        // Setup course.
+        $course = $this->getDataGenerator()->create_course();
+        $context = \context_course::instance($course->id);
+
+        // Test student that is already enrolled.
+        $student1 = $this->getDataGenerator()->create_and_enrol($course, 'student');
+        $result = facetoface_enrol_user($context, $course->id, $student1->id);
+        $this->assertTrue($result);
+        $this->assertTrue(is_enrolled($context, $student1->id));
+
+        // Test student that isn't enrolled.
+        $student2 = $this->getDataGenerator()->create_user();
+        $result = facetoface_enrol_user($context, $course->id, $student2->id);
+        $this->assertTrue($result);
+        $this->assertTrue(is_enrolled($context, $student2->id));
+
+        // Test admin user with moodle/course:view capability.
+        $admin = $this->getDataGenerator()->create_user();
+        $this->getDataGenerator()->role_assign('manager', $admin->id);
+        $result = facetoface_enrol_user($context, $course->id, $admin->id);
+        $this->assertTrue($result);
+        $this->assertTrue(is_enrolled($context, $admin->id));
+
+        // Test student that isn't enrolled and enrol_try_internal_enrol fails
+        // when manual enrol is disabled.
+        $manualinstance = $DB->get_record('enrol', ['courseid' => $course->id, 'enrol' => 'manual']);
+        $DB->set_field('enrol', 'status', ENROL_INSTANCE_DISABLED, ['id' => $manualinstance->id]);
+
+        $student3 = $this->getDataGenerator()->create_user();
+        $result = facetoface_enrol_user($context, $course->id, $student3->id);
+        $this->assertFalse($result);
+        $this->assertFalse(is_enrolled($context, $student3->id));
+    }
 }
