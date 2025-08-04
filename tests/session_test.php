@@ -21,6 +21,8 @@ use core_date;
 defined('MOODLE_INTERNAL') || die();
 global $CFG;
 require_once("$CFG->dirroot/mod/facetoface/lib.php");
+require_once($CFG->dirroot . '/completion/criteria/completion_criteria.php');
+require_once($CFG->dirroot . '/completion/criteria/completion_criteria_activity.php');
 
 /**
  * Test the session helper class.
@@ -369,6 +371,17 @@ It has plain text stuff in it<br />";
         facetoface_user_signup($session, $facetoface, $course, '', MDL_F2F_TEXT, MDL_F2F_STATUS_BOOKED, $student->id);
         $signup = $DB->get_record('facetoface_signups', ['sessionid' => $session->id, 'userid' => $student->id]);
 
+        // Create activity course completion criteria.
+        $cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id);
+        $criteriadata = (object)[
+            'id' => $course->id,
+            'criteria_activity' => [
+                $cm->id => 1
+            ]
+        ];
+        $criterion = new \completion_criteria_activity();
+        $criterion->update_config($criteriadata);
+
         // Mark attendance.
         facetoface_take_individual_attendance($signup->id, MDL_F2F_STATUS_FULLY_ATTENDED);
 
@@ -377,6 +390,10 @@ It has plain text stuff in it<br />";
         $completion = new \completion_info($course);
         $completiondata = $completion->get_data($cm, false, $student->id);
         $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
+
+        // Check activity course completion criteria date matches session date.
+        $criteria = $DB->get_record('course_completion_crit_compl', ['userid' => $student->id, 'course' => $course->id]);
+        $this->assertEquals($sessiondate + HOURSECS, $criteria->timecompleted);
     }
 
     /**

@@ -2693,6 +2693,15 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
                 $data->timemodified = $record->timefinish;
                 $completion->internal_set_data($cm, $data);
                 $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
+
+                // Update the course completion criteria entry.
+                $criteras = $completion->get_criteria(4); // 4 = completion_criteria_activity
+                foreach ($criteras as $criteria) {
+                    if ($criteria->module == 'facetoface' && $criteria->moduleinstance == $cm->id) {
+                        $criteriacompletion = $completion->get_user_completion($record->userid, $criteria);
+                        $criteriacompletion->mark_complete($record->timefinish);
+                    }
+                }
             }
         }
     }
