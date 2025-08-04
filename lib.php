@@ -1078,6 +1078,77 @@ function facetoface_get_session($sessionid) {
 }
 
 /**
+ * Returns facetoface session information (status, isbooked, isstarted, isfull)
+ *
+ * @param stdClass $session
+ * @return array
+ */
+function facetoface_get_session_info(stdClass $session): array {
+    $isbookedsession = false;
+    $sessionstarted = false;
+    $sessionfull = false;
+    $statusparts = [];
+    $timenow = time();
+    $status = get_string('bookingopen', 'facetoface');
+    $signupcount = facetoface_get_num_attendees($session->id, MDL_F2F_STATUS_APPROVED);
+
+    $hassessiondates = !empty($session->sessiondates);
+    if ($hassessiondates && facetoface_has_session_started($session, $timenow)
+            && facetoface_is_session_in_progress($session, $timenow)
+            && isset($session->usersubmission->statuscode)
+            && $session->usersubmission->statuscode == MDL_F2F_STATUS_BOOKED) {
+        $signupstatus = facetoface_get_status($session->usersubmission->statuscode);
+        $statusparts[] = get_string('status_' . $signupstatus, 'facetoface');
+        $statusparts[] = get_string('sessioninprogress', 'facetoface');
+        $status = implode(get_string('listsep', 'langconfig') . ' ', $statusparts);
+        $sessionstarted = true;
+        $isbookedsession = true;
+    } else if ($hassessiondates && !facetoface_has_not_started_session($session, $timenow)
+        && !facetoface_is_session_in_progress($session, $timenow)) {
+        $status = get_string('sessionfinished', 'facetoface');
+    } else if (isset($session->usersubmission->statuscode)) {
+        $signupstatus = facetoface_get_status($session->usersubmission->statuscode);
+        $status = get_string('status_' . $signupstatus, 'facetoface');
+        $isbookedsession = true;
+    } else if ($signupcount >= $session->capacity) {
+        $status = get_string('bookingfull', 'facetoface');
+        $sessionfull = true;
+    } else if ($hassessiondates && facetoface_has_session_started($session, $timenow)) {
+        $status = get_string('closed', 'facetoface');
+    }
+
+    return [
+        'status' => $status,
+        'isbooked' => $isbookedsession,
+        'isstarted' => $sessionstarted,
+        'isfull' => $sessionfull,
+    ];
+}
+
+/**
+ * Returns true if there is a session that has not started, that is if one of the
+ * session start dates is in the future.
+ *
+ * @param stdClass $session record from the facetoface_sessions table
+ * @param int $timenow current time
+ * @return bool
+ */
+function facetoface_has_not_started_session(stdClass $session, int $timenow): bool {
+
+    if (empty($session->sessiondates)) {
+        return false; // No date set.
+    }
+
+    foreach ($session->sessiondates as $date) {
+        if ($date->timestart > $timenow) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+/**
  * Get all records from facetoface_sessions for a given facetoface activity and location
  *
  * @param integer $facetofaceid ID of the activity
