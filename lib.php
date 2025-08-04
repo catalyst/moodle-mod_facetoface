@@ -4441,7 +4441,15 @@ function facetoface_can_view_field(int $visibility, bool $editsessions): bool {
     }
 }
 
-function facetoface_enrol_user($context, $courseid, $userid) {
+/**
+ * Enrol a user into a course on signup.
+ *
+ * @param object $context context object (record from context table)
+ * @param integer $courseid id of the course
+ * @param integer $userid id of the user
+ * @return bool true if the given user is enrolled, false otherwise
+ */
+function facetoface_enrol_user($context, $courseid, $userid): bool {
     global $DB;
 
     if (!is_enrolled($context, $userid)) {
