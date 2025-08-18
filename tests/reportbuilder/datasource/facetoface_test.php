@@ -75,6 +75,7 @@ final class facetoface_test extends core_reportbuilder_testcase {
             'normalcost' => '111',
             'discountcost' => '11',
             'allowcancellations' => '0',
+            'visible' => '1',
             'sessiondates' => [
                 ['timestart' => $now + 1 * DAYSECS, 'timefinish' => $now + 2 * DAYSECS],
             ],
@@ -94,6 +95,8 @@ final class facetoface_test extends core_reportbuilder_testcase {
         $this->rbgenerator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'facetoface:name']);
         // Add session date start column to the report.
         $this->rbgenerator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'session_date:datestart']);
+        // Add session visibility column to the report.
+        $this->rbgenerator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'session:visibility']);
         // Add user fullname column to the report.
         $this->rbgenerator->create_column(['reportid' => $report->get('id'), 'uniqueidentifier' => 'user:fullname']);
 
@@ -106,6 +109,7 @@ final class facetoface_test extends core_reportbuilder_testcase {
             'Test course', // Course fullname.
             'My facetoface', // Facetoface name.
             userdate($now + 1 * DAYSECS, $dateformat), // Session start date.
+            'Yes', // Session visibility.
             fullname($student), // User full name.
         ], $contentrow);
     }

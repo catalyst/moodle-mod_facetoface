@@ -215,6 +215,18 @@ class session extends base {
         }
         $columns[] = $column;
 
+        // Column session visibility.
+        $columns[] = (new column(
+            'visibility',
+            new lang_string('sessionvisibility', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_field("{$session}.visible")
+            ->set_is_sortable(true)
+            ->add_callback([format::class, 'boolean_as_text']);
+
         // Column session status.
         $columns[] = (new column(
             'status',
@@ -324,6 +336,17 @@ class session extends base {
         ))
             ->add_joins($this->get_joins())
             ->set_field_sql("CASE WHEN ({$bookingsquery} >= {$session}.capacity) THEN 1 ELSE 0 END");
+
+
+        // Filter session visibility.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'visible',
+            new lang_string('sessionvisibility', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.visible"
+        ))
+            ->add_joins($this->get_joins());
 
         foreach ($this->customfields as $field) {
             $fieldalias = $field->alias;
