@@ -18,6 +18,8 @@ declare(strict_types=1);
 
 namespace mod_facetoface\reportbuilder\local\helpers;
 
+require_once("$CFG->dirroot/mod/facetoface/lib.php");
+
 /**
  * Helpers for the facetoface RB entities
  *
@@ -35,10 +37,10 @@ class facetoface {
      */
     public static function get_bookings_query(string $tablealias): string {
         $excludestatuses = [
-            10,
-            30,
-            40,
-            60,
+            MDL_F2F_STATUS_USER_CANCELLED,
+            MDL_F2F_STATUS_DECLINED,
+            MDL_F2F_STATUS_REQUESTED,
+            MDL_F2F_STATUS_WAITLISTED,
         ];
         $excludesql = 'NOT IN (' . implode(',', $excludestatuses) . ')';
 
