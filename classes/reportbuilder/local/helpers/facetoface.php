@@ -35,7 +35,7 @@ class facetoface {
      */
     public static function get_bookings_query(string $tablealias): string {
         $excludestatuses = [
-            20,
+            10,
             30,
             40,
             60,
