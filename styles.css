@@ -68,6 +68,9 @@ body.path-mod-facetoface table.f2fsession {
 table.f2fsessionlist tr.highlight td.cell {
     background-color: #afa;
 }
+table.f2fsessionlist .sessionoptions {
+    column-gap: 6px;
+}
 a.f2fsessionlinks,
 td.f2fsessionnotice,
 span.f2fsessionnotice {
