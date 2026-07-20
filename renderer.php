@@ -174,14 +174,17 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 $this->output->pix_icon('i/menu', '') . html_writer::span($label, 'sr-only'),
                 action_menu::DEFAULT_KEBAB_TRIGGER_CLASSES
             );
-            $signupbtn = html_writer::link(
-                'signup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
-                get_string('signup', 'facetoface'),
-                ['class' => 'btn btn-primary']
-            );
 
             if ($isbookedsession) {
-                $options .= $signupbtn . html_writer::empty_tag('br');
+                $options .= html_writer::link(
+                    'signup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
+                    get_string('moreinfo', 'facetoface'),
+                    [
+                        'title' => get_string('moreinfo', 'facetoface'),
+                        'class' => 'btn btn-primary',
+                    ]
+                );
+                $options .= html_writer::empty_tag('br');
                 if ($session->allowcancellations) {
                     if (facetoface_cancellation_allowed($session)) {
                         $options .= html_writer::link(
@@ -205,7 +208,11 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                     }
                 }
             } else if (!$sessionstarted && !$bookedsession && $signuplinks) {
-                $options .= $signupbtn;
+                $options .= html_writer::link(
+                    'signup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
+                    get_string('signup', 'facetoface'),
+                    ['class' => 'btn btn-primary']
+                );
             }
 
             if ($editsessions) {
