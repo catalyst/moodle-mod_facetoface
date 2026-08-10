@@ -2071,7 +2071,7 @@ function facetoface_user_signup(
     $usersignup->mailedreminder = 0;
     $usersignup->notificationtype = $notificationtype;
 
-    $usersignup->discountcode = trim(strtoupper($discountcode ?? ''));
+    $usersignup->discountcode = trim(strtoupper(clean_param($discountcode ?? '', PARAM_TEXT)));
     if (empty($usersignup->discountcode)) {
         $usersignup->discountcode = null;
     }
@@ -2722,7 +2722,7 @@ function facetoface_check_manageremail($manageremail) {
  *                     the ID of the signup
  */
 function facetoface_take_attendance($data) {
-    global $USER;
+    global $USER, $DB;
 
     $sessionid = $data->s;
 
@@ -2745,6 +2745,11 @@ function facetoface_take_attendance($data) {
      */
     $selectedsubmissionids = [];
 
+    // Pre-load signup IDs that belong to this session only.
+    $validsessionsubmissionids = array_flip(
+        $DB->get_fieldset_select('facetoface_signups', 'id', 'sessionid = ?', [$session->id])
+    );
+
     /*
      * FIXME: This is not very efficient, we should do the grade
      * query outside of the loop to get all submissions for a
@@ -2754,7 +2759,12 @@ function facetoface_take_attendance($data) {
     foreach ($data as $key => $value) {
         $submissionidcheck = substr($key, 0, 13);
         if ($submissionidcheck == 'submissionid_') {
-            $submissionid = substr($key, 13);
+            $submissionid = (int) substr($key, 13);
+
+            if (!isset($validsessionsubmissionids[$submissionid])) {
+                continue;
+            }
+
             $selectedsubmissionids[$submissionid] = $submissionid;
 
             // Update status.

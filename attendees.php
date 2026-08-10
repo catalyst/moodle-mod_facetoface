@@ -324,7 +324,7 @@ if ($canviewattendees || $cantakeattendance) {
                 if (!get_config('facetoface', 'hidecost')) {
                     $data[] = facetoface_cost($attendee->id, $session->id, $session);
                     if (!get_config('facetoface', 'hidediscount')) {
-                        $data[] = $attendee->discountcode;
+                        $data[] = s($attendee->discountcode);
                     }
                 }
                 $data[] = str_replace(
