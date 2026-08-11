@@ -42,7 +42,8 @@ Feature: Teacher may set up facetoface completion based on attendance
       | timefinish[0][hour]     | 01                |
       | timefinish[0][minute]   | 01                |
     And I press "Save changes"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Add/remove attendees"
     And I set the field "addselect" to "Student 1"
     And I click on "Add" "button"
@@ -56,7 +57,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "No show"
     And I press "Save attendance"
@@ -69,7 +71,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "Partially attended"
     And I press "Save attendance"
@@ -81,7 +84,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "Fully attended"
     And I press "Save attendance"
@@ -119,7 +123,8 @@ Feature: Teacher may set up facetoface completion based on attendance
       | timefinish[0][hour]     | 01                |
       | timefinish[0][minute]   | 01                |
     And I press "Save changes"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Add/remove attendees"
     And I set the field "addselect" to "Student 1"
     And I click on "Add" "button"
@@ -133,7 +138,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "No show"
     And I press "Save attendance"
@@ -145,7 +151,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "Partially attended"
     And I press "Save attendance"
@@ -157,7 +164,8 @@ Feature: Teacher may set up facetoface completion based on attendance
 
     When I am on the "C1" "Course" page logged in as "teacher1"
     And I follow "View all sessions"
-    And I follow "Attendees"
+    And I follow "Actions"
+    And I follow "See attendees"
     And I follow "Take attendance"
     And I set the field with xpath "//*[contains(concat(' ', normalize-space(@class), ' '), ' menusubmissionid_')]" to "Fully attended"
     And I press "Save attendance"

@@ -4806,6 +4806,32 @@ function facetoface_should_attendees_show_idnumbers(): bool {
 }
 
 /**
+ * Add nodes to myprofile page.
+ *
+ * @param \core_user\output\myprofile\tree $tree Tree object
+ * @param stdClass $user user object
+ * @param bool $iscurrentuser
+ * @param stdClass $course Course object
+ * @return void
+ */
+function mod_facetoface_myprofile_navigation(core_user\output\myprofile\tree $tree, $user, $iscurrentuser, $course) {
+    global $USER;
+
+    $context = context_user::instance($user->id);
+    if ($user->id === $USER->id || has_capability('mod/facetoface:viewuserbookings', $context)) {
+        $url = new moodle_url('/mod/facetoface/my_bookings.php', ['userid' => $user->id]);
+        $node = new core_user\output\myprofile\node(
+            'miscellaneous',
+            'mybookings',
+            get_string('mybookings', 'facetoface'),
+            null,
+            $url
+        );
+        $tree->add_node($node);
+    }
+}
+
+/**
  * Facetoface assignment candidates
  *
  * Copyright (C) 2007-2011 Catalyst IT (http://www.catalyst.net.nz)

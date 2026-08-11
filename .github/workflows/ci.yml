@@ -9,4 +9,3 @@ jobs:
       moodle_org_token: ${{ secrets.MOODLE_ORG_TOKEN }}
     with:
       disable_phpdoc: true
-      disable_phpcpd: true

@@ -52,7 +52,6 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             $tableheader[] = get_string('sessionnumber', 'facetoface');
         }
 
-        $tableheader[] = get_string('date', 'facetoface');
         $tableheader[] = get_string('time', 'facetoface');
         if ($viewattendees) {
             $tableheader[] = get_string('capacity', 'facetoface');
@@ -65,7 +64,7 @@ class mod_facetoface_renderer extends plugin_renderer_base {
         $timenow = time();
 
         $table = new html_table();
-        $table->attributes['class'] = 'f2fsessionlist';
+        $table->attributes['class'] = 'generaltable f2fsessionlist';
         $table->head = $tableheader;
         $table->data = [];
 
@@ -85,44 +84,48 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 }
 
                 if (empty($customdata[$field->id])) {
-                    $sessionrow[] = '&nbsp;';
+                    $sessionrow[] = new html_table_cell('&nbsp;');
                 } else {
                     if (CUSTOMFIELD_TYPE_MULTISELECT == $field->type) {
-                        $sessionrow[] = str_replace(
+                        $data = str_replace(
                             CUSTOMFIELD_DELIMITER,
                             html_writer::empty_tag('br'),
                             format_string($customdata[$field->id]->data)
                         );
                     } else {
-                        $sessionrow[] = format_string($customdata[$field->id]->data);
+                        $data = format_string($customdata[$field->id]->data);
                     }
+                    $cell = new html_table_cell($data);
+                    $cell->attributes['class'] = 'customfield';
+                    $sessionrow[] = $cell;
                 }
             }
 
             if ($uploadbookings) {
-                $sessionrow[] = html_writer::tag('span', $session->id, ['class' => 'mr-3']);
+                $cell = new html_table_cell(
+                    html_writer::tag('span', $session->id, ['class' => 'mr-3'])
+                );
+                $cell->attributes['class'] = 'sessionid';
+                $sessionrow[] = $cell;
             }
 
-            // Dates/times.
-            $allsessiondates = '';
+            // Times.
             $allsessiontimes = '';
             if ($session->datetimeknown) {
-                foreach ($session->sessiondates as $date) {
-                    if (!empty($allsessiondates)) {
-                        $allsessiondates .= html_writer::empty_tag('br');
-                    }
-                    $allsessiondates .= \mod_facetoface\session::get_readable_session_date($date);
+                foreach ($session->sessiondates as $sessiondate) {
                     if (!empty($allsessiontimes)) {
-                        $allsessiontimes .= html_writer::empty_tag('br');
+                        $allsessiontimes .= html_writer::empty_tag('hr');
                     }
-                    $allsessiontimes .= \mod_facetoface\session::get_readable_session_time($date);
+                    $date = \mod_facetoface\session::get_readable_session_date($sessiondate);
+                    $time = \mod_facetoface\session::get_readable_session_time($sessiondate);
+                    $allsessiontimes .= $date . ', ' . $time;
                 }
             } else {
-                $allsessiondates = get_string('wait-listed', 'facetoface');
                 $allsessiontimes = get_string('wait-listed', 'facetoface');
             }
-            $sessionrow[] = $allsessiondates;
-            $sessionrow[] = $allsessiontimes;
+            $cell = new html_table_cell($allsessiontimes);
+            $cell->attributes['class'] = 'sessiontimes';
+            $sessionrow[] = $cell;
 
             // Capacity.
             $signupcount = facetoface_get_num_attendees($session->id, MDL_F2F_STATUS_APPROVED);
@@ -132,7 +135,9 @@ class mod_facetoface_renderer extends plugin_renderer_base {
             } else {
                 $stats = max(0, $stats);
             }
-            $sessionrow[] = $stats;
+            $cell = new html_table_cell($stats);
+            $cell->attributes['class'] = 'capacity';
+            $sessionrow[] = $cell;
 
             // Status.
             $status  = get_string('bookingopen', 'facetoface');
@@ -157,97 +162,153 @@ class mod_facetoface_renderer extends plugin_renderer_base {
                 $sessionfull = true;
             }
 
-            $sessionrow[] = $status;
+            $cell = new html_table_cell($status);
+            $cell->attributes['class'] = 'status';
+            $sessionrow[] = $cell;
 
             // Options.
             $options = '';
-            if ($editsessions) {
-                $options .= $this->output->action_icon(
-                    new moodle_url('sessions.php', ['s' => $session->id]),
-                    new pix_icon('t/edit', get_string('edit', 'facetoface')),
-                    null,
-                    ['title' => get_string('editsession', 'facetoface')]
-                ) . ' ';
-                $options .= $this->output->action_icon(
-                    new moodle_url('sessions.php', ['s' => $session->id, 'c' => 1]),
-                    new pix_icon('t/copy', get_string('copy', 'facetoface')),
-                    null,
-                    ['title' => get_string('copysession', 'facetoface')]
-                ) . ' ';
-                $options .= $this->output->action_icon(
-                    new moodle_url('sessions.php', ['s' => $session->id, 'd' => 1]),
-                    new pix_icon('t/delete', get_string('delete', 'facetoface')),
-                    null,
-                    ['title' => get_string('deletesession', 'facetoface')]
-                ) . ' ';
-            }
-            if ($viewattendees) {
-                $options .= html_writer::link(
-                    'attendees.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
-                    get_string('attendees', 'facetoface'),
-                    ['title' => get_string('seeattendees', 'facetoface')]
-                ) . ' &nbsp; ';
-                $options .= $this->output->action_icon(
-                    new moodle_url('attendees.php', ['s' => $session->id, 'download' => 'xlsx']),
-                    new pix_icon('f/spreadsheet', get_string('downloadexcel')),
-                    null,
-                    ['title' => get_string('downloadexcel')]
-                ) . ' ';
-                $options .= $this->output->action_icon(
-                    new moodle_url('attendees.php', ['s' => $session->id, 'download' => 'ods']),
-                    new pix_icon('f/calc', get_string('downloadods')),
-                    null,
-                    ['title' => get_string('downloadods')]
-                ) . ' ' . html_writer::empty_tag('br');
-            }
+            $actionsmenu = new action_menu();
+            $label = get_string('actions');
+            $actionsmenu->set_menu_trigger(
+                $this->output->pix_icon('i/menu', '') . html_writer::span($label, 'sr-only'),
+                action_menu::DEFAULT_KEBAB_TRIGGER_CLASSES
+            );
+
             if ($isbookedsession) {
                 $options .= html_writer::link(
                     'signup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
                     get_string('moreinfo', 'facetoface'),
-                    ['title' => get_string('moreinfo', 'facetoface')]
-                ) . html_writer::empty_tag('br');
+                    [
+                        'title' => get_string('moreinfo', 'facetoface'),
+                        'class' => 'btn btn-primary',
+                    ]
+                );
+                $options .= html_writer::empty_tag('br');
                 if ($session->allowcancellations) {
                     if (facetoface_cancellation_allowed($session)) {
                         $options .= html_writer::link(
                             'cancelsignup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
                             get_string('cancelbooking', 'facetoface'),
-                            ['title' => get_string('cancelbooking', 'facetoface')]
+                            [
+                                'title' => get_string('cancelbooking', 'facetoface'),
+                                'class' => 'btn btn-primary',
+                            ]
                         );
                     } else {
                         $cancelrestriction = get_config('facetoface', 'cancelrestriction');
                         $options .= html_writer::link(
                             '',
                             get_string('cancelbooking', 'facetoface'),
-                            ['title' => get_string('error:cancellationtooclose', 'facetoface', format_time($cancelrestriction)), 'class' => 'disabled']
+                            [
+                                'title' => get_string('error:cancellationtooclose', 'facetoface', format_time($cancelrestriction)),
+                                'class' => 'btn btn-primary disabled',
+                            ]
                         );
                     }
                 }
             } else if (!$sessionstarted && !$bookedsession && $signuplinks) {
                 $options .= html_writer::link(
                     'signup.php?s=' . $session->id . '&backtoallsessions=' . $session->facetoface,
-                    get_string('signup', 'facetoface')
+                    get_string('signup', 'facetoface'),
+                    ['class' => 'btn btn-primary']
                 );
             }
+
+            if ($editsessions) {
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('sessions.php', ['s' => $session->id]),
+                        new pix_icon('t/edit', get_string('edit', 'facetoface')),
+                        get_string('editsession', 'facetoface')
+                    )
+                );
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('sessions.php', ['s' => $session->id, 'c' => 1]),
+                        new pix_icon('t/copy', get_string('copy', 'facetoface')),
+                        get_string('copysession', 'facetoface')
+                    )
+                );
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('sessions.php', ['s' => $session->id, 'd' => 1]),
+                        new pix_icon('t/delete', get_string('delete', 'facetoface')),
+                        get_string('deletesession', 'facetoface')
+                    )
+                );
+            }
+
+            if ($viewattendees) {
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('attendees.php', ['s' => $session->id, 'backtoallsessions' => $session->facetoface]),
+                        new pix_icon('i/group', get_string('seeattendees', 'facetoface')),
+                        get_string('seeattendees', 'facetoface'),
+                    )
+                );
+                $divider = new action_menu_filler();
+                $divider->primary = false;
+                $actionsmenu->add($divider);
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('attendees.php', ['s' => $session->id, 'download' => 'xlsx']),
+                        new pix_icon('f/spreadsheet', get_string('attendeesdownloadexcel', 'facetoface')),
+                        get_string('attendeesdownloadexcel', 'facetoface')
+                    )
+                );
+                $actionsmenu->add(
+                    new action_menu_link_secondary(
+                        new moodle_url('attendees.php', ['s' => $session->id, 'download' => 'ods']),
+                        new pix_icon('f/calc', get_string('attendeesdownloadods', 'facetoface')),
+                        get_string('attendeesdownloadods', 'facetoface')
+                    )
+                );
+            }
+
+            if ($editsessions || $viewattendees) {
+                $options .= $this->render($actionsmenu);
+            }
+
+            // If the session is no longer available and is not booked dim the session.
+            // We do this on the cell to avoid dimming the options menu.
+            $dimmed = ($sessionstarted || !$session->visible) || ($sessionfull && !$isbookedsession);
+            if ($dimmed) {
+                foreach ($sessionrow as &$cell) {
+                    if (!$cell instanceof html_table_cell) {
+                        $cell = new html_table_cell($cell);
+                    }
+                    $cell->attributes['class'] .= ' dimmed_text';
+                }
+            }
+
             if (empty($options)) {
                 $options = get_string('none', 'facetoface');
+                if ($dimmed) {
+                    $options = new html_table_cell($options);
+                    $options->attributes['class'] = 'options dimmed_text';
+                }
+            } else {
+                $options = new html_table_cell(
+                    html_writer::div($options, 'd-flex sessionoptions')
+                );
+                $options->attributes['class'] = 'options';
             }
             $sessionrow[] = $options;
 
             $row = new html_table_row($sessionrow);
 
             // Set the CSS class for the row.
-            if ($sessionstarted || !$session->visible) {
-                $row->attributes = ['class' => 'dimmed_text'];
-            } else if ($isbookedsession) {
+            if ($session->visible && !$sessionstarted && $isbookedsession) {
                 $row->attributes = ['class' => 'highlight'];
-            } else if ($sessionfull) {
-                $row->attributes = ['class' => 'dimmed_text'];
             }
 
             // Add row to table.
             $table->data[] = $row;
         }
 
+        // This table should not be responsive, as it cuts off the last dropdown menu.
+        $table->responsive = false;
         $output .= html_writer::table($table);
 
         return $output;

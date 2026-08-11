@@ -59,11 +59,13 @@ Feature: An activity module facetoface can be created in a course
     And I press "Sign-up"
     And I am on the "C1" "Course" page logged in as "teacher1"
     And I click on "View all sessions" "link"
-    And I click on "(//table[contains(@class, 'f2fsessionlist')]//*//a[text()='Attendees'])[1]" "xpath_element"
+    And I click on "Actions" "link"
+    And I click on "See attendees" "link"
     And I should see "Student 1"
     And I am on the "C1" "Course" page logged in as "teacher1"
     And I click on "View all sessions" "link"
-    And I click on "(//table[contains(@class, 'f2fsessionlist')]//*//a[text()='Attendees'])[2]" "xpath_element"
+    And I click on "Actions" "link"
+    And I click on "See attendees" "link"
     Then I should see "Student 1"
 
   @javascript

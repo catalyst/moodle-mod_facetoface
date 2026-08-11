@@ -196,4 +196,13 @@ $capabilities = [
             'manager' => CAP_ALLOW,
         ],
     ],
+
+    // Ability to view all of a users bookings.
+    'mod/facetoface:viewuserbookings' => [
+        'captype' => 'read',
+        'contextlevel' => CONTEXT_SYSTEM,
+        'archetypes' => [
+            'manager' => CAP_ALLOW,
+        ],
+    ],
 ];
