@@ -197,7 +197,7 @@ $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => "backtoal
 $out .= html_writer::empty_tag('input', ['type' => 'hidden', 'name' => "sesskey", 'value' => sesskey()]);
 
 $table = new html_table();
-$table->attributes['class'] = "generaltable generalbox boxaligncenter";
+$table->attributes['class'] = "editattendeestable generaltable generalbox boxaligncenter";
 $cells = [];
 
 if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
@@ -210,7 +210,7 @@ if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_MULTIPLE) {
     );
     $content .= $OUTPUT->help_icon('addtoallsessions', 'facetoface');
     $cell = new html_table_cell($content);
-    $cell->attributes['colspan'] = '3';
+    $cell->colspan = '3';
     $table->data[] = new html_table_row([$cell]);
 }
 
@@ -223,8 +223,8 @@ $content = html_writer::checkbox(
 );
 $content .= $OUTPUT->help_icon('suppressemail', 'facetoface');
 $cell = new html_table_cell($content);
-$cell->attributes['id'] = 'backcell';
-$cell->attributes['colspan'] = '3';
+$cell->id = 'backcell';
+$cell->colspan = '3';
 $table->data[] = new html_table_row([$cell]);
 
 $content = html_writer::start_tag('p') . html_writer::tag(
@@ -234,24 +234,29 @@ $content = html_writer::start_tag('p') . html_writer::tag(
 ) . html_writer::end_tag('p');
 $content .= $existinguserselector->display(true);
 $cell = new html_table_cell($content);
-$cell->attributes['id'] = 'existingcell';
+$cell->attributes['class'] = 'existingcell';
 $cells[] = $cell;
-$content = html_writer::tag('div', html_writer::empty_tag(
-    'input',
-    [
-        'type' => 'submit', 'id' => 'add', 'name' => 'add', 'title' => get_string('add'),
-        'value' => $OUTPUT->larrow() . ' ' . get_string('add'),
-    ]
-), ['id' => 'addcontrols']);
-$content .= html_writer::tag('div', html_writer::empty_tag(
-    'input',
-    [
-        'type' => 'submit', 'id' => 'remove', 'name' => 'remove', 'title' => get_string('remove'),
-        'value' => $OUTPUT->rarrow() . ' ' . get_string('remove'),
-    ]
-), ['id' => 'removecontrols']);
+$content = html_writer::start_tag('p', ['class' => 'arrow_button']);
+$content .= html_writer::empty_tag('input', [
+    'type' => 'submit',
+    'class' => 'btn btn-secondary',
+    'id' => 'add',
+    'name' => 'add',
+    'title' => get_string('add'),
+    'value' => $OUTPUT->larrow() . ' ' . get_string('add'),
+]);
+$content .= html_writer::empty_tag('br');
+$content .= html_writer::empty_tag('input', [
+    'type' => 'submit',
+    'class' => 'btn btn-secondary',
+    'id' => 'remove',
+    'name' => 'remove',
+    'title' => get_string('remove'),
+    'value' => $OUTPUT->rarrow() . ' ' . get_string('remove'),
+]);
+$content .= html_writer::end_tag('p');
 $cell = new html_table_cell($content);
-$cell->attributes['id'] = 'buttonscell';
+$cell->attributes['class'] = 'buttonscell';
 $cells[] = $cell;
 $content = html_writer::start_tag('p') . html_writer::tag(
     'label',
@@ -260,7 +265,7 @@ $content = html_writer::start_tag('p') . html_writer::tag(
 ) . html_writer::end_tag('p');
 $content .= $potentialuserselector->display(true);
 $cell = new html_table_cell($content);
-$cell->attributes['id'] = 'potentialcell';
+$cell->attributes['class'] = 'potentialcell';
 $cells[] = $cell;
 $table->data[] = new html_table_row($cells);
 
