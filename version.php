@@ -31,8 +31,8 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->version   = 2025121504;
-$plugin->release   = 2025121504;
+$plugin->version   = 2025121505;
+$plugin->release   = 2025121505;
 $plugin->requires  = 2023100900;  // Requires 4.3.
 $plugin->component = 'mod_facetoface';
 $plugin->maturity  = MATURITY_STABLE;

@@ -94,3 +94,19 @@ body#page-mod-facetoface-view div#page-content .formlocation {
 .path-mod-facetoface .table-responsive table.f2fbookingsuploadlist .c1 {
     width: auto;
 }
+
+.path-mod-facetoface .editattendeestable .existingcell,
+.path-mod-facetoface .editattendeestable .potentialcell {
+    width: 42%;
+}
+
+.path-mod-facetoface .editattendeestable .buttonscell {
+    width: 16%;
+}
+
+.path-mod-facetoface .editattendeestable .buttonscell p.arrow_button input {
+    width: auto;
+    min-width: 80%;
+    display: block;
+    margin: 0px auto;
+}
