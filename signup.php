@@ -99,6 +99,9 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
     }
 
+    // Enforce signup capability server-side before processing the submission.
+    require_capability('mod/facetoface:signup', $contextmodule);
+
     // User can not update Manager's email (depreciated functionality).
     if (!empty($fromform->manageremail)) {
         // Logging and events trigger.
