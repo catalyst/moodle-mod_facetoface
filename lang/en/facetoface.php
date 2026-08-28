@@ -462,10 +462,6 @@ Course:   [facetofacename]
 Duration:   [duration]
 Date(s):
 [alldates]
-
-Location:   [session:location]
-Venue:   [session:venue]
-Room:   [session:room]
 ';
 $string['setting:defaultcancellationsubject'] = 'Default subject line for cancellation emails.';
 $string['setting:defaultcancellationsubject_caption'] = 'Cancellation subject';
@@ -491,10 +487,6 @@ Cost:   [cost]
 Duration:    [duration]
 Date(s):
 [alldates]
-
-Location:   [session:location]
-Venue:   [session:venue]
-Room:   [session:room]
 
 ***Please arrive ten minutes before the course starts***
 
@@ -531,10 +523,6 @@ Duration:   [duration]
 Date(s):
 [alldates]
 
-Location:   [session:location]
-Venue:   [session:venue]
-Room:   [session:room]
-
 ***Please arrive ten minutes before the course starts***
 
 To re-schedule or cancel your booking
@@ -554,10 +542,6 @@ Duration:   [duration]
 Date(s):
 [alldates]
 
-Location:   [session:location]
-Venue:   [session:venue]
-Room:   [session:room]
-
 Please follow the link below to approve the request:
 [attendeeslink]#unapproved
 
@@ -573,10 +557,6 @@ Cost:   [cost]
 Duration:   [duration]
 Date(s):
 [alldates]
-
-Location:   [session:location]
-Venue:   [session:venue]
-Room:   [session:room]
 ';
 $string['setting:defaultrequestsubjectdefault'] = 'Course booking request: [facetofacename], [starttime]-[finishtime]';
 $string['setting:defaultvalue'] = 'Default value';
@@ -585,7 +565,6 @@ $string['setting:defaultwaitlistedmessage_caption'] = 'Wait-listed message';
 $string['setting:defaultwaitlistedmessagedefault'] = 'This is to advise that you have been added to the waitlist for:
 
 Course:   [facetofacename]
-Location:  [session:location]
 Participant:   [firstname] [lastname]
 
 ***Please note this is not a course booking confirmation***
