@@ -684,66 +684,235 @@ It has plain text stuff in it<br />";
     }
 
     /**
-     * Tests that when marking attendance with the sessioncompletiondate setting enabled,
-     * the completion time is set to the session finish time instead of the current time.
+     * Set up a course whose facetoface activity completes on attendance.
      *
+     * @param int $completionattendance the status code attendance has to reach
+     * @param array $sessiondates timestart/timefinish pairs for the session
+     * @return array [course, facetoface, session, student]
      */
-    public function test_session_completion_date(): void {
-        global $DB;
-
-        $this->resetAfterTest();
-
-        // Enable session completion date setting.
-        set_config('sessioncompletiondate', 1, 'facetoface');
-
-        // Setup course and participants.
+    private function setup_attendance_completion(int $completionattendance, array $sessiondates): array {
         $generator = $this->getDataGenerator()->get_plugin_generator('mod_facetoface');
         $course = $this->getDataGenerator()->create_course(['enablecompletion' => 1]);
         $student = $this->getDataGenerator()->create_and_enrol($course, 'student');
         $facetoface = $generator->create_instance([
             'course' => $course->id,
             'completion' => COMPLETION_TRACKING_AUTOMATIC,
-            'completionattendance' => MDL_F2F_STATUS_FULLY_ATTENDED,
+            'completionattendance' => $completionattendance,
         ]);
-
-        // Create a session in the past.
-        $sessiondate = time() - WEEKSECS;
         $session = $generator->create_session([
             'facetoface' => $facetoface->id,
-            'sessiondates' => [
-                [
-                    'timestart' => $sessiondate,
-                    'timefinish' => $sessiondate + HOURSECS,
-                ],
-            ],
+            'sessiondates' => $sessiondates,
         ]);
 
-        // Sign up the student.
         facetoface_user_signup($session, $facetoface, $course, '', MDL_F2F_TEXT, MDL_F2F_STATUS_BOOKED, $student->id);
-        $signup = $DB->get_record('facetoface_signups', ['sessionid' => $session->id, 'userid' => $student->id]);
 
-        // Create activity course completion criteria.
+        return [$course, $facetoface, $session, $student];
+    }
+
+    /**
+     * Make the facetoface activity a course completion criterion.
+     *
+     * @param \stdClass $course
+     * @param \stdClass $facetoface
+     * @return void
+     */
+    private function add_activity_criterion(\stdClass $course, \stdClass $facetoface): void {
         $cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id);
-        $criteriadata = (object)[
+        // update_config() takes its argument by reference, so it needs a variable.
+        $criteriadata = (object) [
             'id' => $course->id,
-            'criteria_activity' => [
-                $cm->id => 1,
-            ],
+            'criteria_activity' => [$cm->id => 1],
         ];
         $criterion = new \completion_criteria_activity();
         $criterion->update_config($criteriadata);
+    }
 
-        // Mark attendance.
-        facetoface_take_individual_attendance($signup->id, MDL_F2F_STATUS_FULLY_ATTENDED);
+    /**
+     * Mark attendance the way the attendees screen and the CSV upload do.
+     *
+     * Both post through facetoface_take_attendance(), which maps the status code
+     * to a grade before recording it. Calling the individual function directly
+     * skips that mapping and so cannot reproduce what the plugin actually does.
+     *
+     * @param \stdClass $session
+     * @param \stdClass $student
+     * @param int $statuscode one of the MDL_F2F_STATUS_* attendance codes
+     * @return void
+     */
+    private function take_attendance(\stdClass $session, \stdClass $student, int $statuscode): void {
+        global $DB;
 
-        // Check completion date matches session date.
-        $cm = get_coursemodule_from_instance('facetoface', $facetoface->id);
+        $signup = $DB->get_record('facetoface_signups', ['sessionid' => $session->id, 'userid' => $student->id]);
+
+        facetoface_take_attendance((object) [
+            's' => $session->id,
+            'submissionid_' . $signup->id => $statuscode,
+        ]);
+    }
+
+    /**
+     * The completion date of the activity, as the activity completion report reads it.
+     *
+     * @param \stdClass $course
+     * @param \stdClass $facetoface
+     * @param \stdClass $student
+     * @return \stdClass
+     */
+    private function get_completion_data(\stdClass $course, \stdClass $facetoface, \stdClass $student): \stdClass {
+        $cm = get_coursemodule_from_instance('facetoface', $facetoface->id, $course->id);
         $completion = new \completion_info($course);
-        $completiondata = $completion->get_data($cm, false, $student->id);
+
+        return (object) (array) $completion->get_data($cm, false, $student->id);
+    }
+
+    /**
+     * With the setting enabled, the activity is dated by the session and not by the marking.
+     *
+     * Course completion criteria are optional, so this must work without them.
+     */
+    public function test_completion_date_uses_session_finish_without_course_criteria(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 1, 'facetoface');
+
+        $sessiondate = time() - WEEKSECS;
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_FULLY_ATTENDED,
+            [['timestart' => $sessiondate, 'timefinish' => $sessiondate + HOURSECS]]
+        );
+
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_FULLY_ATTENDED);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
+        $this->assertEquals(COMPLETION_COMPLETE, $completiondata->completionstate);
+        $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
+    }
+
+    /**
+     * The course completion criterion is dated by the session too.
+     */
+    public function test_completion_date_uses_session_finish_with_course_criteria(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 1, 'facetoface');
+
+        $sessiondate = time() - WEEKSECS;
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_FULLY_ATTENDED,
+            [['timestart' => $sessiondate, 'timefinish' => $sessiondate + HOURSECS]]
+        );
+        $this->add_activity_criterion($course, $facetoface);
+
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_FULLY_ATTENDED);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
         $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
 
-        // Check activity course completion criteria date matches session date.
         $criteria = $DB->get_record('course_completion_crit_compl', ['userid' => $student->id, 'course' => $course->id]);
         $this->assertEquals($sessiondate + HOURSECS, $criteria->timecompleted);
+    }
+
+    /**
+     * Partial attendance is backdated when partial attendance is what completes the activity.
+     *
+     * Partial attendance has status 90 but grade 50, so this guards the status
+     * code comparison.
+     */
+    public function test_completion_date_for_partially_attended_user(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 1, 'facetoface');
+
+        $sessiondate = time() - WEEKSECS;
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_PARTIALLY_ATTENDED,
+            [['timestart' => $sessiondate, 'timefinish' => $sessiondate + HOURSECS]]
+        );
+
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_PARTIALLY_ATTENDED);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
+        $this->assertEquals(COMPLETION_COMPLETE, $completiondata->completionstate);
+        $this->assertEquals($sessiondate + HOURSECS, $completiondata->timemodified);
+    }
+
+    /**
+     * A session held over several days is dated by the last of them.
+     */
+    public function test_completion_date_uses_the_last_day_of_a_multi_date_session(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 1, 'facetoface');
+
+        $firstday = time() - WEEKSECS;
+        $lastday = $firstday + (2 * DAYSECS);
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_FULLY_ATTENDED,
+            [
+                ['timestart' => $firstday, 'timefinish' => $firstday + HOURSECS],
+                ['timestart' => $firstday + DAYSECS, 'timefinish' => $firstday + DAYSECS + HOURSECS],
+                ['timestart' => $lastday, 'timefinish' => $lastday + HOURSECS],
+            ]
+        );
+        $this->add_activity_criterion($course, $facetoface);
+
+        $this->assertEquals(3, $DB->count_records('facetoface_sessions_dates', ['sessionid' => $session->id]));
+
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_FULLY_ATTENDED);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
+        $this->assertEquals($lastday + HOURSECS, $completiondata->timemodified);
+    }
+
+    /**
+     * A user who did not attend is neither completed nor dated by the session.
+     */
+    public function test_no_show_is_not_completed_or_backdated(): void {
+        global $DB;
+
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 1, 'facetoface');
+
+        $sessiondate = time() - WEEKSECS;
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_FULLY_ATTENDED,
+            [['timestart' => $sessiondate, 'timefinish' => $sessiondate + HOURSECS]]
+        );
+        $this->add_activity_criterion($course, $facetoface);
+
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_NO_SHOW);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
+        $this->assertEquals(COMPLETION_INCOMPLETE, $completiondata->completionstate);
+        $this->assertFalse(
+            $DB->record_exists('course_completion_crit_compl', ['userid' => $student->id, 'course' => $course->id])
+        );
+    }
+
+    /**
+     * With the setting off, completion is dated by the marking as it always was.
+     */
+    public function test_completion_date_is_the_marking_time_when_the_setting_is_off(): void {
+        $this->resetAfterTest();
+        $this->setAdminUser();
+        set_config('sessioncompletiondate', 0, 'facetoface');
+
+        $sessiondate = time() - WEEKSECS;
+        [$course, $facetoface, $session, $student] = $this->setup_attendance_completion(
+            MDL_F2F_STATUS_FULLY_ATTENDED,
+            [['timestart' => $sessiondate, 'timefinish' => $sessiondate + HOURSECS]]
+        );
+
+        $before = time();
+        $this->take_attendance($session, $student, MDL_F2F_STATUS_FULLY_ATTENDED);
+
+        $completiondata = $this->get_completion_data($course, $facetoface, $student);
+        $this->assertEquals(COMPLETION_COMPLETE, $completiondata->completionstate);
+        $this->assertGreaterThanOrEqual($before, $completiondata->timemodified);
     }
 }

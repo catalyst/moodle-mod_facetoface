@@ -2916,16 +2916,27 @@ function facetoface_approve_requests($data) {
 function facetoface_take_individual_attendance($submissionid, $grading) {
     global $USER, $CFG, $DB;
 
+    require_once($CFG->dirroot . '/completion/criteria/completion_criteria.php');
+
     $timenow = time();
+
+    /*
+     * Aggregate session dates so multi-date sessions use their final finish
+     * time, and undated sessions can still update attendance grades.
+     */
     $record = $DB->get_record_sql(
-        "SELECT f.*, s.userid, fsd.timefinish, fs.datetimeknown
+        "SELECT f.*, s.userid, fs.datetimeknown, fsus.statuscode,
+                (SELECT MAX(fsd.timefinish)
+                   FROM {facetoface_sessions_dates} fsd
+                  WHERE fsd.sessionid = fs.id) AS timefinish
                                 FROM {facetoface_signups} s
                                 JOIN {facetoface_sessions} fs ON s.sessionid = fs.id
-                                JOIN {facetoface_sessions_dates} fsd ON s.sessionid = fsd.sessionid
                                 JOIN {facetoface} f ON f.id = fs.facetoface
                                 JOIN {course_modules} cm ON cm.instance = f.id
                                 JOIN {modules} m ON m.id = cm.module
-                                WHERE s.id = ? AND m.name='facetoface'",
+                           LEFT JOIN {facetoface_signups_status} fsus
+                                  ON fsus.signupid = s.id AND fsus.superceded = 0
+                                WHERE s.id = ? AND m.name = 'facetoface'",
         [$submissionid]
     );
 
@@ -2946,29 +2957,82 @@ function facetoface_take_individual_attendance($submissionid, $grading) {
         $completion = new \completion_info($course);
         $cm = get_coursemodule_from_instance('facetoface', $record->id, $course->id);
         if ($completion->is_enabled($cm)) {
-            // Update/create completion data
+            // Update/create completion data.
             $completion->update_state($cm, COMPLETION_UNKNOWN, $record->userid, false);
-            $meetscompletioncriteria = $grading >= $record->completionattendance;
-            if ($record->datetimeknown && get_config('facetoface', 'sessioncompletiondate') && $meetscompletioncriteria) {
-                $criterias = $completion->get_criteria(4); // 4 = completion_criteria_activity
-                foreach($criterias as $criterion) {
-                    if ($criterion->module == 'facetoface' && $criterion->moduleinstance == $cm->id) {
-                        // Get existing completion data, modify state, save, and update completion.
-                        $data = $completion->get_data($cm, false, $record->userid);
-                        $data->timemodified = $record->timefinish;
-                        $completion->internal_set_data($cm, $data);
-                        // Updating the completion state status to complete and marking criteria completion.
-                        $completion->update_state($cm, COMPLETION_COMPLETE, $record->userid, false);
-                        $criteriacompletion = $completion->get_user_completion($record->userid, $criterion);
-                        $criteriacompletion->mark_complete($record->timefinish);
-                        break;
-                    }
-                }
+
+            if (facetoface_use_session_completion_date($record, $completion, $cm)) {
+                facetoface_set_completion_date($completion, $cm, $record->userid, $record->timefinish);
             }
         }
     }
 
     return $result;
+}
+
+/**
+ * Whether this attendance marking should be dated by the session rather than by now.
+ *
+ * The activity is only backdated when attendance is what completed it. Checking
+ * the recorded completion state rather than re-deriving it keeps this honest
+ * when the activity also has to be viewed or graded to count as complete: those
+ * rules can leave it incomplete, and an incomplete activity has no date to set.
+ *
+ * @param stdClass $record signup joined to its facetoface, session and current status
+ * @param completion_info $completion completion for the course the activity is in
+ * @param stdClass|cm_info $cm the course module for the facetoface activity
+ * @return bool
+ */
+function facetoface_use_session_completion_date($record, $completion, $cm) {
+    if (!get_config('facetoface', 'sessioncompletiondate')) {
+        return false;
+    }
+
+    // A session whose dates are not known yet has nothing to be dated by.
+    if (empty($record->datetimeknown) || empty($record->timefinish)) {
+        return false;
+    }
+
+    // Match custom_completion::get_state(): completion is based on status code, not grade.
+    if ((int) $record->statuscode < (int) $record->completionattendance) {
+        return false;
+    }
+
+    $data = $completion->get_data($cm, false, $record->userid);
+
+    return in_array((int) $data->completionstate, [COMPLETION_COMPLETE, COMPLETION_COMPLETE_PASS], true);
+}
+
+/**
+ * Date an activity completion, and any course completion criterion built on it, by the session.
+ *
+ * Both are set. Course completion criteria are optional, and while the criteria
+ * update used to be the only place the activity date was written, courses that
+ * did not use them were left with the activity stamped at the moment attendance
+ * was taken instead of the session it was taken for. Core aggregates the course
+ * completion date from the criteria times, so the criterion has to be dated too
+ * or the course completion drifts to whenever the aggregation cron next ran.
+ *
+ * @param completion_info $completion completion for the course the activity is in
+ * @param stdClass|cm_info $cm the course module for the facetoface activity
+ * @param int $userid the user whose completion is being dated
+ * @param int $timefinish the moment the session finished
+ * @return void
+ */
+function facetoface_set_completion_date($completion, $cm, $userid, $timefinish) {
+    $data = $completion->get_data($cm, false, $userid);
+    $data->timemodified = $timefinish;
+
+    // update_state() stamps the current time when the state changes, so set the stored date directly.
+    $completion->internal_set_data($cm, $data);
+
+    foreach ($completion->get_criteria(COMPLETION_CRITERIA_TYPE_ACTIVITY) as $criterion) {
+        // moduleinstance holds the course module id, not the activity instance id.
+        if ($criterion->module === 'facetoface' && $criterion->moduleinstance == $cm->id) {
+            $criteriacompletion = $completion->get_user_completion($userid, $criterion);
+            $criteriacompletion->mark_complete($timefinish);
+            break;
+        }
+    }
 }
 
 /**
