@@ -145,6 +145,34 @@ class session_date extends base {
             ->add_field("$sessiondates.timefinish")
             ->add_callback([facetoface_formatter::class, 'sessiondatetime']);
 
+        // Full start timestamp.
+        $columns[] = (new column(
+            'timestart',
+            new lang_string('timestart', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$sessiondates}.timestart")
+            ->set_is_sortable(true)
+            ->add_callback(static function ($value) {
+                return userdate($value);
+            });
+
+        // Full finish timestamp.
+        $columns[] = (new column(
+            'timefinish',
+            new lang_string('timefinish', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$sessiondates}.timefinish")
+            ->set_is_sortable(true)
+            ->add_callback(static function ($value) {
+                return userdate($value);
+            });
+
         return $columns;
     }
 
@@ -205,6 +233,24 @@ class session_date extends base {
                 ELSE 0
             END")
             ->set_options_callback([facetoface_formatter::class, 'get_session_statuses']);
+
+        // Full start timestamp.
+        $filters[] = (new filter(
+            date::class,
+            'timestart',
+            new lang_string('timestart', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$sessiondates}.timestart"
+        ))->add_joins($this->get_joins());
+
+        // Full finish timestamp.
+        $filters[] = (new filter(
+            date::class,
+            'timefinish',
+            new lang_string('timefinish', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$sessiondates}.timefinish"
+        ))->add_joins($this->get_joins());
 
         return $filters;
     }

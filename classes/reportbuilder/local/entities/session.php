@@ -20,6 +20,7 @@ namespace mod_facetoface\reportbuilder\local\entities;
 
 use core_reportbuilder\local\entities\base;
 use core_reportbuilder\local\filters\boolean_select;
+use core_reportbuilder\local\filters\date;
 use core_reportbuilder\local\filters\number;
 use core_reportbuilder\local\filters\select;
 use core_reportbuilder\local\helpers\custom_fields;
@@ -41,7 +42,7 @@ use stdClass;
  * @license     http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class session extends base {
-    /** @var custom_fields */
+    /** @var stdClass[] */
     protected $customfields;
 
     /**
@@ -159,6 +160,71 @@ class session extends base {
             ->set_is_sortable(true)
             ->add_callback([format::class, 'boolean_as_text']);
 
+        // Column date/time known.
+        $columns[] = (new column(
+            'datetimeknown',
+            new lang_string('sessiondatetimeknown', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_BOOLEAN)
+            ->add_field("{$session}.datetimeknown");
+
+        // Column duration.
+        $columns[] = (new column(
+            'duration',
+            new lang_string('duration', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
+            ->add_field("{$session}.duration")
+            ->set_is_sortable(true);
+
+        // Column normal cost.
+        $columns[] = (new column(
+            'normalcost',
+            new lang_string('normalcost', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
+            ->add_field("{$session}.normalcost")
+            ->set_is_sortable(true);
+
+        // Column discount cost.
+        $columns[] = (new column(
+            'discountcost',
+            new lang_string('discountcost', 'mod_facetoface'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_INTEGER)
+            ->add_field("{$session}.discountcost")
+            ->set_is_sortable(true);
+
+        // Column time created.
+        $columns[] = (new column(
+            'timecreated',
+            new lang_string('timecreated', 'core_reportbuilder'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$session}.timecreated")
+            ->set_is_sortable(true);
+
+        // Column time modified.
+        $columns[] = (new column(
+            'timemodified',
+            new lang_string('timemodified', 'core_reportbuilder'),
+            $this->get_entity_name()
+        ))
+            ->add_joins($this->get_joins())
+            ->set_type(column::TYPE_TIMESTAMP)
+            ->add_field("{$session}.timemodified")
+            ->set_is_sortable(true);
+
         // Bookings query.
         $bookingsquery = facetoface_helper::get_bookings_query($session);
 
@@ -267,6 +333,17 @@ class session extends base {
     protected function get_all_filters(): array {
         $session = $this->get_table_alias('facetoface_sessions');
         $filters = [];
+
+        // Filter details.
+        $filters[] = (new filter(
+            text::class,
+            'details',
+            new lang_string('details', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.details"
+        ))
+            ->add_joins($this->get_joins());
+
         // Filter capacity.
         $filters[] = (new filter(
             number::class,
@@ -294,6 +371,66 @@ class session extends base {
             new lang_string('allowcancellations', 'mod_facetoface'),
             $this->get_entity_name(),
             "{$session}.allowcancellations"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter normal cost.
+        $filters[] = (new filter(
+            number::class,
+            'normalcost',
+            new lang_string('normalcost', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.normalcost"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter duration.
+        $filters[] = (new filter(
+            number::class,
+            'duration',
+            new lang_string('duration', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.duration"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter discount cost.
+        $filters[] = (new filter(
+            number::class,
+            'discountcost',
+            new lang_string('discountcost', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.discountcost"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter date/time known.
+        $filters[] = (new filter(
+            boolean_select::class,
+            'datetimeknown',
+            new lang_string('sessiondatetimeknown', 'mod_facetoface'),
+            $this->get_entity_name(),
+            "{$session}.datetimeknown"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter time created.
+        $filters[] = (new filter(
+            date::class,
+            'timecreated',
+            new lang_string('timecreated', 'core_reportbuilder'),
+            $this->get_entity_name(),
+            "{$session}.timecreated"
+        ))
+            ->add_joins($this->get_joins());
+
+        // Filter time modified.
+        $filters[] = (new filter(
+            date::class,
+            'timemodified',
+            new lang_string('timemodified', 'core_reportbuilder'),
+            $this->get_entity_name(),
+            "{$session}.timemodified"
         ))
             ->add_joins($this->get_joins());
 
