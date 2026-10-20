@@ -94,6 +94,12 @@ if ($mform->is_cancelled()) {
 }
 
 $isbulksignup = $facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_ACTIVITY;
+$timenow = time();
+$errorcode = \mod_facetoface\session::get_self_signup_error($session, $timenow, !$isbulksignup);
+if ($errorcode !== null) {
+    throw new moodle_exception($errorcode, 'facetoface', $returnurl);
+}
+
 if ($fromform = $mform->get_data()) { // Form submitted.
     if (empty($fromform->submitbutton)) {
         throw new moodle_exception('error:unknownbuttonclicked', 'facetoface', $returnurl);
@@ -130,8 +136,15 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         $message = get_string('bookingcompleted', 'facetoface');
 
         foreach (facetoface_get_future_sessions($facetoface->id) as $session) {
+            $errorcode = \mod_facetoface\session::get_self_signup_error($session, $timenow);
+            if ($errorcode !== null) {
+                $error .= html_writer::empty_tag('br') . get_string($errorcode, 'facetoface');
+                continue;
+            }
+
             if (!facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
-                $error = html_writer::empty_tag('br') . html_writer::empty_tag('br') . get_string('somesessionsfull', 'facetoface');
+                $error .= html_writer::empty_tag('br') . html_writer::empty_tag('br') .
+                    get_string('somesessionsfull', 'facetoface');
                 continue;
             }
 
@@ -257,20 +270,6 @@ if ($facetoface->signuptype == MOD_FACETOFACE_SIGNUP_SINGLE && $signedup && $sig
 
 echo $OUTPUT->box_start();
 echo $OUTPUT->heading($heading);
-
-$timenow = time();
-
-if (!$isbulksignup && $session->datetimeknown && facetoface_has_session_started($session, $timenow)) {
-    $inprogressstr = get_string('cannotsignupsessioninprogress', 'facetoface');
-    $overstr = get_string('cannotsignupsessionover', 'facetoface');
-
-    $errorstring = facetoface_is_session_in_progress($session, $timenow) ? $inprogressstr : $overstr;
-
-    echo html_writer::empty_tag('br') . $errorstring;
-    echo $OUTPUT->box_end();
-    echo $OUTPUT->footer($course);
-    exit;
-}
 
 if (!$isbulksignup && !$signedup && !facetoface_session_has_capacity($session, $context) && (!$session->allowoverbook)) {
     throw new moodle_exception('sessionisfull', 'facetoface', $returnurl);

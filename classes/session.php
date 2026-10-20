@@ -29,6 +29,27 @@ namespace mod_facetoface;
  */
 class session {
     /**
+     * Get the language string key explaining why self-service signup is unavailable.
+     *
+     * @param \stdClass $session Session record including its dates.
+     * @param int $timenow Current timestamp.
+     * @param bool $checkdates Whether to check dates; bulk entry forms check each session separately.
+     * @return string|null Error string key, or null when signup is available.
+     */
+    public static function get_self_signup_error(\stdClass $session, int $timenow, bool $checkdates = true): ?string {
+        if (empty($session->visible)) {
+            return 'error:sessionclosed';
+        }
+
+        if ($checkdates && facetoface_has_session_started($session, $timenow)) {
+            return facetoface_is_session_in_progress($session, $timenow)
+                ? 'cannotsignupsessioninprogress' : 'cannotsignupsessionover';
+        }
+
+        return null;
+    }
+
+    /**
      * Get a human-readable string of the dates for a session instance.
      *
      * @param \stdClass $sessiondate Object containing a start and finish time for a session.

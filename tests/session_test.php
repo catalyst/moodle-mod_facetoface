@@ -47,6 +47,64 @@ final class session_test extends \advanced_testcase {
     }
 
     /**
+     * Test self-service signup eligibility for session visibility and dates.
+     *
+     * @dataProvider self_signup_error_provider
+     * @param int $visible Whether the session is visible.
+     * @param bool $datetimeknown Whether session dates are known.
+     * @param array $dateoffsets Start and finish offsets from the current timestamp.
+     * @param bool $checkdates Whether to validate session dates.
+     * @param string|null $expectederror Expected error string key.
+     */
+    public function test_get_self_signup_error(
+        int $visible,
+        bool $datetimeknown,
+        array $dateoffsets,
+        bool $checkdates,
+        ?string $expectederror
+    ): void {
+        $session = (object) [
+            'visible' => $visible,
+            'datetimeknown' => $datetimeknown,
+            'sessiondates' => array_map(function (array $offsets): \stdClass {
+                return (object) [
+                    'timestart' => $this->starttime + $offsets[0],
+                    'timefinish' => $this->starttime + $offsets[1],
+                ];
+            }, $dateoffsets),
+        ];
+
+        $this->assertSame($expectederror, session::get_self_signup_error($session, $this->starttime, $checkdates));
+    }
+
+    /**
+     * Provide session states for self-service signup eligibility.
+     *
+     * @return array
+     */
+    public static function self_signup_error_provider(): array {
+        return [
+            'visible future session' => [1, true, [[3600, 7200]], true, null],
+            'hidden future session' => [0, true, [[3600, 7200]], true, 'error:sessionclosed'],
+            'hidden ended session' => [0, true, [[-7200, -3600]], true, 'error:sessionclosed'],
+            'hidden undated session' => [0, false, [], true, 'error:sessionclosed'],
+            'session in progress' => [1, true, [[-3600, 3600]], true, 'cannotsignupsessioninprogress'],
+            'ended session' => [1, true, [[-7200, -3600]], true, 'cannotsignupsessionover'],
+            'visible undated session' => [1, false, [], true, null],
+            'unknown dates ignore stored past dates' => [1, false, [[-7200, -3600]], true, null],
+            'all occurrences in the future' => [1, true, [[3600, 7200], [10800, 14400]], true, null],
+            'in progress with a future occurrence' => [
+                1, true, [[-3600, 3600], [7200, 10800]], true, 'cannotsignupsessioninprogress',
+            ],
+            'ended occurrence with a future occurrence' => [
+                1, true, [[-7200, -3600], [3600, 7200]], true, 'cannotsignupsessionover',
+            ],
+            'bulk entry defers date checks to individual sessions' => [1, true, [[-7200, -3600]], false, null],
+            'bulk entry still rejects hidden sessions' => [0, true, [[3600, 7200]], false, 'error:sessionclosed'],
+        ];
+    }
+
+    /**
      * Test getting session date.
      */
     public function test_get_readable_session_date_with_single_date(): void {
