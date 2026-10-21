@@ -218,6 +218,7 @@ $string['error:noticeidincorrect'] = 'Notice ID is incorrect: {$a}';
 $string['error:problemsigningup'] = 'There was a problem signing you up.';
 $string['error:removeattendee'] = 'Could not remove {$a} from the session.';
 $string['error:sessionalreadystarted'] = 'Unable to use session {$a}, as it which has already started.';
+$string['error:sessionclosed'] = 'Registration for this session is closed. No booking has been processed.';
 $string['error:sessiondoesnotexist'] = 'Session ID {$a} does not exist';
 $string['error:sessionoverbooked'] = 'Session ID {$a->session} overbooked by {$a->amount} person(s).';
 $string['error:sessionstartafterend'] = 'Session start date/time is after end.';
