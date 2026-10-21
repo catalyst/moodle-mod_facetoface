@@ -95,7 +95,7 @@ if ($mform->is_cancelled()) {
 
 $isbulksignup = $facetoface->multiplesignupmethod == MOD_FACETOFACE_SIGNUP_MULTIPLE_PER_ACTIVITY;
 $timenow = time();
-$errorcode = \mod_facetoface\session::get_self_signup_error($session, $timenow, !$isbulksignup);
+$errorcode = \mod_facetoface\session::check_signup_status($session, $timenow, !$isbulksignup);
 if ($errorcode !== null) {
     throw new moodle_exception($errorcode, 'facetoface', $returnurl);
 }
@@ -136,7 +136,7 @@ if ($fromform = $mform->get_data()) { // Form submitted.
         $message = get_string('bookingcompleted', 'facetoface');
 
         foreach (facetoface_get_future_sessions($facetoface->id) as $session) {
-            $errorcode = \mod_facetoface\session::get_self_signup_error($session, $timenow);
+            $errorcode = \mod_facetoface\session::check_signup_status($session, $timenow);
             if ($errorcode !== null) {
                 $error .= html_writer::empty_tag('br') . get_string($errorcode, 'facetoface');
                 continue;

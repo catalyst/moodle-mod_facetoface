@@ -29,14 +29,14 @@ namespace mod_facetoface;
  */
 class session {
     /**
-     * Get the language string key explaining why self-service signup is unavailable.
+     * Check session visibility and dates for self-service signup.
      *
      * @param \stdClass $session Session record including its dates.
      * @param int $timenow Current timestamp.
      * @param bool $checkdates Whether to check dates; bulk entry forms check each session separately.
      * @return string|null Error string key, or null when signup is available.
      */
-    public static function get_self_signup_error(\stdClass $session, int $timenow, bool $checkdates = true): ?string {
+    public static function check_signup_status(\stdClass $session, int $timenow, bool $checkdates = true): ?string {
         if (empty($session->visible)) {
             return 'error:sessionclosed';
         }

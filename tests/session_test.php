@@ -49,14 +49,14 @@ final class session_test extends \advanced_testcase {
     /**
      * Test self-service signup eligibility for session visibility and dates.
      *
-     * @dataProvider self_signup_error_provider
+     * @dataProvider signup_status_provider
      * @param int $visible Whether the session is visible.
      * @param bool $datetimeknown Whether session dates are known.
      * @param array $dateoffsets Start and finish offsets from the current timestamp.
      * @param bool $checkdates Whether to validate session dates.
      * @param string|null $expectederror Expected error string key.
      */
-    public function test_get_self_signup_error(
+    public function test_check_signup_status(
         int $visible,
         bool $datetimeknown,
         array $dateoffsets,
@@ -74,7 +74,7 @@ final class session_test extends \advanced_testcase {
             }, $dateoffsets),
         ];
 
-        $this->assertSame($expectederror, session::get_self_signup_error($session, $this->starttime, $checkdates));
+        $this->assertSame($expectederror, session::check_signup_status($session, $this->starttime, $checkdates));
     }
 
     /**
@@ -82,7 +82,7 @@ final class session_test extends \advanced_testcase {
      *
      * @return array
      */
-    public static function self_signup_error_provider(): array {
+    public static function signup_status_provider(): array {
         return [
             'visible future session' => [1, true, [[3600, 7200]], true, null],
             'hidden future session' => [0, true, [[3600, 7200]], true, 'error:sessionclosed'],
